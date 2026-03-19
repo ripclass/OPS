@@ -50,12 +50,75 @@ class OasisAgentProfile:
     country: Optional[str] = None
     profession: Optional[str] = None
     interested_topics: List[str] = field(default_factory=list)
+    trust_government: Optional[int] = None
+    shame_sensitivity: Optional[int] = None
+    primary_fear: Optional[str] = None
+    influence_radius: Optional[int] = None
+    fb_intensity: Optional[int] = None
+    dialect: Optional[str] = None
+    income_stability: Optional[str] = None
+    rumour_amplifier: Optional[bool] = None
     
     # 来源实体信息
     source_entity_uuid: Optional[str] = None
     source_entity_type: Optional[str] = None
     
     created_at: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
+
+    def ops_fields(self) -> Dict[str, Any]:
+        """OPS-specific persona fields."""
+        return {
+            "trust_government": self.trust_government,
+            "shame_sensitivity": self.shame_sensitivity,
+            "primary_fear": self.primary_fear,
+            "influence_radius": self.influence_radius,
+            "fb_intensity": self.fb_intensity,
+            "dialect": self.dialect,
+            "income_stability": self.income_stability,
+            "rumour_amplifier": self.rumour_amplifier,
+        }
+
+    def build_user_char(self) -> str:
+        """Compose the text prompt OASIS injects for Twitter agents."""
+        parts = [self.bio]
+        if self.persona and self.persona != self.bio:
+            parts.append(self.persona)
+
+        ops_pairs = []
+        for key, value in self.ops_fields().items():
+            if value is None:
+                continue
+            if isinstance(value, bool):
+                rendered = str(value).lower()
+            else:
+                rendered = str(value)
+            ops_pairs.append(f"{key}={rendered}")
+
+        if ops_pairs:
+            parts.append("OPS persona: " + ", ".join(ops_pairs))
+
+        return " ".join(part for part in parts if part).replace('\n', ' ').replace('\r', ' ')
+
+    def _apply_optional_fields(self, profile: Dict[str, Any]) -> Dict[str, Any]:
+        """Attach optional persona fields, preserving falsy but valid values such as 0/False."""
+        if self.age is not None:
+            profile["age"] = self.age
+        if self.gender:
+            profile["gender"] = self.gender
+        if self.mbti:
+            profile["mbti"] = self.mbti
+        if self.country:
+            profile["country"] = self.country
+        if self.profession:
+            profile["profession"] = self.profession
+        if self.interested_topics:
+            profile["interested_topics"] = self.interested_topics
+
+        for key, value in self.ops_fields().items():
+            if value is not None:
+                profile[key] = value
+
+        return profile
     
     def to_reddit_format(self) -> Dict[str, Any]:
         """转换为Reddit平台格式"""
@@ -68,22 +131,7 @@ class OasisAgentProfile:
             "karma": self.karma,
             "created_at": self.created_at,
         }
-        
-        # 添加额外人设信息（如果有）
-        if self.age:
-            profile["age"] = self.age
-        if self.gender:
-            profile["gender"] = self.gender
-        if self.mbti:
-            profile["mbti"] = self.mbti
-        if self.country:
-            profile["country"] = self.country
-        if self.profession:
-            profile["profession"] = self.profession
-        if self.interested_topics:
-            profile["interested_topics"] = self.interested_topics
-        
-        return profile
+        return self._apply_optional_fields(profile)
     
     def to_twitter_format(self) -> Dict[str, Any]:
         """转换为Twitter平台格式"""
@@ -98,22 +146,7 @@ class OasisAgentProfile:
             "statuses_count": self.statuses_count,
             "created_at": self.created_at,
         }
-        
-        # 添加额外人设信息
-        if self.age:
-            profile["age"] = self.age
-        if self.gender:
-            profile["gender"] = self.gender
-        if self.mbti:
-            profile["mbti"] = self.mbti
-        if self.country:
-            profile["country"] = self.country
-        if self.profession:
-            profile["profession"] = self.profession
-        if self.interested_topics:
-            profile["interested_topics"] = self.interested_topics
-        
-        return profile
+        return self._apply_optional_fields(profile)
     
     def to_dict(self) -> Dict[str, Any]:
         """转换为完整字典格式"""
@@ -133,6 +166,7 @@ class OasisAgentProfile:
             "country": self.country,
             "profession": self.profession,
             "interested_topics": self.interested_topics,
+            **self.ops_fields(),
             "source_entity_uuid": self.source_entity_uuid,
             "source_entity_type": self.source_entity_type,
             "created_at": self.created_at,
@@ -268,6 +302,14 @@ class OasisProfileGenerator:
             country=profile_data.get("country"),
             profession=profile_data.get("profession"),
             interested_topics=profile_data.get("interested_topics", []),
+            trust_government=profile_data.get("trust_government"),
+            shame_sensitivity=profile_data.get("shame_sensitivity"),
+            primary_fear=profile_data.get("primary_fear"),
+            influence_radius=profile_data.get("influence_radius"),
+            fb_intensity=profile_data.get("fb_intensity"),
+            dialect=profile_data.get("dialect"),
+            income_stability=profile_data.get("income_stability"),
+            rumour_amplifier=profile_data.get("rumour_amplifier"),
             source_entity_uuid=entity.uuid,
             source_entity_type=entity_type,
         )
@@ -713,6 +755,14 @@ class OasisProfileGenerator:
 6. country: 国家（使用中文，如"中国"）
 7. profession: 职业
 8. interested_topics: 感兴趣话题数组
+9. trust_government: 对政府信任度，0-10整数
+10. shame_sensitivity: 羞耻敏感度，0-10整数
+11. primary_fear: 当前最核心的担忧，字符串
+12. influence_radius: 大致能影响到的人数，整数
+13. fb_intensity: Facebook/社媒使用强度，0-10整数
+14. dialect: 常用方言或口语风格，字符串
+15. income_stability: 收入稳定性描述，字符串
+16. rumour_amplifier: 是否容易放大/转述传闻，布尔值 true/false
 
 重要:
 - 所有字段值必须是字符串或数字，不要使用换行符
@@ -720,6 +770,9 @@ class OasisProfileGenerator:
 - 使用中文（除了gender字段必须用英文male/female）
 - 内容要与实体信息保持一致
 - age必须是有效的整数，gender必须是"male"或"female"
+- trust_government、shame_sensitivity、fb_intensity 必须是 0-10 整数
+- influence_radius 必须是整数，rumour_amplifier 必须是 true 或 false
+- persona 中要自然体现这些 OPS 变量对发言和传播行为的影响
 """
 
     def _build_group_persona_prompt(
@@ -762,6 +815,14 @@ class OasisProfileGenerator:
 6. country: 国家（使用中文，如"中国"）
 7. profession: 机构职能描述
 8. interested_topics: 关注领域数组
+9. trust_government: 对政府信任度，0-10整数
+10. shame_sensitivity: 羞耻敏感度，0-10整数
+11. primary_fear: 当前最核心的担忧，字符串
+12. influence_radius: 大致能影响到的人数，整数
+13. fb_intensity: Facebook/社媒使用强度，0-10整数
+14. dialect: 常用方言或口语风格，字符串
+15. income_stability: 收入稳定性描述，字符串
+16. rumour_amplifier: 是否容易放大/转述传闻，布尔值 true/false
 
 重要:
 - 所有字段值必须是字符串或数字，不允许null值
@@ -792,6 +853,14 @@ class OasisProfileGenerator:
                 "country": random.choice(self.COUNTRIES),
                 "profession": "Student",
                 "interested_topics": ["Education", "Social Issues", "Technology"],
+                "trust_government": random.randint(3, 7),
+                "shame_sensitivity": random.randint(4, 8),
+                "primary_fear": "education costs",
+                "influence_radius": random.randint(10, 40),
+                "fb_intensity": random.randint(5, 9),
+                "dialect": "standard",
+                "income_stability": "unstable",
+                "rumour_amplifier": random.choice([True, False]),
             }
         
         elif entity_type_lower in ["publicfigure", "expert", "faculty"]:
@@ -804,6 +873,14 @@ class OasisProfileGenerator:
                 "country": random.choice(self.COUNTRIES),
                 "profession": entity_attributes.get("occupation", "Expert"),
                 "interested_topics": ["Politics", "Economics", "Culture & Society"],
+                "trust_government": random.randint(4, 8),
+                "shame_sensitivity": random.randint(2, 6),
+                "primary_fear": "loss of credibility",
+                "influence_radius": random.randint(100, 1000),
+                "fb_intensity": random.randint(3, 7),
+                "dialect": "standard",
+                "income_stability": "stable",
+                "rumour_amplifier": False,
             }
         
         elif entity_type_lower in ["mediaoutlet", "socialmediaplatform"]:
@@ -816,6 +893,14 @@ class OasisProfileGenerator:
                 "country": "中国",
                 "profession": "Media",
                 "interested_topics": ["General News", "Current Events", "Public Affairs"],
+                "trust_government": 5,
+                "shame_sensitivity": 2,
+                "primary_fear": "audience distrust",
+                "influence_radius": random.randint(500, 5000),
+                "fb_intensity": 8,
+                "dialect": "standard",
+                "income_stability": "institutional",
+                "rumour_amplifier": False,
             }
         
         elif entity_type_lower in ["university", "governmentagency", "ngo", "organization"]:
@@ -828,6 +913,14 @@ class OasisProfileGenerator:
                 "country": "中国",
                 "profession": entity_type,
                 "interested_topics": ["Public Policy", "Community", "Official Announcements"],
+                "trust_government": 7,
+                "shame_sensitivity": 3,
+                "primary_fear": "public backlash",
+                "influence_radius": random.randint(200, 3000),
+                "fb_intensity": 4,
+                "dialect": "standard",
+                "income_stability": "institutional",
+                "rumour_amplifier": False,
             }
         
         else:
@@ -841,6 +934,14 @@ class OasisProfileGenerator:
                 "country": random.choice(self.COUNTRIES),
                 "profession": entity_type,
                 "interested_topics": ["General", "Social Issues"],
+                "trust_government": random.randint(2, 7),
+                "shame_sensitivity": random.randint(3, 8),
+                "primary_fear": "household costs",
+                "influence_radius": random.randint(10, 80),
+                "fb_intensity": random.randint(3, 8),
+                "dialect": "standard",
+                "income_stability": "variable",
+                "rumour_amplifier": random.choice([True, False]),
             }
     
     def set_graph_id(self, graph_id: str):
@@ -1030,6 +1131,10 @@ class OasisProfileGenerator:
             f"【基本属性】",
             f"年龄: {profile.age} | 性别: {profile.gender} | MBTI: {profile.mbti}",
             f"职业: {profile.profession} | 国家: {profile.country}",
+            f"OPS: trust_government={profile.trust_government}, shame_sensitivity={profile.shame_sensitivity}, "
+            f"primary_fear={profile.primary_fear}, influence_radius={profile.influence_radius}, "
+            f"fb_intensity={profile.fb_intensity}, dialect={profile.dialect}, "
+            f"income_stability={profile.income_stability}, rumour_amplifier={profile.rumour_amplifier}",
             f"兴趣话题: {topics_str}",
             separator
         ]
@@ -1092,12 +1197,8 @@ class OasisProfileGenerator:
             
             # 写入数据行
             for idx, profile in enumerate(profiles):
-                # user_char: 完整人设（bio + persona），用于LLM系统提示
-                user_char = profile.bio
-                if profile.persona and profile.persona != profile.bio:
-                    user_char = f"{profile.bio} {profile.persona}"
-                # 处理换行符（CSV中用空格替代）
-                user_char = user_char.replace('\n', ' ').replace('\r', ' ')
+                # user_char: 完整人设（bio + persona + OPS字段），用于LLM系统提示
+                user_char = profile.build_user_char()
                 
                 # description: 简短简介，用于外部显示
                 description = profile.bio.replace('\n', ' ').replace('\r', ' ')
@@ -1173,6 +1274,7 @@ class OasisProfileGenerator:
                 "mbti": profile.mbti if profile.mbti else "ISTJ",
                 "country": profile.country if profile.country else "中国",
             }
+            item.update(profile.ops_fields())
             
             # 可选字段
             if profile.profession:

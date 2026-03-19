@@ -1,11 +1,19 @@
 services:
   mirofish:
-    image: ghcr.io/666ghj/mirofish:latest
-    # 加速镜像（如拉取缓慢可替换上方地址）
-    # image: ghcr.nju.edu.cn/666ghj/mirofish:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mirofish-local:latest
     container_name: mirofish
     env_file:
       - .env
+    environment:
+      LLM_API_KEY: ${DOCKER_LLM_API_KEY:-ollama}
+      LLM_BASE_URL: ${DOCKER_LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      LLM_MODEL_NAME: ${DOCKER_LLM_MODEL_NAME:-qwen2.5:7b}
+      LLM_BOOST_API_KEY: ${DOCKER_LLM_BOOST_API_KEY:-ollama}
+      LLM_BOOST_BASE_URL: ${DOCKER_LLM_BOOST_BASE_URL:-http://host.docker.internal:11434/v1}
+      LLM_BOOST_MODEL_NAME: ${DOCKER_LLM_BOOST_MODEL_NAME:-qwen2.5:7b}
     ports:
       - "3000:3000"
       - "5001:5001"

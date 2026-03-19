@@ -38,6 +38,8 @@ def create_app(config_class=Config):
         logger.info("=" * 50)
         logger.info("MiroFish Backend 启动中...")
         logger.info("=" * 50)
+        if not app.config.get('ZEP_ENABLED'):
+            logger.warning("ZEP_API_KEY 未配置，Zep 图谱相关功能将不可用，但本地 UI 和非 Zep 功能可正常启动")
     
     # 启用CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}})
