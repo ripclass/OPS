@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 def _ensure_utf8_stdout():
     """
     Make sure stdout/stderr uses UTF-8 encoding
-    Solve the problem of Chinese garbled characters in Windows console
+    Avoid garbled non-ASCII output in the Windows console
     """
     if sys.platform == 'win32':
         # Reconfigure standard output to UTF-8 under Windows
@@ -27,7 +27,7 @@ def _ensure_utf8_stdout():
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs')
 
 
-def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.Logger:
+def setup_logger(name: str = 'ops', level: int = logging.DEBUG) -> logging.Logger:
     """
     Set up logger
     
@@ -75,7 +75,7 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
     file_handler.setFormatter(detailed_formatter)
     
     # 2. Console processor - concise log (INFO and above)
-    # Make sure to use UTF-8 encoding under Windows to avoid Chinese garbled characters
+    # Make sure to use UTF-8 encoding under Windows to avoid garbled console output
     _ensure_utf8_stdout()
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
@@ -88,7 +88,7 @@ def setup_logger(name: str = 'mirofish', level: int = logging.DEBUG) -> logging.
     return logger
 
 
-def get_logger(name: str = 'mirofish') -> logging.Logger:
+def get_logger(name: str = 'ops') -> logging.Logger:
     """
     Get the logger (create it if it does not exist)
     
@@ -123,4 +123,3 @@ def error(msg, *args, **kwargs):
 
 def critical(msg, *args, **kwargs):
     logger.critical(msg, *args, **kwargs)
-

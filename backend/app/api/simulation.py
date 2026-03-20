@@ -16,7 +16,7 @@ from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
 from ..models.project import ProjectManager
 
-logger = get_logger('mirofish.api.simulation')
+logger = get_logger('ops.api.simulation')
 
 
 # Interview prompt optimization prefix
@@ -885,8 +885,8 @@ def get_simulation_history():
                 {
                     "simulation_id": "sim_xxxx",
                     "project_id": "proj_xxxx",
-                    "project_name": "Public Opinion Analysis of Wuhan University",
-                    "simulation_requirement": "If Wuhan University releases...",
+                    "project_name": "OPS Rice Price Shock Forecast",
+                    "simulation_requirement": "If rice prices rise 40% next month, how will low-income households across South Asia react?",
                     "status": "completed",
                     "entities_count": 68,
                     "profiles_count": 68,

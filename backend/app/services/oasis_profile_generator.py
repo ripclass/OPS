@@ -22,7 +22,7 @@ from ..config import Config
 from ..utils.logger import get_logger
 from .zep_entity_reader import EntityNode, ZepEntityReader
 
-logger = get_logger('mirofish.oasis_profile')
+logger = get_logger('ops.oasis_profile')
 
 
 @dataclass
@@ -195,7 +195,7 @@ class OasisProfileGenerator:
     
     # Common countries
     COUNTRIES = [
-        "China", "US", "UK", "Japan", "Germany", "France", 
+        "Bangladesh", "India", "Pakistan", "US", "UK", "Japan", "Germany", "France", 
         "Canada", "Australia", "Brazil", "India", "South Korea"
     ]
     
@@ -751,7 +751,7 @@ Generate JSON with the following fields:
 3. age: numeric age (must be an integer)
 4. gender: must be in English, either "male" or "female"
 5. mbti: MBTI type such as INTJ or ENFP
-6. country: country name in English, such as "China"
+6. country: country name in English, such as "Bangladesh"
 7. profession: profession
 8. interested_topics: array of topics of interest
 9. trust_government: trust in government, integer from 0 to 10
@@ -811,7 +811,7 @@ Generate JSON with the following fields:
 3. age: fixed at 30 as the account's virtual age
 4. gender: fixed to "other" because the account is non-personal
 5. mbti: MBTI type used to describe account style, for example ISTJ for a rigorous and conservative tone
-6. country: country name in English, such as "China"
+6. country: country name in English, such as "Bangladesh"
 7. profession: description of the institution's function
 8. interested_topics: array of focus areas
 9. trust_government: trust in government, integer from 0 to 10
@@ -889,7 +889,7 @@ Important:
                 "age": 30,  # Virtual age for institution accounts
                 "gender": "other",  # Institutions use `other`
                 "mbti": "ISTJ",  # Institutional style: rigorous and conservative
-                "country": "China",
+                "country": "Bangladesh",
                 "profession": "Media",
                 "interested_topics": ["General News", "Current Events", "Public Affairs"],
                 "trust_government": 5,
@@ -909,7 +909,7 @@ Important:
                 "age": 30,  # Virtual age for institution accounts
                 "gender": "other",  # Institutions use `other`
                 "mbti": "ISTJ",  # Institutional style: rigorous and conservative
-                "country": "China",
+                "country": "Bangladesh",
                 "profession": entity_type,
                 "interested_topics": ["Public Policy", "Community", "Official Announcements"],
                 "trust_government": 7,
@@ -1271,7 +1271,7 @@ Important:
                 "age": profile.age if profile.age else 30,
                 "gender": self._normalize_gender(profile.gender),
                 "mbti": profile.mbti if profile.mbti else "ISTJ",
-                "country": profile.country if profile.country else "China",
+                "country": profile.country if profile.country else "Unknown",
             }
             item.update(profile.ops_fields())
             

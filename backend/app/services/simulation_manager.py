@@ -18,7 +18,7 @@ from .zep_entity_reader import ZepEntityReader, FilteredEntities
 from .oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
 from .simulation_config_generator import SimulationConfigGenerator, SimulationParameters
 
-logger = get_logger('mirofish.simulation')
+logger = get_logger('ops.simulation')
 
 
 class SimulationStatus(str, Enum):

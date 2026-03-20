@@ -4,7 +4,7 @@
     <nav class="navbar">
       <div class="nav-brand">OPS</div>
       <div class="nav-links">
-        <a href="https://github.com/666ghj/MiroFish" target="_blank" class="github-link">
+        <a href="https://github.com/ripclass/OPS" target="_blank" class="github-link">
           Open the source repository <span class="arrow">↗</span>
         </a>
       </div>
@@ -39,7 +39,7 @@
         <div class="hero-right">
           <!-- Logo Area -->
           <div class="logo-container">
-            <img src="../assets/logo/MiroFish_logo_left.jpeg" alt="OPS Logo" class="hero-logo" />
+            <img src="../assets/logo/ops_logo_left.jpeg" alt="OPS Logo" class="hero-logo" />
           </div>
           
           <button class="scroll-down-btn" @click="scrollToBottom">

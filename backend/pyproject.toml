@@ -1,5 +1,5 @@
 [project]
-name = "mirofish-backend"
+name = "ops-backend"
 version = "0.1.0"
 description = "OPS backend for Organic Population Simulation and scenario forecasting."
 requires-python = ">=3.11"

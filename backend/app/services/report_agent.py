@@ -1,4 +1,4 @@
-"""
+﻿"""
 Report Agent service
 Using LangChain + Zep to implement simulation report generation in ReACT mode
 
@@ -29,7 +29,7 @@ from .zep_tools import (
     InterviewResult
 )
 
-logger = get_logger('mirofish.report_agent')
+logger = get_logger('ops.report_agent')
 
 
 class ReportLogger:
@@ -352,8 +352,8 @@ class ReportConsoleLogger:
         
         # Added to report_agent related logger
         loggers_to_attach = [
-            'mirofish.report_agent',
-            'mirofish.zep_tools',
+            'ops.report_agent',
+            'ops.zep_tools',
         ]
         
         for logger_name in loggers_to_attach:
@@ -368,8 +368,8 @@ class ReportConsoleLogger:
         
         if self._file_handler:
             loggers_to_detach = [
-                'mirofish.report_agent',
-                'mirofish.zep_tools',
+                'ops.report_agent',
+                'ops.zep_tools',
             ]
             
             for logger_name in loggers_to_detach:
@@ -466,11 +466,11 @@ class Report:
         }
 
 
-# ═══════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # Prompt template constant
-# ═══════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-# ── Tool description ──
+# â”€â”€ Tool description â”€â”€
 
 TOOL_DESC_INSIGHT_FORGE = """\
 [Deep Insight Search - Powerful Search Tool]
@@ -480,12 +480,12 @@ This is our powerful search function, designed for in-depth analysis. It will:
 3. Integrate the results of semantic search, entity analysis, and relationship chain tracking
 4. Return the most comprehensive and in-depth search content
 
-【Usage Scenario】
+ã€Usage Scenarioã€‘
 - Need to analyze a topic in depth
 - Need to understand multiple aspects of the incident
 - Need to obtain rich materials to support the report chapters
 
-【Return to content】
+ã€Return to contentã€‘
 - Original text of relevant facts (can be quoted directly)
 - Core entity insights
 -Relationship chain analysis"""
@@ -497,12 +497,12 @@ This tool is used to obtain a complete picture of the simulation results and is 
 2. Distinguish between currently valid facts and historical/expired facts
 3. Help you understand how public opinion evolves
 
-【Usage Scenario】
+ã€Usage Scenarioã€‘
 - Need to understand the complete development of the incident
 - Need to compare changes in public opinion at different stages
 - Need to obtain comprehensive entity and relationship information
 
-【Return to content】
+ã€Return to contentã€‘
 - Current valid facts (simulate the latest results)
 - Historical/expired facts (evolution records)
 - All entities involved"""
@@ -511,12 +511,12 @@ TOOL_DESC_QUICK_SEARCH = """\
 [Simple search - quick search]
 A lightweight fast retrieval tool suitable for simple and direct information query.
 
-【Usage Scenario】
+ã€Usage Scenarioã€‘
 - Need to find specific information quickly
 - Need to verify a fact
 - Simple information retrieval
 
-【Return to content】
+ã€Return to contentã€‘
 - List of facts most relevant to the query"""
 
 TOOL_DESC_INTERVIEW_AGENTS = """\
@@ -532,13 +532,13 @@ Functional flow:
 4. Call the /api/simulation/interview/batch interface to conduct real interviews on dual platforms
 5. Integrate all interview results and provide multi-perspective analysis
 
-【Usage Scenario】
-- Need to understand the views of events from different roles’ perspectives (What do students think? What do the media think? What do officials say?)
+ã€Usage Scenarioã€‘
+- Need to understand the views of events from different rolesâ€™ perspectives (What do students think? What do the media think? What do officials say?)
 - Need to collect opinions and positions from multiple parties
 - Need to obtain the real answer of the simulated Agent (from the OASIS simulation environment)
 - I want to make the report more vivid and include "Interview Record"
 
-【Return to content】
+ã€Return to contentã€‘
 - Identity information of the agent being interviewed
 - Interview answers from each Agent on Twitter and Reddit
 - Key quotes (can be quoted directly)
@@ -546,26 +546,26 @@ Functional flow:
 
 [Important] The OASIS simulation environment needs to be running to use this function!"""
 
-# ──Outline planning prompt──
+# â”€â”€Outline planning promptâ”€â”€
 
 PLAN_SYSTEM_PROMPT = """\
 You are an expert in writing "future prediction reports" and have a "God's perspective" on the simulated world - you can gain insight into the behavior, speech and interaction of every agent in the simulation.
 
-【Core Concept】
+ã€Core Conceptã€‘
 We build a simulation world and inject specific "simulation requirements" as variables into it. The evolution of the simulated world is a prediction of what may happen in the future. What you are observing is not "experimental data" but "a preview of the future".
 
-【Your mission】
+ã€Your missionã€‘
 Write a "Future Forecast Report" and answer:
 1. What happens in the future under the conditions we set?
 2. How do various Agents (people) react and act?
 3. What future trends and risks does this simulation reveal that are worthy of attention?
 
 [Report positioning]
-- ✅ This is a simulation-based future prediction report that reveals "what will happen in the future if this happens"
-- ✅ Focus on predicting results: event trends, group reactions, emerging phenomena, potential risks
-- ✅ The words and deeds of the Agent in the simulated world are predictions of future crowd behavior.
-- ❌ Not an analysis of real-world conditions
-- ❌ This is not a general summary of public opinion.
+- âœ… This is a simulation-based future prediction report that reveals "what will happen in the future if this happens"
+- âœ… Focus on predicting results: event trends, group reactions, emerging phenomena, potential risks
+- âœ… The words and deeds of the Agent in the simulated world are predictions of future crowd behavior.
+- âŒ Not an analysis of real-world conditions
+- âŒ This is not a general summary of public opinion.
 
 [Limited number of chapters]
 - Minimum 2 chapters, maximum 5 chapters
@@ -609,10 +609,10 @@ Based on the prediction results, design the most appropriate report chapter stru
 
 [Remind again] Number of report chapters: minimum 2, maximum 5. The content should be refined and focused on core predictions and findings."""
 
-# ──Chapter generation prompt──
+# â”€â”€Chapter generation promptâ”€â”€
 
 SECTION_SYSTEM_PROMPT_TEMPLATE = """\
-You are a "future forecast report" writing expert and are writing a chapter of the report.
+You are a future-forecast report writer and are drafting one chapter of the report.
 
 Report title: {report_title}
 Report summary: {report_summary}
@@ -620,189 +620,170 @@ Forecast scenario (simulation requirement): {simulation_requirement}
 
 Chapter currently being written: {section_title}
 
-═══════════════════════════════════════════════════════════════
-【Core Concept】
-═══════════════════════════════════════════════════════════════
+================================================================
+[Core Concept]
+================================================================
 
-The simulated world is a preview of the future. We inject specific conditions (simulation requirements) into the simulation world,
-The behavior and interaction of Agents in the simulation are predictions of future crowd behavior.
+The simulated world is a preview of the future. We inject the scenario into the simulation world,
+and the agents' behavior and interactions are predictions of future crowd behavior.
 
-Your task is:
-- Reveal what will happen in the future under set conditions
-- Predict how various types of people (Agents) will react and act
-- Discover future trends, risks and opportunities worth paying attention to
+Your task is to:
+- reveal what is likely to happen under the scenario
+- predict how different kinds of people or organizations will react
+- identify trends, risks, and opportunities worth attention
 
-❌ Don’t write it as an analysis of real-world conditions
-✅ Focus on "what will happen in the future" - the simulation result is the predicted future
+Do not write this as a retrospective analysis of real-world events.
+Focus on what is likely to happen next in the simulated future.
 
-═══════════════════════════════════════════════════════════════
-【The most important rule - must be followed】
-═══════════════════════════════════════════════════════════════
+================================================================
+[Mandatory Rules]
+================================================================
 
-1. [Tools must be called to observe the simulated world]
-   - You are observing a preview of the future from a "God's perspective"
-   - All content must come from events that occurred in the simulated world and the words and deeds of the Agent
-   - It is prohibited to use your own knowledge to write the report content
-   - Call the tool at least 3 times per chapter (maximum 5 times) to observe the simulated world, which represents the future
+1. [You must use tools to observe the simulated world]
+   - All report content must come from events that occurred in the simulated world
+   - Do not use your own outside knowledge to invent findings
+   - Call tools at least 3 times per chapter and at most 5 times
 
-2. [Must quote the Agent’s original words and deeds]
-   - Agent’s speech and behavior are predictions of future crowd behavior
-   - Present these forecasts in reports using citation format, for example:
-     > "A certain group of people will say: Original content..."
-   - These quotes are core evidence for simulation predictions
+2. [Quote what the agents actually say or do]
+   - Agent speech and behavior are the evidence for predicted public response
+   - Present important evidence in quotation format, for example:
+     > "A specific group is likely to say: original content..."
 
-3. [Language consistency - citations must be translated into the reporting language]
-   - The content returned by the tool may contain expressions in English or a mixture of Chinese and English
-   - If the original text of the simulation requirements and materials is in Chinese, the report must be entirely written in Chinese
-   - When you quote English or Chinese-English mixed content returned by the tool, you must translate it into fluent Chinese before writing it into the report
-   - Keep the original meaning unchanged during translation to ensure natural and smooth expression
-   - This rule applies to content in both body text and quotation blocks (> format)
+3. [Keep language consistent]
+   - Tool output may contain multilingual or mixed-language material
+   - Write the chapter in the report language requested by the user; default to English
+   - When quoting material in another language, translate it into the report language while preserving the meaning
+   - Apply this rule to both narrative text and block quotes
 
-4. [Faithfully present the prediction results]
-   - Report content must reflect simulation results that represent the future in the simulated world
-   - Do not add information that does not exist in the simulation
-   - If there is insufficient information in a certain aspect, explain it truthfully
+4. [Represent the simulation faithfully]
+   - Report content must reflect the simulated future exactly as observed
+   - Do not add facts that do not appear in the simulation
+   - If information is missing, say so directly
 
-═══════════════════════════════════════════════════════════════
-【⚠️ Format specifications - extremely important! 】
-═══════════════════════════════════════════════════════════════
+================================================================
+[Format Rules]
+================================================================
 
-[A chapter = the smallest unit of content]
-- Each chapter is the smallest unit of reporting
-- ❌ It is forbidden to use any Markdown titles (#, ##, ###, ####, etc.) within chapters
-- ❌ It is forbidden to add the main chapter title at the beginning of the content
-- ✅ Chapter titles are automatically added by the system, you only need to write pure text content
-- ✅ Use **bold**, paragraph breaks, quotes, lists to organize content, but no headings
+[A chapter is the smallest unit of content]
+- Do not use Markdown headings such as #, ##, ###, or ####
+- Do not repeat the chapter title at the start of the content
+- The system inserts chapter titles automatically
+- Use bold text, paragraph breaks, quotes, and lists to structure the chapter
 
 [Correct example]
 ```
-This chapter analyzes the public opinion communication trend of the incident. Through in-depth analysis of simulated data, we found...
+This chapter examines how the scenario gains momentum across the network.
 
-**Initial detonation stage**
+**Initial trigger**
 
-As the first site for public opinion, Weibo assumes the core function of information publishing:
+The first visible reaction comes from local community pages:
 
-> "Weibo contributed 68% of first-time buzz..."
+> "People are already asking whether the price jump is final."
 
-**Emotional amplification stage**
+**Amplification**
 
-The Douyin platform further amplified the impact of the incident:
+Discussion then accelerates through peer-to-peer sharing:
 
-- Strong visual impact
-- High emotional resonance
+- neighborhood groups repeat the warning
+- rumor-heavy accounts add emotional framing
 ```
 
-[Error example]
+[Incorrect example]
 ```
-## Executive Summary ← Error! don't add any title
-### 1. First release stage ← Error! Do not use ### to divide sections into sections
-#### 1.1 Detailed analysis ← Error! Do not use #### to subdivide
+## Executive Summary
+### First stage
+#### Detailed analysis
 
-This chapter analyzes...
+This chapter examines...
 ```
 
-═══════════════════════════════════════════════════════════════
-[Available search tools] (called 3-5 times per chapter)
-═══════════════════════════════════════════════════════════════
+================================================================
+[Available Search Tools] (call tools 3-5 times per chapter)
+================================================================
 
 {tools_description}
 
-[Tool usage suggestions - please use a mix of different tools, don’t just use one]
-- insight_forge: Deep insight analysis, automatically decompose problems and retrieve facts and relationships in multiple dimensions
-- panorama_search: wide-angle panoramic search to understand the entire event, timeline and evolution process
-- quick_search: Quickly verify a specific information point
-- interview_agents: Interview simulated Agents to obtain first-person views and real reactions of different characters
+[Tool usage suggestions - use a mix of different tools]
+- insight_forge: deep multi-angle analysis across facts and relationships
+- panorama_search: broad search across timeline, entities, and evolution
+- quick_search: fast verification of a specific point
+- interview_agents: direct agent interviews for first-person reactions
 
-═══════════════════════════════════════════════════════════════
-【Workflow】
-═══════════════════════════════════════════════════════════════
+================================================================
+[Workflow]
+================================================================
 
-You can only do one of the following two things for each reply (not at the same time):
+In each reply you may do only one of the following:
 
-Option A - Call the tool:
-Print your thinking and then call a tool using the following format:
+Option A - Call a tool
+Print your reasoning, then call exactly one tool using:
 <tool_call>
-{{"name": "Tool name", "parameters": {{"Parameter name": "Parameter value"}}}}
+{{"name": "tool_name", "parameters": {{"param": "value"}}}}
 </tool_call>
-The system will execute the tool and return the results to you. You don't need and can't write your own tool to return results.
 
-Option B - Output final content:
-When you have obtained enough information through the tool, output the chapter content starting with "Final Answer:".
+Option B - Output final content
+After you have enough evidence, output the chapter content starting with "Final Answer:".
 
-⚠️ Strictly prohibited:
-- It is prohibited to include both tool call and Final Answer in one reply
-- It is forbidden to make up the results returned by tools (Observation). All tool results are injected by the system.
-- A maximum of one tool can be called per reply
+Strictly prohibited:
+- including both a tool call and Final Answer in one reply
+- fabricating tool results
+- calling more than one tool in a single reply
 
-═══════════════════════════════════════════════════════════════
+================================================================
 [Chapter Content Requirements]
-═══════════════════════════════════════════════════════════════
+================================================================
 
-1. Content must be based on simulation data retrieved by the tool
-2. Extensive quotations from original texts to demonstrate simulation effects
-3. Use Markdown format (but prohibit the use of titles):
-   - Use **bold text** to mark important points (instead of subheadings)
-   - Use lists (- or 1.2.3.) to organize key points
-   - Use blank lines to separate paragraphs
-   - ❌ It is forbidden to use any title syntax such as #, ##, ###, #### etc.
-4. [Citation format specifications - must be separated into separate paragraphs]
-   Quotations must be separated into separate paragraphs, with a blank line before and after them, and cannot be mixed into paragraphs:
-
-   ✅ Correct format:
-   ```
-   The school's response was deemed to lack substance.
-
-   > "The school's response model appears rigid and slow in the rapidly changing social media environment."
-
-   This assessment reflects widespread public dissatisfaction.
-   ```
-
-   ❌ Incorrect format:
-   ```
-   The school's response was deemed to lack substance. > "The school's response model..." This comment reflects...
-   ```
-5. Maintain logical coherence with other chapters
-6. [Avoid repetition] Read the completed chapters below carefully and do not describe the same information repeatedly.
-7. [Again] Don’t add any titles! Replace section titles with **bold**"""
+1. Content must be based on simulation data returned by tools
+2. Use concrete quotes from the simulation where they add evidence
+3. Use Markdown formatting without headings:
+   - use **bold** for emphasis instead of section headings
+   - use lists to organize key points
+   - use blank lines between paragraphs
+4. Quote formatting:
+   - place quotes in their own paragraphs with a blank line before and after
+   - do not bury quotes inside a normal paragraph
+5. Keep the chapter logically consistent with the rest of the report
+6. Avoid repetition with completed chapters
+7. Do not add headings; if you need internal structure, use **bold** labels instead"""
 
 SECTION_USER_PROMPT_TEMPLATE = """\
-Completed chapter content (please read carefully to avoid repetition):
+Completed chapter content (read carefully to avoid repetition):
 {previous_content}
 
-═══════════════════════════════════════════════════════════════
-[Current task] Write a chapter: {section_title}
-═══════════════════════════════════════════════════════════════
+================================================================
+[Current task] Write the chapter: {section_title}
+================================================================
 
-【Important reminder】
-1. Read the completed chapters above carefully to avoid repeating the same content!
-2. You must first call the tool to obtain simulation data before starting.
-3. Use a mix of tools, don’t just use one
-4. The report content must come from search results, do not use your own knowledge
+[Important reminders]
+1. Read the completed chapters above and avoid repeating them
+2. You must call tools before drafting the chapter
+3. Use a mix of tools rather than relying on only one
+4. All report content must come from retrieved simulation evidence
 
-【⚠️ Format warning - must be followed】
-- ❌ Do not write any title (#, ##, ###, #### will not work)
-- ❌ Do not write "{section_title}" as the beginning
-- ✅ Chapter titles are automatically added by the system
-- ✅ Write the main text directly and use **bold** instead of section titles
+[Format warning]
+- Do not write any Markdown heading (#, ##, ###, ####)
+- Do not start the chapter by repeating "{section_title}"
+- Chapter titles are added automatically by the system
+- Write the chapter body directly and use **bold** instead of headings
 
-Please start:
-1. First think about what information is needed for this chapter
-2. Then call the tool (Action) to obtain the simulation data
-3. After collecting enough information, output the Final Answer (plain text, without any title)"""
+Please begin:
+1. Decide what information you need
+2. Call a tool to retrieve simulation evidence
+3. After enough evidence is collected, output Final Answer with plain text only"""
 
-# ── ReACT in-loop message template ──
+# -- ReACT in-loop message template --
 
 REACT_OBSERVATION_TEMPLATE = """\
 Observation (retrieval results):
 
-═══ tool {tool_name} returns ═══
+=== tool {tool_name} returned ===
 {result}
 
-═══════════════════════════════════════════════════════════════
-Tool called {tool_calls_count}/{max_tool_calls} times (used: {used_tools_str}) {unused_hint}
-- If the information is sufficient: output the chapter content starting with "Final Answer:" (the above original text must be cited)
-- If more information is needed: call a tool to continue the search
-═══════════════════════════════════════════════════════════════"""
+=================================
+Tools called: {tool_calls_count}/{max_tool_calls} (used: {used_tools_str}) {unused_hint}
+- If the evidence is sufficient, output the chapter content starting with "Final Answer:"
+- If more evidence is needed, call another tool
+================================="""
 
 REACT_INSUFFICIENT_TOOLS_MSG = (
     "[Note] You only called the tool {tool_calls_count} times, at least {min_tool_calls} times are required."
@@ -819,22 +800,22 @@ REACT_TOOL_LIMIT_MSG = (
     'Please immediately output the chapter content starting with "Final Answer:" based on the information you have obtained.'
 )
 
-REACT_UNUSED_TOOLS_HINT = "\\n💡 You have not used: {unused_list}, it is recommended to try different tools to obtain multi-angle information"
+REACT_UNUSED_TOOLS_HINT = "\\nðŸ’¡ You have not used: {unused_list}, it is recommended to try different tools to obtain multi-angle information"
 
 REACT_FORCE_FINAL_MSG = "The tool calling limit has been reached, please directly output Final Answer: and generate chapter content."
 
-# ── Chat prompt ──
+# â”€â”€ Chat prompt â”€â”€
 
 CHAT_SYSTEM_PROMPT_TEMPLATE = """\
 You are a simple and efficient simulation prediction assistant.
 
-【background】
+ã€backgroundã€‘
 Prediction condition: {simulation_requirement}
 
 [Generated analysis report]
 {report_content}
 
-【rule】
+ã€ruleã€‘
 1. Prioritize answering questions based on the above report content
 2. Answer the question directly and avoid lengthy thinking and discussion.
 3. Only call the tool to retrieve more data if the report content is not enough to answer the question
@@ -849,16 +830,16 @@ Prediction condition: {simulation_requirement}
 </tool_call>
 
 [Answer style]
-- Be concise and direct, don’t make lengthy statements
+- Be concise and direct, donâ€™t make lengthy statements
 - Quote key content using the > format
 - Give conclusions first, then explain the reasons"""
 
 CHAT_OBSERVATION_SUFFIX = "\\n\\nPlease answer the question concisely."
 
 
-# ═══════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # ReportAgent main class
-# ═══════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 
 class ReportAgent:
@@ -946,7 +927,7 @@ class ReportAgent:
                 "name": "interview_agents",
                 "description": TOOL_DESC_INTERVIEW_AGENTS,
                 "parameters": {
-                    "interview_topic": "Interview topic or description of needs (for example: 'Understand students' views on the formaldehyde incident in dormitories')",
+                    "interview_topic": "Interview topic or description of needs (for example: 'Understand how low-income households may react to a 40% rice price increase')",
                     "max_agents": "Maximum number of agents to interview (optional, default 5, maximum 10)"
                 }
             }
@@ -1231,7 +1212,7 @@ class ReportAgent:
         ReACT loop:
         1. Thought - what information is needed for analysis
         2. Action - call the tool to obtain information
-        3. Observation – Analysis tools return results
+        3. Observation â€“ Analysis tools return results
         4. Repeat until the information is enough or the maximum number of times is reached
         5. Final Answer - Generate chapter content
         
@@ -1324,7 +1305,7 @@ class ReportAgent:
             has_tool_calls = bool(tool_calls)
             has_final_answer = "Final Answer:" in response
 
-            # ── Conflict handling: LLM outputs tool calls and Final Answer at the same time ──
+            # â”€â”€ Conflict handling: LLM outputs tool calls and Final Answer at the same time â”€â”€
             if has_tool_calls and has_final_answer:
                 conflict_retries += 1
                 logger.warning(
@@ -1371,13 +1352,13 @@ class ReportAgent:
                     has_final_answer=has_final_answer
                 )
 
-            # ── Case 1: LLM outputs Final Answer ──
+            # â”€â”€ Case 1: LLM outputs Final Answer â”€â”€
             if has_final_answer:
                 # The number of times the tool has been called is insufficient. Refuse and ask to continue adjusting the tool.
                 if tool_calls_count < min_tool_calls:
                     messages.append({"role": "assistant", "content": response})
                     unused_tools = all_tools - used_tools
-                    unused_hint = f"(These tools have not been used yet, it is recommended to use them:{', '.join(unused_tools)}）" if unused_tools else ""
+                    unused_hint = f"(These tools have not been used yet, it is recommended to use them:{', '.join(unused_tools)}ï¼‰" if unused_tools else ""
                     messages.append({
                         "role": "user",
                         "content": REACT_INSUFFICIENT_TOOLS_MSG.format(
@@ -1401,9 +1382,9 @@ class ReportAgent:
                     )
                 return final_answer
 
-            # ── Case 2: LLM attempts to call the tool ──
+            # â”€â”€ Case 2: LLM attempts to call the tool â”€â”€
             if has_tool_calls:
-                # The tool quota has been exhausted → clearly inform and require output Final Answer
+                # The tool quota has been exhausted â†’ clearly inform and require output Final Answer
                 if tool_calls_count >= self.MAX_TOOL_CALLS_PER_SECTION:
                     messages.append({"role": "assistant", "content": response})
                     messages.append({
@@ -1451,7 +1432,7 @@ class ReportAgent:
                 unused_tools = all_tools - used_tools
                 unused_hint = ""
                 if unused_tools and tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION:
-                    unused_hint = REACT_UNUSED_TOOLS_HINT.format(unused_list="、".join(unused_tools))
+                    unused_hint = REACT_UNUSED_TOOLS_HINT.format(unused_list="ã€".join(unused_tools))
 
                 messages.append({"role": "assistant", "content": response})
                 messages.append({
@@ -1467,13 +1448,13 @@ class ReportAgent:
                 })
                 continue
 
-            # ── Case 3: There is neither tool call nor Final Answer ──
+            # â”€â”€ Case 3: There is neither tool call nor Final Answer â”€â”€
             messages.append({"role": "assistant", "content": response})
 
             if tool_calls_count < min_tool_calls:
                 # The number of times the tool has been called is insufficient. Unused tools are recommended.
                 unused_tools = all_tools - used_tools
-                unused_hint = f"(These tools have not been used yet, it is recommended to use them:{', '.join(unused_tools)}）" if unused_tools else ""
+                unused_hint = f"(These tools have not been used yet, it is recommended to use them:{', '.join(unused_tools)}ï¼‰" if unused_tools else ""
 
                 messages.append({
                     "role": "user",
@@ -1487,7 +1468,7 @@ class ReportAgent:
 
             # The tool call is sufficient, LLM outputs the content without the "Final Answer:" prefix
             # Use this content directly as the final answer, no more idling
-            logger.info(f"chapter{section.title} The 'Final Answer:' prefix is ​​not detected, and the LLM output is directly adopted as the final content (tool call:{tool_calls_count}Second-rate)")
+            logger.info(f"chapter{section.title} The 'Final Answer:' prefix is â€‹â€‹not detected, and the LLM output is directly adopted as the final content (tool call:{tool_calls_count}Second-rate)")
             final_answer = response.strip()
 
             if self.report_logger:
@@ -1544,9 +1525,9 @@ class ReportAgent:
             outline.json - Report outline
             progress.json - Generate progress
             section_01.md - Chapter 1
-            section_02.md – Chapter 2
+            section_02.md â€“ Chapter 2
             ...
-            full_report.md – full report
+            full_report.md â€“ full report
         
         Args:
             progress_callback: progress callback function (stage, progress, message)
@@ -1893,9 +1874,9 @@ class ReportManager:
         outline.json - Report outline
         progress.json - Generate progress
         section_01.md - Chapter 1
-        section_02.md – Chapter 2
+        section_02.md â€“ Chapter 2
         ...
-        full_report.md – full report
+        full_report.md â€“ full report
     """
     
     # Report storage directory
@@ -2569,3 +2550,4 @@ class ReportManager:
             deleted = True
         
         return deleted
+

@@ -1,5 +1,7 @@
+name: ops
+
 services:
-  mirofish:
+  ops:
     build:
       context: .
       dockerfile: Dockerfile

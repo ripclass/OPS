@@ -1,4 +1,4 @@
-"""
+﻿"""
 Zep search tool service
 Encapsulates graph search, node reading, edge query and other tools for use by Report Agent
 
@@ -10,6 +10,7 @@ Core search tools (after optimization):
 
 import time
 import json
+import re
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 
@@ -20,7 +21,7 @@ from ..utils.logger import get_logger
 from ..utils.llm_client import LLMClient
 from ..utils.zep_paging import fetch_all_nodes, fetch_all_edges
 
-logger = get_logger('mirofish.zep_tools')
+logger = get_logger('ops.zep_tools')
 
 
 @dataclass
@@ -43,10 +44,13 @@ class SearchResult:
     
     def to_text(self) -> str:
         """Convert to text format for LLM to understand"""
-        text_parts = [f"Search query:{self.query}", f"turn up{self.total_count} related information"]
+        text_parts = [
+            f"Search Query: {self.query}",
+            f"Found {self.total_count} related items",
+        ]
         
         if self.facts:
-            text_parts.append("\\n### Relevant facts:")
+            text_parts.append("\n### Relevant Facts:")
             for i, fact in enumerate(self.facts, 1):
                 text_parts.append(f"{i}. {fact}")
         
@@ -170,40 +174,40 @@ class InsightForgeResult:
     def to_text(self) -> str:
         """Convert to detailed text format for LLM to understand"""
         text_parts = [
-            f"## In-depth analysis of future forecasts",
-            f"Analyze the problem:{self.query}",
-            f"Predicted scenario:{self.simulation_requirement}",
-            f"\n### Forecast data statistics",
-            f"- Related prediction facts:{self.total_facts}strip",
-            f"- Involved entities:{self.total_entities}indivual",
-            f"-Relationship chain:{self.total_relationships}strip"
+            "## Deep Insight Search",
+            f"Analysis Question: {self.query}",
+            f"Prediction Scenario: {self.simulation_requirement}",
+            "\n### Forecast Data Statistics",
+            f"- Relevant Facts: {self.total_facts}",
+            f"- Involved Entities: {self.total_entities}",
+            f"- Relationship Chains: {self.total_relationships}",
         ]
         
         # subproblem
         if self.sub_queries:
-            text_parts.append(f"\n### Analysis sub-problems")
+            text_parts.append("\n### Analysis Sub-Questions")
             for i, sq in enumerate(self.sub_queries, 1):
                 text_parts.append(f"{i}. {sq}")
         
         # Semantic search results
         if self.semantic_facts:
-            text_parts.append(f"\n### [Key Facts] (Please cite these original texts in your report)")
+            text_parts.append("\n### [Key Facts]")
             for i, fact in enumerate(self.semantic_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # entity insights
         if self.entity_insights:
-            text_parts.append(f"\n### [Core Entity]")
+            text_parts.append("\n### [Core Entities]")
             for entity in self.entity_insights:
                 text_parts.append(f"- **{entity.get('name', 'unknown')}** ({entity.get('type', 'entity')})")
                 if entity.get('summary'):
                     text_parts.append(f"  Summary: \"{entity.get('summary')}\"")
                 if entity.get('related_facts'):
-                    text_parts.append(f"  Relevant facts:{len(entity.get('related_facts', []))}strip")
+                    text_parts.append(f"  Relevant Facts: {len(entity.get('related_facts', []))}")
         
         # relationship chain
         if self.relationship_chains:
-            text_parts.append(f"\n### [Relationship chain]")
+            text_parts.append("\n### [Relationship Chains]")
             for chain in self.relationship_chains:
                 text_parts.append(f"- {chain}")
         
@@ -249,30 +253,30 @@ class PanoramaResult:
     def to_text(self) -> str:
         """Convert to text format (full version, not truncated)"""
         text_parts = [
-            f"## Breadth search results (future panoramic view)",
-            f"Query:{self.query}",
-            f"\n### Statistics",
-            f"- Total number of nodes:{self.total_nodes}",
-            f"- Total number of sides:{self.total_edges}",
-            f"- Current valid facts:{self.active_count}strip",
-            f"- Historical/Expired Facts:{self.historical_count}strip"
+            "## Panorama Search Results",
+            f"Search Query: {self.query}",
+            "\n### Statistics",
+            f"- Total Nodes: {self.total_nodes}",
+            f"- Total Edges: {self.total_edges}",
+            f"- Current Active Facts: {self.active_count}",
+            f"- Historical/Expired Facts: {self.historical_count}",
         ]
         
         # Currently valid facts (complete output, not truncated)
         if self.active_facts:
-            text_parts.append(f"\n### [Current valid facts] (Original text of simulation results)")
+            text_parts.append("\n### [Current Active Facts]")
             for i, fact in enumerate(self.active_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # Historical/expired facts (full output, no truncation)
         if self.historical_facts:
-            text_parts.append(f"\n### [History/Expired Facts] (Evolution Process Record)")
+            text_parts.append("\n### [Historical/Expired Facts]")
             for i, fact in enumerate(self.historical_facts, 1):
                 text_parts.append(f"{i}. \"{fact}\"")
         
         # Key entities (complete output, no truncation)
         if self.all_nodes:
-            text_parts.append(f"\n### [Entity involved]")
+            text_parts.append("\n### [Involved Entities]")
             for node in self.all_nodes:
                 entity_type = next((l for l in node.labels if l not in ["Entity", "Node"]), "entity")
                 text_parts.append(f"- **{node.name}** ({entity_type})")
@@ -289,7 +293,7 @@ class AgentInterview:
     question: str  # interview questions
     response: str  # Interview answers
     key_quotes: List[str] = field(default_factory=list)  # Key Quotes
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "agent_name": self.agent_name,
@@ -299,38 +303,33 @@ class AgentInterview:
             "response": self.response,
             "key_quotes": self.key_quotes
         }
-    
+
     def to_text(self) -> str:
         text = f"**{self.agent_name}** ({self.agent_role})\n"
-        # Display the complete agent_bio without truncation
-        text += f"_Introduction:{self.agent_bio}_\n\n"
+        text += f"_Introduction: {self.agent_bio}_\n\n"
         text += f"**Q:** {self.question}\n\n"
         text += f"**A:** {self.response}\n"
         if self.key_quotes:
-            text += "\\n**Key Quotes:**\\n"
+            text += "\n**Key Quotes:**\n"
             for quote in self.key_quotes:
-                # Clean up various quotes
                 clean_quote = quote.replace('\u201c', '').replace('\u201d', '').replace('"', '')
                 clean_quote = clean_quote.replace('\u300c', '').replace('\u300d', '')
                 clean_quote = clean_quote.strip()
-                # Remove the leading punctuation
-                while clean_quote and clean_quote[0] in '，,；;：:、。！？\n\r\t ':
+
+                while clean_quote and clean_quote[0] in ',;:\u3001\u3002\uFF01\uFF1F\uFF0C\uFF1B\uFF1A\n\r\t ':
                     clean_quote = clean_quote[1:]
-                # Filter spam containing question numbers (questions 1-9)
-                skip = False
-                for d in '123456789':
-                    if f'\u95ee\u9898{d}' in clean_quote:
-                        skip = True
-                        break
-                if skip:
+
+                if re.search(r'(?:Question|\u95EE\u9898)\s*\d+', clean_quote, re.IGNORECASE):
                     continue
-                # Truncate overly long content (truncate by periods, not hard truncation)
+
                 if len(clean_quote) > 150:
-                    dot_pos = clean_quote.find('\u3002', 80)
-                    if dot_pos > 0:
-                        clean_quote = clean_quote[:dot_pos + 1]
+                    punctuation_positions = [clean_quote.find(mark, 80) for mark in ('.', '!', '?', '\u3002')]
+                    punctuation_positions = [pos for pos in punctuation_positions if pos > 0]
+                    if punctuation_positions:
+                        clean_quote = clean_quote[:min(punctuation_positions) + 1]
                     else:
                         clean_quote = clean_quote[:147] + "..."
+
                 if clean_quote and len(clean_quote) >= 10:
                     text += f'> "{clean_quote}"\n'
         return text
@@ -344,21 +343,21 @@ class InterviewResult:
     """
     interview_topic: str  # Interview topics
     interview_questions: List[str]  # List of interview questions
-    
+
     # Agent selected for interview
     selected_agents: List[Dict[str, Any]] = field(default_factory=list)
     # Interview responses from each Agent
     interviews: List[AgentInterview] = field(default_factory=list)
-    
+
     # Reasons for choosing Agent
     selection_reasoning: str = ""
     # Consolidated interview summary
     summary: str = ""
-    
+
     # statistics
     total_agents: int = 0
     interviewed_count: int = 0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "interview_topic": self.interview_topic,
@@ -370,17 +369,17 @@ class InterviewResult:
             "total_agents": self.total_agents,
             "interviewed_count": self.interviewed_count
         }
-    
+
     def to_text(self) -> str:
-        """Converted to detailed text format for LLM understanding and report citation"""
+        """Convert the interview result to an English report block."""
         text_parts = [
-            "## In-depth interview report",
-            f"**Interview topic:**{self.interview_topic}",
-            f"**Number of people interviewed:**{self.interviewed_count} / {self.total_agents} Simulation Agent",
-            "\\n### Reasons for selecting interviewees",
+            "## Agent Interview Report",
+            f"**Interview Topic:** {self.interview_topic}",
+            f"**Interview Count:** {self.interviewed_count} / {self.total_agents} simulated agents",
+            "\n### Selection Rationale",
             self.selection_reasoning or "(automatically selected)",
             "\n---",
-            "\\n### Interview transcript",
+            "\n### Interview Transcript",
         ]
 
         if self.interviews:
@@ -389,10 +388,10 @@ class InterviewResult:
                 text_parts.append(interview.to_text())
                 text_parts.append("\n---")
         else:
-            text_parts.append("(No interview record)\\n\\n---")
+            text_parts.append("(No interview record)\n\n---")
 
-        text_parts.append("\\n### Interview summary and core points")
-        text_parts.append(self.summary or "(no abstract)")
+        text_parts.append("\n### Interview Summary")
+        text_parts.append(self.summary or "(no summary)")
 
         return "\n".join(text_parts)
 
@@ -406,8 +405,7 @@ class ZepToolsService:
     2. panorama_search - Breadth search (get the whole picture, including expired content)
     3. quick_search - simple search (quick retrieval)
     4. interview_agents - in-depth interviews (interview simulated agents to obtain multiple perspectives)
-    
-    【Basic tools】
+    [Basic tools]
     - search_graph - Graph semantic search
     - get_all_nodes - Get all nodes of the graph
     - get_all_edges - Get all edges of the graph (including time information)
@@ -1417,7 +1415,7 @@ Returns a list of subquestions in JSON format."""
                 # Always output dual platform tags
                 twitter_text = twitter_response if twitter_response else "(The platform did not receive a reply)"
                 reddit_text = reddit_response if reddit_response else "(The platform did not receive a reply)"
-                response_text = f"【Twitter platform answer】\n{twitter_text}\n\n【Reddit platform answer】\n{reddit_text}"
+                response_text = f"[Twitter Response]\n{twitter_text}\n\n[Reddit Response]\n{reddit_text}"
 
                 # Extract key quotes (from answers on both platforms)
                 import re
@@ -1439,9 +1437,9 @@ Returns a list of subquestions in JSON format."""
                     and not s.strip().startswith(('{', 'question'))
                 ]
                 meaningful.sort(key=len, reverse=True)
-                key_quotes = [s + "。" for s in meaningful[:3]]
+                key_quotes = [s + "." for s in meaningful[:3]]
 
-                # Strategy 2 (Supplementary): Correctly paired Chinese quotation marks "" within long text
+                # Strategy 2 (Supplementary): Capture properly paired quotation marks within long text
                 if not key_quotes:
                     paired = re.findall(r'\u201c([^\u201c\u201d]{15,100})\u201d', clean_text)
                     paired += re.findall(r'\u300c([^\u300c\u300d]{15,100})\u300d', clean_text)
@@ -1693,7 +1691,7 @@ Please generate 3-5 interview questions."""
         # Collect all interviews
         interview_texts = []
         for interview in interviews:
-            interview_texts.append(f"【{interview.agent_name}（{interview.agent_role}）】\n{interview.response[:500]}")
+            interview_texts.append(f"[{interview.agent_name} ({interview.agent_role})]\n{interview.response[:500]}")
         
         system_prompt = """You are a professional news editor. Please generate an interview summary based on responses from multiple interviewees.
 
@@ -1708,7 +1706,7 @@ Format constraints (must be adhered to):
 - Use plain text paragraphs with blank lines separating different sections
 - Do not use Markdown titles (such as #, ##, ###)
 - Do not use dividing lines (such as ---, ***)
-- Use Chinese quotation marks "" when quoting the interviewee's original words
+- Use standard quotation marks when quoting the interviewee's original words
 - You can use **bold** to mark keywords, but do not use other Markdown syntax"""
 
         user_prompt = f"""Interview topic:{interview_requirement}
@@ -1733,3 +1731,4 @@ Please generate an interview summary."""
             logger.warning(f"Failed to generate interview summary:{e}")
             # Downgrade: Simple splicing
             return f"Interviewed in total{len(interviews)}interviewees, including:" + "、".join([i.agent_name for i in interviews])
+

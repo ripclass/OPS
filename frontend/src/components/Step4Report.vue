@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="report-panel">
     <!-- Main Split Layout -->
     <div class="main-split-layout">
@@ -549,33 +549,28 @@ const parseInsightForge = (text) => {
     entities: [],
     relations: []
   }
-  
+
   try {
-    // Extract analysis questions
-    const queryMatch = text.match(/分析问题:\s*(.+?)(?:\n|$)/)
+    const queryMatch = text.match(/(?:Analysis Question|Analyze the problem|\u5206\u6790\u95ee\u9898):\s*(.+?)(?:\n|$)/i)
     if (queryMatch) result.query = queryMatch[1].trim()
-    
-    // Extract predictive scenarios
-    const reqMatch = text.match(/预测场景:\s*(.+?)(?:\n|$)/)
+
+    const reqMatch = text.match(/(?:Prediction Scenario|Predicted scenario|\u9884\u6d4b\u573a\u666f):\s*(.+?)(?:\n|$)/i)
     if (reqMatch) result.simulationRequirement = reqMatch[1].trim()
-    
-    // Extract statistical data - match format 'related prediction facts: X items'
-    const factMatch = text.match(/相关预测事实:\s*(\d+)/)
-    const entityMatch = text.match(/涉及实体:\s*(\d+)/)
-    const relMatch = text.match(/关系链:\s*(\d+)/)
+
+    const factMatch = text.match(/(?:Relevant Facts|Related prediction facts|\u76f8\u5173\u9884\u6d4b\u4e8b\u5b9e):\s*(\d+)/i)
+    const entityMatch = text.match(/(?:Involved Entities|Entity Count|\u6d89\u53ca\u5b9e\u4f53):\s*(\d+)/i)
+    const relMatch = text.match(/(?:Relationship Chains|Relationship chain|\u5173\u7cfb\u94fe):\s*(\d+)/i)
     if (factMatch) result.stats.facts = parseInt(factMatch[1])
     if (entityMatch) result.stats.entities = parseInt(entityMatch[1])
     if (relMatch) result.stats.relationships = parseInt(relMatch[1])
-    
-    // Extract sub-questions - complete extraction, no quantity limit
-    const subQSection = text.match(/### 分析的子问题\n([\s\S]*?)(?=\n###|$)/)
+
+    const subQSection = text.match(/### (?:Analysis Sub-Questions|Analysis sub-problems|\u5206\u6790\u7684\u5b50\u95ee\u9898)\n([\s\S]*?)(?=\n###|$)/i)
     if (subQSection) {
       const lines = subQSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.subQueries = lines.map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
     }
-    
-    // Extract key facts - complete extraction, no quantity limit
-    const factsSection = text.match(/### 【关键事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
+
+    const factsSection = text.match(/### (?:\[Key Facts\]|\u3010\u5173\u952e\u4e8b\u5b9e\u3011)(?:[^\n]*)\n([\s\S]*?)(?=\n###|$)/i)
     if (factsSection) {
       const lines = factsSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.facts = lines.map(l => {
@@ -583,17 +578,15 @@ const parseInsightForge = (text) => {
         return match ? match[1].replace(/^"|"$/g, '').trim() : l.replace(/^\d+\.\s*/, '').trim()
       }).filter(Boolean)
     }
-    
-    // Extract core entities - complete extraction, including summary and related fact count
-    const entitySection = text.match(/### 【核心实体】\n([\s\S]*?)(?=\n###|$)/)
+
+    const entitySection = text.match(/### (?:\[Core Entities?\]|\u3010\u6838\u5fc3\u5b9e\u4f53\u3011)\n([\s\S]*?)(?=\n###|$)/i)
     if (entitySection) {
       const entityText = entitySection[1]
-      // Split entity blocks by "- **"
       const entityBlocks = entityText.split(/\n(?=- \*\*)/).filter(b => b.trim().startsWith('- **'))
       result.entities = entityBlocks.map(block => {
         const nameMatch = block.match(/^-\s*\*\*(.+?)\*\*\s*\((.+?)\)/)
-        const summaryMatch = block.match(/摘要:\s*"?(.+?)"?(?:\n|$)/)
-        const relatedMatch = block.match(/相关事实:\s*(\d+)/)
+        const summaryMatch = block.match(/(?:Summary|\u6458\u8981):\s*"?(.+?)"?(?:\n|$)/i)
+        const relatedMatch = block.match(/(?:Relevant Facts|\u76f8\u5173\u4e8b\u5b9e):\s*(\d+)/i)
         return {
           name: nameMatch ? nameMatch[1].trim() : '',
           type: nameMatch ? nameMatch[2].trim() : '',
@@ -602,9 +595,8 @@ const parseInsightForge = (text) => {
         }
       }).filter(e => e.name)
     }
-    
-    // Extract relationship chains - fully extract without quantity restrictions
-    const relSection = text.match(/### 【关系链】\n([\s\S]*?)(?=\n###|$)/)
+
+    const relSection = text.match(/### (?:\[Relationship Chains?\]|\u3010\u5173\u7cfb\u94fe\u3011)\n([\s\S]*?)(?=\n###|$)/i)
     if (relSection) {
       const lines = relSection[1].split('\n').filter(l => l.trim().startsWith('-'))
       result.relations = lines.map(l => {
@@ -618,7 +610,7 @@ const parseInsightForge = (text) => {
   } catch (e) {
     console.warn('Parse insight_forge failed:', e)
   }
-  
+
   return result
 }
 
@@ -630,45 +622,33 @@ const parsePanorama = (text) => {
     historicalFacts: [],
     entities: []
   }
-  
+
   try {
-    // Extract queries
-    const queryMatch = text.match(/查询:\s*(.+?)(?:\n|$)/)
+    const queryMatch = text.match(/(?:Search Query|Query|\u67e5\u8be2):\s*(.+?)(?:\n|$)/i)
     if (queryMatch) result.query = queryMatch[1].trim()
-    
-    // Extract statistics
-    const nodesMatch = text.match(/总节点数:\s*(\d+)/)
-    const edgesMatch = text.match(/总边数:\s*(\d+)/)
-    const activeMatch = text.match(/当前有效事实:\s*(\d+)/)
-    const histMatch = text.match(/历史\/过期事实:\s*(\d+)/)
+
+    const nodesMatch = text.match(/(?:Total Nodes|Total number of nodes|\u603b\u8282\u70b9\u6570):\s*(\d+)/i)
+    const edgesMatch = text.match(/(?:Total Edges|Total number of sides|Total number of edges|\u603b\u8fb9\u6570):\s*(\d+)/i)
+    const activeMatch = text.match(/(?:Current Active Facts|Current valid facts|\u5f53\u524d\u6709\u6548\u4e8b\u5b9e):\s*(\d+)/i)
+    const histMatch = text.match(/(?:Historical\/Expired Facts|History\/Expired Facts|\u5386\u53f2\/\u8fc7\u671f\u4e8b\u5b9e):\s*(\d+)/i)
     if (nodesMatch) result.stats.nodes = parseInt(nodesMatch[1])
     if (edgesMatch) result.stats.edges = parseInt(edgesMatch[1])
     if (activeMatch) result.stats.activeFacts = parseInt(activeMatch[1])
     if (histMatch) result.stats.historicalFacts = parseInt(histMatch[1])
-    
-    // Extract current valid facts - fully extract without quantity restrictions
-    const activeSection = text.match(/### 【当前有效事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
+
+    const activeSection = text.match(/### (?:\[Current Active Facts\]|\[Current valid facts\]|\u3010\u5f53\u524d\u6709\u6548\u4e8b\u5b9e\u3011)(?:[^\n]*)\n([\s\S]*?)(?=\n###|$)/i)
     if (activeSection) {
       const lines = activeSection[1].split('\n').filter(l => l.match(/^\d+\./))
-      result.activeFacts = lines.map(l => {
-        // Remove numbers and quotes
-        const factText = l.replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '').trim()
-        return factText
-      }).filter(Boolean)
+      result.activeFacts = lines.map(l => l.replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '').trim()).filter(Boolean)
     }
-    
-    // Extract historical/expired facts - fully extract without quantity restrictions
-    const histSection = text.match(/### 【历史\/过期事实】[\s\S]*?\n([\s\S]*?)(?=\n###|$)/)
+
+    const histSection = text.match(/### (?:\[Historical\/Expired Facts\]|\[History\/Expired Facts\]|\u3010\u5386\u53f2\/\u8fc7\u671f\u4e8b\u5b9e\u3011)(?:[^\n]*)\n([\s\S]*?)(?=\n###|$)/i)
     if (histSection) {
       const lines = histSection[1].split('\n').filter(l => l.match(/^\d+\./))
-      result.historicalFacts = lines.map(l => {
-        const factText = l.replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '').trim()
-        return factText
-      }).filter(Boolean)
+      result.historicalFacts = lines.map(l => l.replace(/^\d+\.\s*/, '').replace(/^"|"$/g, '').trim()).filter(Boolean)
     }
-    
-    // Extract entities involved - fully extract without quantity restrictions
-    const entitySection = text.match(/### 【涉及实体】\n([\s\S]*?)(?=\n###|$)/)
+
+    const entitySection = text.match(/### (?:\[Involved Entities\]|\[Entity involved\]|\u3010\u6d89\u53ca\u5b9e\u4f53\u3011)\n([\s\S]*?)(?=\n###|$)/i)
     if (entitySection) {
       const lines = entitySection[1].split('\n').filter(l => l.trim().startsWith('-'))
       result.entities = lines.map(l => {
@@ -680,7 +660,7 @@ const parsePanorama = (text) => {
   } catch (e) {
     console.warn('Parse panorama failed:', e)
   }
-  
+
   return result
 }
 
@@ -694,95 +674,79 @@ const parseInterview = (text) => {
     interviews: [],
     summary: ''
   }
-  
+
   try {
-    // Extract the interview topic
-    const topicMatch = text.match(/\*\*采访主题:\*\*\s*(.+?)(?:\n|$)/)
+    const topicMatch = text.match(/\*\*(?:Interview Topic|Interview topic|\u91c7\u8bbf\u4e3b\u9898):\*\*\s*(.+?)(?:\n|$)/i)
     if (topicMatch) result.topic = topicMatch[1].trim()
-    
-    // Extract the number of interviewees (e.g., "5 / 9 agents")
-    const countMatch = text.match(/\*\*采访人数:\*\*\s*(\d+)\s*\/\s*(\d+)/)
+
+    const countMatch = text.match(/\*\*(?:Interview Count|Number of people interviewed|\u91c7\u8bbf\u4eba\u6570):\*\*\s*(\d+)\s*\/\s*(\d+)/i)
     if (countMatch) {
       result.successCount = parseInt(countMatch[1])
       result.totalCount = parseInt(countMatch[2])
       result.agentCount = `${countMatch[1]} / ${countMatch[2]}`
     }
-    
-    // Extract the rationale for choosing interviewees
-    const reasonMatch = text.match(/### 采访对象选择理由\n([\s\S]*?)(?=\n---\n|\n### 采访实录)/)
+
+    const reasonMatch = text.match(/### (?:Selection Rationale|Reasons for selecting interviewees|\u91c7\u8bbf\u5bf9\u8c61\u9009\u62e9\u7406\u7531)\n([\s\S]*?)(?=\n---\n|\n### (?:Interview Transcript|\u91c7\u8bbf\u5b9e\u5f55))/i)
     if (reasonMatch) {
       result.selectionReason = reasonMatch[1].trim()
     }
-    
-    // Parse each person's rationale
+
     const parseIndividualReasons = (reasonText) => {
       const reasons = {}
       if (!reasonText) return reasons
-      
+
       const lines = reasonText.split(/\n+/)
       let currentName = null
       let currentReason = []
-      
+
       for (const line of lines) {
         let headerMatch = null
         let name = null
         let reasonStart = null
-        
-        // Format 1: Number. **Name (index=X)**: Reason
-        // Example: 1. **Alumni_345 (index=1)**: As a Wuhan University alumnus...
-        headerMatch = line.match(/^\d+\.\s*\*\*([^*（(]+)(?:[（(]index\s*=?\s*\d+[)）])?\*\*[：:]\s*(.*)/)
+
+        headerMatch = line.match(/^\d+\.\s*\*\*([^*(]+?)(?:\s*\(index\s*=?\s*\d+\))?\*\*[:\uFF1A]\s*(.*)/i)
         if (headerMatch) {
           name = headerMatch[1].trim()
           reasonStart = headerMatch[2]
         }
-        
-        // Format 2: - Choose Name (index X): Reason
-        // Example: - Choose Parent_601 (index 0): As a representative of the parent community...
+
         if (!headerMatch) {
-          headerMatch = line.match(/^-\s*选择([^（(]+)(?:[（(]index\s*=?\s*\d+[)）])?[：:]\s*(.*)/)
+          headerMatch = line.match(/^-\s*Select\s+([^(:]+?)(?:\s*\(index\s*=?\s*\d+\))?[:\uFF1A]\s*(.*)/i)
           if (headerMatch) {
             name = headerMatch[1].trim()
             reasonStart = headerMatch[2]
           }
         }
-        
-        // Format 3: - **Name (index X)**: Reason
-        // Example: - **Parent_601 (index 0)**: As a representative of the parent group...
+
         if (!headerMatch) {
-          headerMatch = line.match(/^-\s*\*\*([^*（(]+)(?:[（(]index\s*=?\s*\d+[)）])?\*\*[：:]\s*(.*)/)
+          headerMatch = line.match(/^-\s*\*\*([^*(]+?)(?:\s*\(index\s*=?\s*\d+\))?\*\*[:\uFF1A]\s*(.*)/i)
           if (headerMatch) {
             name = headerMatch[1].trim()
             reasonStart = headerMatch[2]
           }
         }
-        
+
         if (name) {
-          // Save the reason for the previous person
           if (currentName && currentReason.length > 0) {
             reasons[currentName] = currentReason.join(' ').trim()
           }
-          // Start a new person
           currentName = name
           currentReason = reasonStart ? [reasonStart.trim()] : []
-        } else if (currentName && line.trim() && !line.match(/^未选|^综上|^最终选择/)) {
-          // Continue the reason (exclude the final summary paragraph)
+        } else if (currentName && line.trim() && !line.match(/^(?:Not selected|In summary|Final selection)/i)) {
           currentReason.push(line.trim())
         }
       }
-      
-      // Save the last person's reason
+
       if (currentName && currentReason.length > 0) {
         reasons[currentName] = currentReason.join(' ').trim()
       }
-      
+
       return reasons
     }
-    
+
     const individualReasons = parseIndividualReasons(result.selectionReason)
-    
-    // Extract each interview record
-    const interviewBlocks = text.split(/#### 采访 #\d+:/).slice(1)
-    
+    const interviewBlocks = text.split(/(?:#### Interview #\d+:|#### \u91c7\u8bbf #\d+:)/).slice(1)
+
     interviewBlocks.forEach((block, index) => {
       const interview = {
         num: index + 1,
@@ -796,34 +760,27 @@ const parseInterview = (text) => {
         redditAnswer: '',
         quotes: []
       }
-      
-      // Extract titles (such as "students", "educators", etc.)
+
       const titleMatch = block.match(/^(.+?)\n/)
       if (titleMatch) interview.title = titleMatch[1].trim()
-      
-      // Extract names and roles
+
       const nameRoleMatch = block.match(/\*\*(.+?)\*\*\s*\((.+?)\)/)
       if (nameRoleMatch) {
         interview.name = nameRoleMatch[1].trim()
         interview.role = nameRoleMatch[2].trim()
-        // Set the selection rationale for this person
         interview.selectionReason = individualReasons[interview.name] || ''
       }
-      
-      // Extract the biography
-      const bioMatch = block.match(/_简介:\s*([\s\S]*?)_\n/)
+
+      const bioMatch = block.match(/(?:_Introduction:|_\u7b80\u4ecb:)\s*([\s\S]*?)_\n/i)
       if (bioMatch) {
         interview.bio = bioMatch[1].trim().replace(/\.\.\.$/, '...')
       }
-      
-      // Extract the list of questions
+
       const qMatch = block.match(/\*\*Q:\*\*\s*([\s\S]*?)(?=\n\n\*\*A:\*\*|\*\*A:\*\*)/)
       if (qMatch) {
         const qText = qMatch[1].trim()
-        // Split the questions by numerical numbering
         const questions = qText.split(/\n\d+\.\s+/).filter(q => q.trim())
         if (questions.length > 0) {
-          // If the first question has a prefix "1.", handle it specially
           const firstQ = qText.match(/^1\.\s+(.+)/)
           if (firstQ) {
             interview.questions = [firstQ[1].trim(), ...questions.slice(1).map(q => q.trim())]
@@ -832,41 +789,31 @@ const parseInterview = (text) => {
           }
         }
       }
-      
-      // Extract answers - separate Twitter and Reddit
-      const answerMatch = block.match(/\*\*A:\*\*\s*([\s\S]*?)(?=\*\*关键引言|$)/)
+
+      const answerMatch = block.match(/\*\*A:\*\*\s*([\s\S]*?)(?=\*\*(?:Key Quotes|\u5173\u952e\u5f15\u8a00)|$)/i)
       if (answerMatch) {
         const answerText = answerMatch[1].trim()
-        
-        // Separate Twitter and Reddit answers
-        const twitterMatch = answerText.match(/【Twitter平台回答】\n?([\s\S]*?)(?=【Reddit平台回答】|$)/)
-        const redditMatch = answerText.match(/【Reddit平台回答】\n?([\s\S]*?)$/)
-        
-        if (twitterMatch) {
-          interview.twitterAnswer = twitterMatch[1].trim()
-        }
-        if (redditMatch) {
-          interview.redditAnswer = redditMatch[1].trim()
-        }
-        
-        // Platform rollback logic (compatibility with old format: only one platform marker present)
+
+        const twitterMatch = answerText.match(/(?:\[Twitter Response\]|\u3010Twitter platform answer\u3011)\n?([\s\S]*?)(?=(?:\[Reddit Response\]|\u3010Reddit platform answer\u3011)|$)/i)
+        const redditMatch = answerText.match(/(?:\[Reddit Response\]|\u3010Reddit platform answer\u3011)\n?([\s\S]*?)$/i)
+
+        if (twitterMatch) interview.twitterAnswer = twitterMatch[1].trim()
+        if (redditMatch) interview.redditAnswer = redditMatch[1].trim()
+
         if (!twitterMatch && redditMatch) {
-          // Only Reddit response, copy as default display if non-placeholder text
-          if (interview.redditAnswer && interview.redditAnswer !== '(No Response from the Platform)') {
+          if (interview.redditAnswer && interview.redditAnswer !== '(No Response from the Platform)' && interview.redditAnswer !== '(The platform did not receive a reply)') {
             interview.twitterAnswer = interview.redditAnswer
           }
         } else if (twitterMatch && !redditMatch) {
-          if (interview.twitterAnswer && interview.twitterAnswer !== '(No Response from the Platform)') {
+          if (interview.twitterAnswer && interview.twitterAnswer !== '(No Response from the Platform)' && interview.twitterAnswer !== '(The platform did not receive a reply)') {
             interview.redditAnswer = interview.twitterAnswer
           }
         } else if (!twitterMatch && !redditMatch) {
-          // No sub-platform markers (extremely old format), treat the entire content as a response
           interview.twitterAnswer = answerText
         }
       }
-      
-      // Extract key quotations (compatibility with various quote formats)
-      const quotesMatch = block.match(/\*\*关键引言:\*\*\n([\s\S]*?)(?=\n---|\n####|$)/)
+
+      const quotesMatch = block.match(/\*\*(?:Key Quotes|\u5173\u952e\u5f15\u8a00):\*\*\n([\s\S]*?)(?=\n---|\n####|$)/i)
       if (quotesMatch) {
         const quotesText = quotesMatch[1]
         let quoteMatches = quotesText.match(/> "([^"]+)"/g)
@@ -885,8 +832,7 @@ const parseInterview = (text) => {
       }
     })
 
-    // Extract the interview summary
-    const summaryMatch = text.match(/### 采访摘要与核心观点\n([\s\S]*?)$/)
+    const summaryMatch = text.match(/### (?:Interview Summary|Interview summary and core points|\u91c7\u8bbf\u6458\u8981\u4e0e\u6838\u5fc3\u89c2\u70b9)\n([\s\S]*?)$/i)
     if (summaryMatch) {
       result.summary = summaryMatch[1].trim()
     }
@@ -907,19 +853,19 @@ const parseQuickSearch = (text) => {
   }
 
   try {
-    const queryMatch = text.match(/搜索查询:\s*(.+?)(?:\n|$)/)
+    const queryMatch = text.match(/(?:Search Query|\u641c\u7d22\u67e5\u8be2):\s*(.+?)(?:\n|$)/i)
     if (queryMatch) result.query = queryMatch[1].trim()
 
-    const countMatch = text.match(/找到\s*(\d+)\s*条/)
+    const countMatch = text.match(/(?:Found|\u627e\u5230)\s*(\d+)/i)
     if (countMatch) result.count = parseInt(countMatch[1])
 
-    const factsSection = text.match(/### 相关事实:\n([\s\S]*)$/)
+    const factsSection = text.match(/### (?:Relevant Facts|\u76f8\u5173\u4e8b\u5b9e):\n([\s\S]*)$/i)
     if (factsSection) {
       const lines = factsSection[1].split('\n').filter(l => l.match(/^\d+\./))
       result.facts = lines.map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
     }
 
-    const edgesSection = text.match(/### 相关边:\n([\s\S]*?)(?=\n###|$)/)
+    const edgesSection = text.match(/### (?:Related Edges|\u76f8\u5173\u8fb9):\n([\s\S]*?)(?=\n###|$)/i)
     if (edgesSection) {
       const lines = edgesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
       result.edges = lines.map(l => {
@@ -931,7 +877,7 @@ const parseQuickSearch = (text) => {
       }).filter(Boolean)
     }
 
-    const nodesSection = text.match(/### 相关节点:\n([\s\S]*?)(?=\n###|$)/)
+    const nodesSection = text.match(/### (?:Related Nodes|\u76f8\u5173\u8282\u70b9):\n([\s\S]*?)(?=\n###|$)/i)
     if (nodesSection) {
       const lines = nodesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
       result.nodes = lines.map(l => {
@@ -1238,7 +1184,7 @@ const InterviewDisplay = {
 
     const cleanQuoteText = (text) => {
       if (!text) return ''
-      return text.replace(/^\s*\d+[\.、\)）]\s*/, '').trim()
+      return text.replace(/^\s*\d+[\.\)\u3001\uFF09]\s*/, '').trim()
     }
 
     const activeIndex = ref(0)
@@ -1274,7 +1220,7 @@ const InterviewDisplay = {
     const isPlaceholderText = (text) => {
       if (!text) return true
       const t = text.trim()
-      return t === '（该平台未获得回复）' || t === '(该平台未获得回复)' || t === '[无回复]' || t === '(No Response from the Platform)'
+      return t === '(The platform did not receive a reply)' || t === '(No Response from the Platform)' || t === '[No Response]' || t === '(\u8be5\u5e73\u53f0\u672a\u83b7\u5f97\u56de\u590d)'
     }
 
     const splitAnswerByQuestions = (answerText, questionCount) => {
@@ -1284,8 +1230,8 @@ const InterviewDisplay = {
       let matches = []
       let match
 
-      const cnPattern = /(?:^|[\r\n]+)问题(\d+)[：:]\s*/g
-      while ((match = cnPattern.exec(answerText)) !== null) {
+      const questionPattern = /(?:^|[\r\n]+)(?:Question|\u95ee\u9898)\s*(\d+)[:\uFF1A]\s*/gi
+      while ((match = questionPattern.exec(answerText)) !== null) {
         matches.push({
           num: parseInt(match[1]),
           index: match.index,
@@ -1306,7 +1252,7 @@ const InterviewDisplay = {
 
       if (matches.length <= 1) {
         const cleaned = answerText
-          .replace(/^问题\d+[：:]\s*/, '')
+          .replace(/^(?:Question|\u95ee\u9898)\s*\d+[:\uFF1A]\s*/i, '')
           .replace(/^\d+\.\s+/, '')
           .trim()
         return [cleaned || answerText]
@@ -5061,3 +5007,4 @@ watch(() => props.reportId, (newId) => {
 .log-msg.warning { color: #FFA726; }
 .log-msg.success { color: #66BB6A; }
 </style>
+

@@ -21,13 +21,13 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    # Set JSON encoding: ensure that Chinese is displayed directly (instead of \uXXXX format)
+    # Set JSON encoding: ensure non-ASCII text is displayed directly (instead of \uXXXX format)
     # Flask >= 2.3 uses app.json.ensure_ascii, older versions use JSON_AS_ASCII configuration
     if hasattr(app, 'json') and hasattr(app.json, 'ensure_ascii'):
         app.json.ensure_ascii = False
     
     # Setup log
-    logger = setup_logger('mirofish')
+    logger = setup_logger('ops')
     
     # Only print startup information in the reloader sub-process (avoid printing twice in debug mode)
     is_reloader_process = os.environ.get('WERKZEUG_RUN_MAIN') == 'true'
@@ -53,14 +53,14 @@ def create_app(config_class=Config):
     # Request log middleware
     @app.before_request
     def log_request():
-        logger = get_logger('mirofish.request')
+        logger = get_logger('ops.request')
         logger.debug(f"ask:{request.method} {request.path}")
         if request.content_type and 'json' in request.content_type:
             logger.debug(f"Request body:{request.get_json(silent=True)}")
     
     @app.after_request
     def log_response(response):
-        logger = get_logger('mirofish.request')
+        logger = get_logger('ops.request')
         logger.debug(f"response:{response.status_code}")
         return response
     

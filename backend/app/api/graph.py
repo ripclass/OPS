@@ -19,7 +19,7 @@ from ..models.task import TaskManager, TaskStatus
 from ..models.project import ProjectManager, ProjectStatus
 
 # Get logger
-logger = get_logger('mirofish.api')
+logger = get_logger('ops.api')
 
 
 def allowed_file(filename: str) -> bool:
@@ -378,7 +378,7 @@ def build_graph():
         
         # Start background task
         def build_task():
-            build_logger = get_logger('mirofish.build')
+            build_logger = get_logger('ops.build')
             try:
                 build_logger.info(f"[{task_id}] Start building the graph...")
                 task_manager.update_task(

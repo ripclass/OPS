@@ -1,20 +1,10 @@
 <div align="center">
 
-<img src="./static/image/MiroFish_logo_compressed.jpeg" alt="OPS Logo" width="75%"/>
-
-<a href="https://trendshift.io/repositories/16144" target="_blank"><img src="https://trendshift.io/api/badge/repositories/16144" alt="666ghj%2FMiroFish | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<img src="./static/image/ops_logo_compressed.jpeg" alt="OPS Logo" width="75%"/>
 
 A scenario forecasting stack for Organic Population Simulation
 </br>
 <em>Population-scale simulation for policy, crisis, and narrative forecasting across South Asia</em>
-
-<a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2MiroFish | Shanda" height="40"/></a>
-
-[![GitHub Stars](https://img.shields.io/github/stars/666ghj/MiroFish?style=flat-square&color=DAA520)](https://github.com/666ghj/MiroFish/stargazers)
-[![GitHub Watchers](https://img.shields.io/github/watchers/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/watchers)
-[![GitHub Forks](https://img.shields.io/github/forks/666ghj/MiroFish?style=flat-square)](https://github.com/666ghj/MiroFish/network)
-[![Docker](https://img.shields.io/badge/Docker-Build-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/666ghj/MiroFish)
 
 [English](./README-EN.md) | [Project README](./README.md)
 
@@ -37,48 +27,28 @@ OPS is focused on population response forecasting across South Asia. By capturin
 
 OPS is designed for India, Bangladesh, and Pakistan first, while keeping the workflow portable to other regions.
 
-## Live Demo
+## Deployment Model
 
-This fork is intended for local or private deployment. For a reference walkthrough of the upstream interface, see: [mirofish-live-demo](https://666ghj.github.io/mirofish-demo/)
+This repository is intended for local or private deployment of OPS.
 
 ## Screenshots
 
 <div align="center">
 <table>
 <tr>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE1.png" alt="Screenshot 1" width="100%"/></td>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE2.png" alt="Screenshot 2" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_1.png" alt="Screenshot 1" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_2.png" alt="Screenshot 2" width="100%"/></td>
 </tr>
 <tr>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE3.png" alt="Screenshot 3" width="100%"/></td>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE4.png" alt="Screenshot 4" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_3.png" alt="Screenshot 3" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_4.png" alt="Screenshot 4" width="100%"/></td>
 </tr>
 <tr>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE5.png" alt="Screenshot 5" width="100%"/></td>
-<td><img src="./static/image/Screenshot/%E8%BF%90%E8%A1%8C%E6%88%AA%E5%9B%BE6.png" alt="Screenshot 6" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_5.png" alt="Screenshot 5" width="100%"/></td>
+<td><img src="./static/image/Screenshot/ops_screenshot_6.png" alt="Screenshot 6" width="100%"/></td>
 </tr>
 </table>
 </div>
-
-## Upstream Demo Videos
-
-### 1. Wuhan University Public Opinion Simulation + Upstream Engine Introduction
-
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1VYBsBHEMY/" target="_blank"><img src="./static/image/%E6%AD%A6%E5%A4%A7%E6%A8%A1%E6%8B%9F%E6%BC%94%E7%A4%BA%E5%B0%81%E9%9D%A2.png" alt="Upstream engine demo video" width="75%"/></a>
-
-Click the image to watch the upstream demo that originally introduced the engine workflow.
-</div>
-
-### 2. Dream of the Red Chamber Lost Ending Simulation
-
-<div align="center">
-<a href="https://www.bilibili.com/video/BV1cPk3BBExq" target="_blank"><img src="./static/image/%E7%BA%A2%E6%A5%BC%E6%A2%A6%E6%A8%A1%E6%8B%9F%E6%8E%A8%E6%BC%94%E5%B0%81%E9%9D%A2.jpg" alt="Upstream engine demo video" width="75%"/></a>
-
-Click the image to watch the upstream engine run a large-scale narrative simulation.
-</div>
-
-> **Financial prediction**, **political news prediction**, and more examples are coming soon.
 
 ## Workflow
 
@@ -171,22 +141,8 @@ By default, Docker reads the `.env` file in the project root and maps ports `300
 
 ## Deployment Notes
 
-<div align="center">
-<img src="./static/image/QQ%E7%BE%A4.png" alt="QQ Group" width="60%"/>
-</div>
-
 This OPS fork is currently optimized for local and private deployments. Replace the logo asset, community links, and contact details with your own organization-owned branding before public release.
 
 ## Acknowledgments
 
-OPS builds on the open-source interface layer originally released as MiroFish and is powered by **[OASIS (Open Agent Social Interaction Simulations)](https://github.com/camel-ai/oasis)**. We sincerely thank the CAMEL-AI team for their open-source contributions!
-
-## Project Statistics
-
-<a href="https://www.star-history.com/#666ghj/MiroFish&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=666ghj/MiroFish&type=date&legend=top-left" />
- </picture>
-</a>
+OPS is powered by **[OASIS (Open Agent Social Interaction Simulations)](https://github.com/camel-ai/oasis)**. We sincerely thank the CAMEL-AI team for their open-source contributions!
