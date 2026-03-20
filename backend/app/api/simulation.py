@@ -171,7 +171,7 @@ def create_simulation():
     Request (JSON):
         {
             "project_id": "proj_xxxx", // required
-            "graph_id": "mirofish_xxxx", // Optional, if not provided, it will be obtained from the project
+            "graph_id": "ops_xxxx", // Optional, if not provided, it will be obtained from the project
             "enable_twitter": true, // optional, default true
             "enable_reddit": true // Optional, default true
         }
@@ -182,7 +182,7 @@ def create_simulation():
             "data": {
                 "simulation_id": "sim_xxxx",
                 "project_id": "proj_xxxx",
-                "graph_id": "mirofish_xxxx",
+                "graph_id": "ops_xxxx",
                 "status": "created",
                 "enable_twitter": true,
                 "enable_reddit": true,
@@ -1376,7 +1376,7 @@ def generate_profiles():
     
     Request (JSON):
         {
-            "graph_id": "mirofish_xxxx", // required
+            "graph_id": "ops_xxxx", // required
             "entity_types": ["Student"], // optional
             "use_llm": true, // optional
             "platform": "reddit" // optional

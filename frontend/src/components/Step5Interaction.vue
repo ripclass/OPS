@@ -8,7 +8,7 @@
           <!-- Report Header -->
           <div class="report-header-block">
             <div class="report-meta">
-              <span class="report-tag">Prediction Report</span>
+              <span class="report-tag">OPS Insight Report</span>
               <span class="report-id">ID: {{ reportId || 'REF-2024-X92' }}</span>
             </div>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
@@ -72,7 +72,7 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">Waiting for Report Agent...</span>
+          <span class="waiting-text">Waiting for the OPS report agent...</span>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
           <div class="action-bar-text">
-            <span class="action-bar-title">Interactive Tools</span>
+            <span class="action-bar-title">OPS Interaction Tools</span>
             <span class="action-bar-subtitle mono">{{ profiles.length }} agents available</span>
           </div>
         </div>
@@ -98,7 +98,7 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
               </svg>
-              <span>Engage with the Report Agent</span>
+              <span>Chat with the OPS Report Agent</span>
             </button>
             <div class="agent-dropdown" v-if="profiles.length > 0">
               <button 
@@ -110,13 +110,13 @@
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>{{ selectedAgent ? selectedAgent.username : 'Interact with any individual in the world' }}</span>
+                <span>{{ selectedAgent ? selectedAgent.username : 'Interview a simulated person' }}</span>
                 <svg class="dropdown-arrow" :class="{ open: showAgentDropdown }" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
               <div v-if="showAgentDropdown" class="dropdown-menu">
-                <div class="dropdown-header">Select Interlocutor</div>
+                <div class="dropdown-header">Select a simulated person</div>
                 <div 
                   v-for="(agent, idx) in profiles" 
                   :key="idx"
@@ -126,7 +126,7 @@
                   <div class="agent-avatar">{{ (agent.username || 'A')[0] }}</div>
                   <div class="agent-info">
                     <span class="agent-name">{{ agent.username }}</span>
-                    <span class="agent-role">{{ agent.profession || 'Unknown Profession' }}</span>
+                    <span class="agent-role">{{ agent.profession || 'Occupation unavailable' }}</span>
                   </div>
                 </div>
               </div>
@@ -141,7 +141,7 @@
                 <path d="M9 11l3 3L22 4"></path>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
-              <span>Send surveys to the world</span>
+              <span>Survey the population</span>
             </button>
           </div>
         </div>
@@ -154,8 +154,8 @@
             <div class="tools-card-header">
               <div class="tools-card-avatar">R</div>
               <div class="tools-card-info">
-                <div class="tools-card-name">Report Agent - Chat</div>
-                <div class="tools-card-subtitle">A quick dialogue version of the report generating entity, capable of calling 4 specialized tools and possessing full memory of MiroFish</div>
+                <div class="tools-card-name">OPS Report Agent</div>
+                <div class="tools-card-subtitle">A lightweight dialogue interface for the reporting agent, with four analysis tools and memory of the active OPS run.</div>
               </div>
               <button class="tools-card-toggle" @click="showToolsDetail = !showToolsDetail">
                 <svg :class="{ 'is-expanded': showToolsDetail }" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -250,7 +250,7 @@
                 </svg>
               </div>
               <p class="empty-text">
-                {{ chatTarget === 'report_agent' ? 'Chat with the Report Agent to gain deeper insights into the report content' : 'Chat with a simulated individual to understand their perspectives' }}
+                {{ chatTarget === 'report_agent' ? 'Chat with the OPS report agent to explore the report in more depth' : 'Interview a simulated person to understand their perspective' }}
               </p>
             </div>
             <div 
@@ -266,7 +266,7 @@
               <div class="message-content">
                 <div class="message-header">
                   <span class="sender-name">
-                    {{ msg.role === 'user' ? 'You' : (chatTarget === 'report_agent' ? 'Report Agent' : (selectedAgent?.username || 'Agent')) }}
+                    {{ msg.role === 'user' ? 'You' : (chatTarget === 'report_agent' ? 'OPS Report Agent' : (selectedAgent?.username || 'Agent')) }}
                   </span>
                   <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
                 </div>
@@ -317,7 +317,7 @@
           <div class="survey-setup">
             <div class="setup-section">
               <div class="section-header">
-                <span class="section-title">Select Survey Subjects</span>
+              <span class="section-title">Select Survey Participants</span>
                 <span class="selection-count">Selected {{ selectedAgents.size }} / {{ profiles.length }}</span>
               </div>
               <div class="agents-grid">
@@ -335,7 +335,7 @@
                   <div class="checkbox-avatar">{{ (agent.username || 'A')[0] }}</div>
                   <div class="checkbox-info">
                     <span class="checkbox-name">{{ agent.username }}</span>
-                    <span class="checkbox-role">{{ agent.profession || 'Unknown Profession' }}</span>
+                    <span class="checkbox-role">{{ agent.profession || 'Occupation unavailable' }}</span>
                   </div>
                   <div class="checkbox-indicator">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3">
@@ -353,12 +353,12 @@
 
             <div class="setup-section">
               <div class="section-header">
-                <span class="section-title">Survey Questions</span>
+                <span class="section-title">Survey Prompt</span>
               </div>
               <textarea 
                 v-model="surveyQuestion"
                 class="survey-input"
-                placeholder="Enter the question you want to ask all selected objects..."
+                placeholder="Enter the question you want to ask all selected participants..."
                 rows="3"
               ></textarea>
             </div>
@@ -376,7 +376,7 @@
           <!-- Survey Results -->
           <div v-if="surveyResults.length > 0" class="survey-results">
             <div class="results-header">
-              <span class="results-title">Survey Results</span>
+              <span class="results-title">Survey Responses</span>
               <span class="results-count">{{ surveyResults.length }} responses</span>
             </div>
             <div class="results-list">
@@ -389,7 +389,7 @@
                   <div class="result-avatar">{{ (result.agent_name || 'A')[0] }}</div>
                   <div class="result-info">
                     <span class="result-name">{{ result.agent_name }}</span>
-                    <span class="result-role">{{ result.profession || 'Unknown Profession' }}</span>
+                    <span class="result-role">{{ result.profession || 'Occupation unavailable' }}</span>
                   </div>
                 </div>
                 <div class="result-question">
@@ -677,7 +677,7 @@ const sendMessage = async () => {
 }
 
 const sendToReportAgent = async (message) => {
-  addLog(`Sent to Report Agent: ${message.substring(0, 50)}...`)
+  addLog(`Sent to OPS report agent: ${message.substring(0, 50)}...`)
   
   // Build chat history for API
   const historyForApi = chatHistory.value
@@ -700,7 +700,7 @@ const sendToReportAgent = async (message) => {
       content: res.data.response || res.data.answer || 'No response',
       timestamp: new Date().toISOString()
     })
-    addLog('Report Agent has responded')
+    addLog('OPS report agent responded')
   } else {
     throw new Error(res.error || 'Request failed')
   }
@@ -935,7 +935,7 @@ const handleClickOutside = (e) => {
 
 // Lifecycle
 onMounted(() => {
-  addLog('Step5 Deep Interaction Initialization')
+  addLog('Step 5: Live interactions initialized')
   loadReportData()
   loadProfiles()
   document.addEventListener('click', handleClickOutside)

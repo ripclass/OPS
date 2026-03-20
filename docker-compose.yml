@@ -1,7 +1,10 @@
 services:
   mirofish:
-    image: ghcr.io/666ghj/mirofish:latest
-    container_name: mirofish
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ops-local:latest
+    container_name: ops
     env_file:
       - .env
     environment:
@@ -17,6 +20,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/uploads:/app/backend/uploads
-      - ./backend/app/config.py:/app/backend/app/config.py:ro
-      - ./backend/app/__init__.py:/app/backend/app/__init__.py:ro
-      - ./backend/app/services/oasis_profile_generator.py:/app/backend/app/services/oasis_profile_generator.py:ro
+      - ./backend/app:/app/backend/app
+      - ./backend/run.py:/app/backend/run.py
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/index.html:/app/frontend/index.html

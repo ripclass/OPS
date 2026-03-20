@@ -2,10 +2,10 @@
   <div class="home-container">
     <!-- Top Navigation Bar -->
     <nav class="navbar">
-      <div class="nav-brand">MIROFISH</div>
+      <div class="nav-brand">OPS</div>
       <div class="nav-links">
         <a href="https://github.com/666ghj/MiroFish" target="_blank" class="github-link">
-          Visit Our Github Homepage <span class="arrow">↗</span>
+          Open the source repository <span class="arrow">↗</span>
         </a>
       </div>
     </nav>
@@ -15,21 +15,21 @@
       <section class="hero-section">
         <div class="hero-left">
           <div class="tag-row">
-            <span class="orange-tag">Simple and Universal Swarm Intelligence Engine</span>
-            <span class="version-text">/ V0.1-Preview</span>
+            <span class="orange-tag">Organic Population Simulation</span>
+            <span class="version-text">/ South Asia Preview</span>
           </div>
           
           <h1 class="main-title">
-            Upload Any Report<br>
-            <span class="gradient-text">Instantly Forecast the Future</span>
+            Start from a Scenario<br>
+            <span class="gradient-text">Forecast Public Response Across South Asia</span>
           </h1>
           
           <div class="hero-desc">
             <p>
-              Even a single line of text lets <span class="highlight-bold">MiroFish</span> detect the real-world seeds inside it and automatically generate up to <span class="highlight-orange">Million-Grade Agent</span> parallel worlds. Inject variables from an omniscient perspective to explore dynamic interactions in complex environments and uncover a <span class="highlight-code">local optimal solution</span>.
+              <span class="highlight-bold">OPS</span> turns short briefs and supporting evidence into simulated populations grounded in the political, economic, and social realities of <span class="highlight-orange">India, Bangladesh, and Pakistan</span>. Model how narratives move through households, communities, and social feeds before the real event unfolds.
             </p>
             <p class="slogan-text">
-              Preview the Future in the Agent Group and Triumph through Hundred Battles<span class="blinking-cursor">_</span>
+              Stress-test public reaction before the signal reaches the street<span class="blinking-cursor">_</span>
             </p>
           </div>
            
@@ -39,7 +39,7 @@
         <div class="hero-right">
           <!-- Logo Area -->
           <div class="logo-container">
-            <img src="../assets/logo/MiroFish_logo_left.jpeg" alt="MiroFish Logo" class="hero-logo" />
+            <img src="../assets/logo/MiroFish_logo_left.jpeg" alt="OPS Logo" class="hero-logo" />
           </div>
           
           <button class="scroll-down-btn" @click="scrollToBottom">
@@ -56,20 +56,20 @@
             <span class="status-dot">■</span> System Status
           </div>
           
-          <h2 class="section-title">Ready</h2>
+          <h2 class="section-title">Ready for Scenario Design</h2>
           <p class="section-desc">
-            Prediction Engine Ready, Upload Multiple Unstructured Data Files to Initialize Simulation Sequences
+            OPS is ready. Upload supporting material or continue directly with a scenario brief.
           </p>
           
           <!-- Data Metrics Cards -->
           <div class="metrics-row">
             <div class="metric-card">
-              <div class="metric-value">Low-cost</div>
-              <div class="metric-label">Standard Simulation Averages $5/Time</div>
+              <div class="metric-value">Scenario-led</div>
+              <div class="metric-label">Start from a brief, a policy note, or a field report</div>
             </div>
             <div class="metric-card">
-              <div class="metric-value">High Availability</div>
-              <div class="metric-label">Up to Millions of Agent Simulations</div>
+              <div class="metric-value">South Asia</div>
+              <div class="metric-label">Built for regional populations across India, Bangladesh, and Pakistan</div>
             </div>
           </div>
 
@@ -82,36 +82,36 @@
               <div class="workflow-item">
                 <span class="step-num">01</span>
                 <div class="step-info">
-                  <div class="step-title">Graph Build</div>
-                  <div class="step-desc">Real Seed Extraction & Individual and Group Memory Injection & GraphRAG Construction</div>
+                  <div class="step-title">Scenario Graph</div>
+                  <div class="step-desc">Extract actors, institutions, locations, grievances, and memory anchors from source material and scenario text.</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">02</span>
                 <div class="step-info">
-                  <div class="step-title">Environment Setup</div>
-                  <div class="step-desc">Entity Relationship Extraction & Character Profile Generation & Environment Configuration for Agent Simulation Parameters</div>
+                  <div class="step-title">Population Setup</div>
+                  <div class="step-desc">Generate personas, platform behavior, and world settings for population segments across South Asia.</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">03</span>
                 <div class="step-info">
-                  <div class="step-title">Start Simulation</div>
-                  <div class="step-desc">Parallel Simulation on Dual Platforms & Automatic Parsing and Prediction of Requirements & Dynamic Update of Sequential Memories</div>
+                  <div class="step-title">Run Simulation</div>
+                  <div class="step-desc">Execute multi-agent cascades, update memories round by round, and observe opinion and rumor dynamics.</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">04</span>
                 <div class="step-info">
-                  <div class="step-title">Report Generation</div>
-                  <div class="step-desc">ReportAgent Equipped with a Rich Set of Tools for Deep Interaction with the Simulated Environment</div>
+                  <div class="step-title">Insight Report</div>
+                  <div class="step-desc">Compile structured findings on amplification risk, narrative spread, sentiment shifts, and intervention options.</div>
                 </div>
               </div>
               <div class="workflow-item">
                 <span class="step-num">05</span>
                 <div class="step-info">
-                  <div class="step-title">Deep Interaction</div>
-                  <div class="step-desc">Dialogue with Any Entity in the Simulated World & Dialogue with ReportAgent</div>
+                  <div class="step-title">Live Interactions</div>
+                  <div class="step-desc">Interview simulated people or question the OPS report agent for follow-up analysis.</div>
                 </div>
               </div>
             </div>
@@ -124,8 +124,8 @@
             <!-- Upload Area -->
             <div class="console-section">
               <div class="console-header">
-                <span class="console-label">01 / Real Seed</span>
-                <span class="console-meta">Supported Formats: PDF, MD, TXT</span>
+                <span class="console-label">01 / Source Material</span>
+                <span class="console-meta">Optional Uploads: PDF, MD, TXT</span>
               </div>
               
               <div 
@@ -148,8 +148,8 @@
                 
                 <div v-if="files.length === 0" class="upload-placeholder">
                   <div class="upload-icon">↑</div>
-                  <div class="upload-title">Drag Files to Upload</div>
-                  <div class="upload-hint">Or Click to Browse File System</div>
+                  <div class="upload-title">Drag Files to Upload (Optional)</div>
+                  <div class="upload-hint">Or click to browse. You can continue with only the scenario prompt below.</div>
                 </div>
                 
                 <div v-else class="file-list">
@@ -164,23 +164,23 @@
 
             <!-- separator -->
             <div class="console-divider">
-              <span>Input Parameters</span>
+              <span>Scenario Inputs</span>
             </div>
 
             <!-- input area -->
             <div class="console-section">
               <div class="console-header">
-                <span class="console-label">>_ 02 / Simulate Prompt Words</span>
+                <span class="console-label">>_ 02 / Scenario Brief</span>
               </div>
               <div class="input-wrapper">
                 <textarea
                   v-model="formData.simulationRequirement"
                   class="code-input"
-                  placeholder="Use natural language to input simulated or predictive demands (e.g., if Wuhan University issues a notice revoking Xiao's disciplinary action, what would be the public opinion trend?)"
+                  placeholder="Describe the scenario you want to simulate (for example: If rice prices rise 40% next month, how do low-income households in Sylhet, Kolkata, and Karachi respond?)"
                   rows="6"
                   :disabled="loading"
                 ></textarea>
-                <div class="model-badge">Engine: MiroFish-V1.0</div>
+                <div class="model-badge">Engine: OPS / OASIS</div>
               </div>
             </div>
 
@@ -191,7 +191,7 @@
                 @click="startSimulation"
                 :disabled="!canSubmit || loading"
               >
-                <span v-if="!loading">Start Engine</span>
+                <span v-if="!loading">Launch OPS</span>
                 <span v-else>Initializing...</span>
                 <span class="btn-arrow">→</span>
               </button>
@@ -231,7 +231,7 @@ const fileInput = ref(null)
 
 // computed property: can submit
 const canSubmit = computed(() => {
-  return formData.value.simulationRequirement.trim() !== '' && files.value.length > 0
+  return formData.value.simulationRequirement.trim() !== ''
 })
 
 // trigger file selection

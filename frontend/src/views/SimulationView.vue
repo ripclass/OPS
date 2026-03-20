@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROFISH</div>
+        <div class="brand" @click="router.push('/')">OPS</div>
       </div>
       
       <div class="header-center">
@@ -23,7 +23,7 @@
       <div class="header-right">
         <div class="workflow-step">
           <span class="step-num">Step 2/5</span>
-          <span class="step-name">Environment Setup</span>
+          <span class="step-name">Population Setup</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -46,7 +46,7 @@
         />
       </div>
 
-      <!-- Right Panel: Step2 Environment Setup -->
+      <!-- Right Panel: Step2 Population Setup -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
         <Step2EnvSetup
           :simulationId="currentSimulationId"
@@ -111,7 +111,7 @@ const statusClass = computed(() => {
 const statusText = computed(() => {
   if (currentStatus.value === 'error') return 'Error'
   if (currentStatus.value === 'completed') return 'Ready'
-  return 'Preparing'
+  return 'Preparing Population'
 })
 
 // --- Helpers ---
@@ -146,13 +146,13 @@ const handleGoBack = () => {
 }
 
 const handleNextStep = (params = {}) => {
-  addLog('Enter Step 3: Start Simulation')
+  addLog('Enter Step 3: Run Simulation')
   
   // Record the number of simulation rounds configured
   if (params.maxRounds) {
     addLog(`Customize simulation rounds: ${params.maxRounds} rounds`)
   } else {
-    addLog('Use Auto-configured Simulation Rounds')
+    addLog('Use auto-configured simulation rounds')
   }
   
   // Build route parameters

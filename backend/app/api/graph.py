@@ -165,11 +165,6 @@ def generate_ontology():
         
         # Get uploaded files
         uploaded_files = request.files.getlist('files')
-        if not uploaded_files or all(not f.filename for f in uploaded_files):
-            return jsonify({
-                "success": False,
-                "error": "Please upload at least one document file"
-            }), 400
         
         # Create project
         project = ProjectManager.create_project(name=project_name)
@@ -199,11 +194,22 @@ def generate_ontology():
                 document_texts.append(text)
                 all_text += f"\n\n=== {file_info['original_filename']} ===\n{text}"
         
+        # Allow scenario-only projects by treating the simulation requirement as the seed text
+        # when no documents are uploaded.
+        if not document_texts and simulation_requirement:
+            seed_text = TextProcessor.preprocess_text(simulation_requirement)
+            document_texts.append(seed_text)
+            all_text = f"\n\n=== scenario_input.txt ===\n{seed_text}"
+            project.files.append({
+                "filename": "scenario_input.txt",
+                "size": len(seed_text.encode("utf-8"))
+            })
+
         if not document_texts:
             ProjectManager.delete_project(project.project_id)
             return jsonify({
                 "success": False,
-                "error": "No documents were successfully processed, please check the file format"
+                "error": "Please upload a document file or provide scenario text"
             }), 400
         
         # Save extracted text
@@ -336,7 +342,7 @@ def build_graph():
             project.error = None
         
         # Get configuration
-        graph_name = data.get('graph_name', project.name or 'MiroFish Graph')
+        graph_name = data.get('graph_name', project.name or 'OPS Graph')
         chunk_size = data.get('chunk_size', project.chunk_size or Config.DEFAULT_CHUNK_SIZE)
         chunk_overlap = data.get('chunk_overlap', project.chunk_overlap or Config.DEFAULT_CHUNK_OVERLAP)
         

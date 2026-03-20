@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROFISH</div>
+        <div class="brand" @click="router.push('/')">OPS</div>
       </div>
       
       <div class="header-center">
@@ -23,7 +23,7 @@
       <div class="header-right">
         <div class="workflow-step">
           <span class="step-num">Step 3/5</span>
-          <span class="step-name">Start Simulation</span>
+          <span class="step-name">Run Simulation</span>
         </div>
         <div class="step-divider"></div>
         <span class="status-indicator" :class="statusClass">
@@ -47,7 +47,7 @@
         />
       </div>
 
-      <!-- Right Panel: Step3 Start Simulation -->
+      <!-- Right Panel: Step3 Run Simulation -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
         <Step3Simulation
           :simulationId="currentSimulationId"
@@ -195,7 +195,7 @@ const handleGoBack = async () => {
 const handleNextStep = () => {
   // The Step3Simulation component will directly handle report generation and route redirection.
   // This method is provided as an alternative backup.
-  addLog('Entering Step 4: Report Generation')
+  addLog('Entering Step 4: Insight Report')
 }
 
 // --- Data Logic ---

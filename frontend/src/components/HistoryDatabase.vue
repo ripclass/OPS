@@ -13,7 +13,7 @@
     <!-- Title area -->
     <div class="section-header">
       <div class="section-line"></div>
-      <span class="section-title">Simulation records</span>
+      <span class="section-title">Recent OPS Runs</span>
       <div class="section-line"></div>
     </div>
 
@@ -36,16 +36,16 @@
             <span 
               class="status-icon" 
               :class="{ available: project.project_id, unavailable: !project.project_id }"
-              title="Graph Build"
+              title="Scenario Graph"
             >◇</span>
             <span 
               class="status-icon available" 
-              title="Environment Setup"
+              title="Population Setup"
             >◈</span>
             <span 
               class="status-icon" 
               :class="{ available: project.report_id, unavailable: !project.report_id }"
-              title="Analysis Report"
+              title="Insight Report"
             >◆</span>
           </div>
         </div>
@@ -126,7 +126,7 @@
             <div class="modal-body">
               <!-- Simulated requirement -->
               <div class="modal-section">
-                <div class="modal-label">Simulation requirement</div>
+                <div class="modal-label">Scenario brief</div>
                 <div class="modal-requirement">{{ selectedProject.simulation_requirement || 'None' }}</div>
               </div>
 
@@ -139,14 +139,14 @@
                     <span class="modal-file-name">{{ file.filename }}</span>
                   </div>
                 </div>
-                <div class="modal-empty" v-else>No Associated Files</div>
+                <div class="modal-empty" v-else>No associated files</div>
               </div>
             </div>
 
             <!-- Replay separation line -->
             <div class="modal-divider">
               <span class="divider-line"></span>
-              <span class="divider-text">Playback Replay</span>
+              <span class="divider-text">Playback</span>
               <span class="divider-line"></span>
             </div>
 
@@ -159,7 +159,7 @@
               >
                 <span class="btn-step">Step1</span>
                 <span class="btn-icon">◇</span>
-                <span class="btn-text">Graph Build</span>
+                <span class="btn-text">Scenario Graph</span>
               </button>
               <button 
                 class="modal-btn btn-simulation" 
@@ -167,7 +167,7 @@
               >
                 <span class="btn-step">Step2</span>
                 <span class="btn-icon">◈</span>
-                <span class="btn-text">Environment Setup</span>
+                <span class="btn-text">Population Setup</span>
               </button>
               <button 
                 class="modal-btn btn-report" 
@@ -176,12 +176,12 @@
               >
                 <span class="btn-step">Step4</span>
                 <span class="btn-icon">◆</span>
-                <span class="btn-text">Analysis Report</span>
+                <span class="btn-text">Insight Report</span>
               </button>
             </div>
             <!-- Cannot replay hint -->
             <div class="modal-playback-hint">
-              <span class="hint-text">Step3 'Start Simulation' and Step5 'Deep Interaction' Must Be Initiated During Operation and Do Not Support Historical Playback</span>
+              <span class="hint-text">Step 3 'Run Simulation' and Step 5 'Live Interactions' must be opened during an active run and cannot be replayed from history.</span>
             </div>
           </div>
         </div>
@@ -337,7 +337,7 @@ const truncateText = (text, maxLength) => {
 
 // Generate title from simulated requirements (take the first 20 characters)
 const getSimulationTitle = (requirement) => {
-  if (!requirement) return 'Unnamed Simulation'
+  if (!requirement) return 'Untitled Scenario'
   const title = requirement.slice(0, 20)
   return requirement.length > 20 ? title + '...' : title
 }
@@ -354,7 +354,7 @@ const formatRounds = (simulation) => {
   const current = simulation.current_round || 0
   const total = simulation.total_rounds || 0
   if (total === 0) return 'Not started'
-  return `${current}/${total} Round`
+  return `${current}/${total} rounds`
 }
 
 // Get file type (for styling)

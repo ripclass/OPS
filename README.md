@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="./static/image/MiroFish_logo_compressed.jpeg" alt="MiroFish Logo" width="75%"/>
+<img src="./static/image/MiroFish_logo_compressed.jpeg" alt="OPS Logo" width="75%"/>
 
 <a href="https://trendshift.io/repositories/16144" target="_blank"><img src="https://trendshift.io/api/badge/repositories/16144" alt="666ghj%2FMiroFish | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-A concise and universal swarm intelligence engine, predicting everything.
+A scenario forecasting stack for Organic Population Simulation.
 </br>
-<em>A Simple and Universal Swarm Intelligence Engine, Predicting Anything</em>
+<em>Population-scale simulation for policy, crisis, and narrative forecasting across South Asia</em>
 
 <a href="https://www.shanda.com/" target="_blank"><img src="./static/image/shanda_logo.png" alt="666ghj%2MiroFish | Shanda" height="40"/></a>
 
@@ -16,33 +16,30 @@ A concise and universal swarm intelligence engine, predicting everything.
 [![Docker](https://img.shields.io/badge/Docker-Build-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/666ghj/MiroFish)
 
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.com/channels/1469200078932545606/1469201282077163739)
-[![X](https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/mirofish_ai)
-[![Instagram](https://img.shields.io/badge/Instagram-Follow-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://www.instagram.com/mirofish_ai/)
-
-[English](./README-EN.md) | [This Document](./README.md)
+[English](./README-EN.md) | [Project README](./README.md)
 
 </div>
 
 ## Project Overview
 
-**MiroFish** is a next-generation AI prediction engine powered by multi-agent technology. It extracts seed information from the real world, builds a high-fidelity parallel digital world, and lets thousands of agents with distinct personalities, memory, and behavior interact inside it. You can inject variables from a God's-eye view to simulate future trajectories in a digital sandbox and support better decisions.
+**OPS (Organic Population Simulation)** is a scenario-forecasting platform built on top of the existing interface layer and the OASIS multi-agent engine. It turns short briefs, policy notes, field reports, and media narratives into simulated populations with memory, behavior, and network structure so you can test reactions before events unfold.
 
-> Upload seed materials (data analysis reports or compelling stories) and describe your prediction goal in natural language.</br>
-> MiroFish returns a detailed prediction report and a deeply interactive high-fidelity digital world.
+> Start from a scenario brief, optionally add supporting documents, and define the response you want to forecast.</br>
+> OPS returns a structured report plus an interactive agent environment for follow-up analysis.
 
 ### Our Vision
 
-MiroFish aims to create a swarm intelligence mirror that maps reality by capturing the emergence from individual interactions, breaking through the limitations of traditional prediction.
+OPS is focused on population response forecasting across South Asia. By capturing the collective emergence created by individual interactions, it moves beyond the limits of traditional forecasting and static polling.
 
-- **For Macro**: We are a rehearsal laboratory for decision-makers, allowing policies and public relations to experiment with errors in a risk-free environment
-- **At Micro Level**: We are a sandbox for individual users' creative exploration, whether it's deducing the ending of a novel or delving into brainstorming, all can be fun and accessible.
+- **Policy Opinion Forecasting**: Rehearse likely public reaction before major announcements and test where sentiment or rumor may concentrate.
+- **Crisis Communication Simulation**: Model how warnings, leaks, and narrative shifts could move through districts, communities, and online networks.
+- **Academic and Research Use**: Run controlled experiments on information propagation, trust, coordination, and group behavior across South Asian populations.
 
-From serious forecasting to fun simulations, we ensure that every 'if' can see its results, making it possible to predict everything.
+OPS is designed for India, Bangladesh, and Pakistan first, while keeping the workflow portable to other regions.
 
 ## Live Demo
 
-Visit the online demo to experience a public-opinion simulation prepared by the MiroFish team: [mirofish-live-demo](https://666ghj.github.io/mirofish-demo/)
+This fork is intended for local or private deployment. For a reference walkthrough of the upstream interface, see: [mirofish-live-demo](https://666ghj.github.io/mirofish-demo/)
 
 ## Screenshots
 
@@ -63,22 +60,22 @@ Visit the online demo to experience a public-opinion simulation prepared by the 
 </table>
 </div>
 
-## Demo Videos
+## Upstream Demo Videos
 
-### 1. Wuhan University Public Opinion Simulation + MiroFish Project Introduction
+### 1. Wuhan University Public Opinion Simulation + Upstream Engine Introduction
 
 <div align="center">
-<a href="https://www.bilibili.com/video/BV1VYBsBHEMY/" target="_blank"><img src="./static/image/%E6%AD%A6%E5%A4%A7%E6%A8%A1%E6%8B%9F%E6%BC%94%E7%A4%BA%E5%B0%81%E9%9D%A2.png" alt="MiroFish Demo Video" width="75%"/></a>
+<a href="https://www.bilibili.com/video/BV1VYBsBHEMY/" target="_blank"><img src="./static/image/%E6%AD%A6%E5%A4%A7%E6%A8%A1%E6%8B%9F%E6%BC%94%E7%A4%BA%E5%B0%81%E9%9D%A2.png" alt="Upstream engine demo video" width="75%"/></a>
 
-Click the image to watch the full demo showing BettaFish generating the Wuhan University public opinion report.
+Click the image to watch the upstream demo that originally introduced the engine workflow.
 </div>
 
 ### 2. Dream of the Red Chamber Lost Ending Simulation
 
 <div align="center">
-<a href="https://www.bilibili.com/video/BV1cPk3BBExq" target="_blank"><img src="./static/image/%E7%BA%A2%E6%A5%BC%E6%A2%A6%E6%A8%A1%E6%8B%9F%E6%8E%A8%E6%BC%94%E5%B0%81%E9%9D%A2.jpg" alt="MiroFish Demo Video" width="75%"/></a>
+<a href="https://www.bilibili.com/video/BV1cPk3BBExq" target="_blank"><img src="./static/image/%E7%BA%A2%E6%A5%BC%E6%A2%A6%E6%A8%A1%E6%8B%9F%E6%8E%A8%E6%BC%94%E5%B0%81%E9%9D%A2.jpg" alt="Upstream engine demo video" width="75%"/></a>
 
-Click the image to view a prediction of the lost ending based on the first 80 chapters of Dream of the Red Chamber, involving over 100,000 words by MiroFish.
+Click the image to watch the upstream engine run a large-scale narrative simulation.
 </div>
 
 > Financial trend forecasting, political headline forecasting, and more examples are coming soon.
@@ -112,19 +109,16 @@ cp .env.example .env
 # Edit the .env file and fill in necessary API keys
 ```
 
-**Required environment variables:**
+**Suggested local environment variables:**
 
 ```env
-# LLM API Configuration (supports any LLM API in OpenAI SDK format)
-# It is recommended to use the Qwen-plus model from AILab: https://bailian.console.aliyun.com/
-# Note that this consumes a lot of resources, so you can first try it with less than 40 rounds of simulation
-LLM_API_KEY=your_api_key
-LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-LLM_MODEL_NAME=qwen-plus
+# Local Ollama configuration
+LLM_API_KEY=ollama
+LLM_BASE_URL=http://localhost:11434/v1
+LLM_MODEL_NAME=qwen2.5:7b
 
-# Zep Cloud Configuration
-# A monthly free tier is sufficient for simple usage: https://app.getzep.com/
-ZEP_API_KEY=your_zep_api_key
+# Optional Zep Cloud key. Leave blank to run locally without graph persistence.
+ZEP_API_KEY=
 ```
 
 #### 2. Install Dependencies
@@ -174,21 +168,19 @@ docker compose up -d
 
 By default, Docker reads the `.env` file in the project root and maps ports `3000 (frontend) / 5001 (backend)`.
 
-> The `docker-compose.yml` file includes optional mirror image addresses in comments. Replace them if needed.
+> Docker is configured for a local Ollama instance. Containers use `host.docker.internal` to reach the model server running on Windows.
 
-## Join the Conversation
+## Deployment Notes
 
 <div align="center">
 <img src="./static/image/QQ%E7%BE%A4.png" alt="QQ Group" width="60%"/>
 </div>
 
-&nbsp;
-MiroFish team is currently recruiting full-time and internship positions. If you are interested in multi-Agent applications, please send your resume to: **mirofish@shanda.com**
+This OPS fork is currently optimized for local and private deployments. Replace the logo asset, community links, and contact details with your own organization-owned branding before public release.
 
 ## Acknowledgments
 
-**MiroFish has received strategic support and incubation from Shanda Group!**
-MiroFish's simulation engine is driven by **[OASIS](https://github.com/camel-ai/oasis)**, and we sincerely thank the CAMEL-AI team for their open-source contributions!
+OPS builds on the open-source interface layer originally released as MiroFish and is powered by **[OASIS](https://github.com/camel-ai/oasis)**. We sincerely thank the CAMEL-AI team for their open-source contributions!
 
 ## Project Statistics
 

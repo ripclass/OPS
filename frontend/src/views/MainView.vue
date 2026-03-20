@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">MIROFISH</div>
+        <div class="brand" @click="router.push('/')">OPS</div>
       </div>
       
       <div class="header-center">
@@ -48,7 +48,7 @@
 
       <!-- Right Panel: Step Components -->
       <div class="panel-wrapper right" :style="rightPanelStyle">
-        <!-- Step 1: Graph Construction -->
+        <!-- Step 1: Scenario Graph -->
         <Step1GraphBuild 
           v-if="currentStep === 1"
           :currentPhase="currentPhase"
@@ -59,7 +59,7 @@
           :systemLogs="systemLogs"
           @next-step="handleNextStep"
         />
-        <!-- Step 2: Environment Setup -->
+        <!-- Step 2: Population Setup -->
         <Step2EnvSetup
           v-else-if="currentStep === 2"
           :projectData="projectData"
@@ -90,8 +90,8 @@ const router = useRouter()
 const viewMode = ref('split') // graph | split | workbench
 
 // Step State
-const currentStep = ref(1) // 1: Graph Construction, 2: Environment Setup, 3: Simulation Start, 4: Report Generation, 5: Deep Interaction
-const stepNames = ['Graph Build', 'Environment Setup', 'Start Simulation', 'Report Generation', 'Deep Interaction']
+const currentStep = ref(1) // 1: Scenario Graph, 2: Population Setup, 3: Run Simulation, 4: Insight Report, 5: Live Interactions
+const stepNames = ['Scenario Graph', 'Population Setup', 'Run Simulation', 'Insight Report', 'Live Interactions']
 
 // Data State
 const currentProjectId = ref(route.params.projectId)
@@ -132,8 +132,8 @@ const statusClass = computed(() => {
 const statusText = computed(() => {
   if (error.value) return 'Error'
   if (currentPhase.value >= 2) return 'Ready'
-  if (currentPhase.value === 1) return 'Building Graph'
-  if (currentPhase.value === 0) return 'Generating Ontology'
+  if (currentPhase.value === 1) return 'Building Scenario Graph'
+  if (currentPhase.value === 0) return 'Extracting Structure'
   return 'Initializing'
 })
 
@@ -188,17 +188,20 @@ const initProject = async () => {
 
 const handleNewProject = async () => {
   const pending = getPendingUpload()
-  if (!pending.isPending || pending.files.length === 0) {
-    error.value = 'No pending files found.'
-    addLog('Error: No pending files found for new project.')
+  const hasScenario = !!pending.simulationRequirement?.trim()
+  const hasFiles = pending.files.length > 0
+
+  if (!pending.isPending || (!hasFiles && !hasScenario)) {
+    error.value = 'No pending scenario input found.'
+    addLog('Error: No pending scenario input found for new project.')
     return
   }
   
   try {
     loading.value = true
     currentPhase.value = 0
-    ontologyProgress.value = { message: 'Uploading and analyzing docs...' }
-    addLog('Starting ontology generation: Uploading files...')
+    ontologyProgress.value = { message: hasFiles ? 'Uploading and analyzing source material...' : 'Analyzing scenario brief...' }
+    addLog(hasFiles ? 'Starting scenario extraction: uploading source material...' : 'Starting scenario extraction from the scenario brief...')
     
     const formData = new FormData()
     pending.files.forEach(f => formData.append('files', f))
@@ -212,11 +215,11 @@ const handleNewProject = async () => {
       
       router.replace({ name: 'Process', params: { projectId: res.data.project_id } })
       ontologyProgress.value = null
-      addLog(`Ontology generated successfully for project ${res.data.project_id}`)
+      addLog(`Scenario outline generated successfully for project ${res.data.project_id}`)
       await startBuildGraph()
     } else {
-      error.value = res.error || 'Ontology generation failed'
-      addLog(`Error generating ontology: ${error.value}`)
+      error.value = res.error || 'Scenario extraction failed'
+      addLog(`Error generating scenario outline: ${error.value}`)
     }
   } catch (err) {
     error.value = err.message
@@ -271,8 +274,8 @@ const updatePhaseByStatus = (status) => {
 const startBuildGraph = async () => {
   try {
     currentPhase.value = 1
-    buildProgress.value = { progress: 0, message: 'Starting build...' }
-    addLog('Initiating graph build...')
+    buildProgress.value = { progress: 0, message: 'Starting scenario graph build...' }
+    addLog('Initiating scenario graph build...')
     
     const res = await buildGraph({ project_id: currentProjectId.value })
     if (res.success) {

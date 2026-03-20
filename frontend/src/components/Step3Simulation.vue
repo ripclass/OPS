@@ -308,7 +308,7 @@ const props = defineProps({
   systemLogs: Array
 })
 
-const emit = defineEmits([''])'go-back', 'next-step', 'add-log', 'update-status'])
+const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
 
 const router = useRouter()
 

@@ -2,12 +2,12 @@
   <div class="process-page">
     <!-- Top navigation bar -->
     <nav class="navbar">
-      <div class="nav-brand" @click="goHome">MIROFISH</div>
+      <div class="nav-brand" @click="goHome">OPS</div>
       
       <!-- Middle step indicator -->
       <div class="nav-center">
         <div class="step-badge">STEP 01</div>
-        <div class="step-name">Graph Construction</div>
+        <div class="step-name">Scenario Graph</div>
       </div>
 
       <div class="nav-status">
@@ -23,7 +23,7 @@
         <div class="panel-header">
           <div class="header-left">
             <span class="header-deco">◆</span>
-            <span class="header-title">Real-time Knowledge Graph</span>
+            <span class="header-title">Live Scenario Graph</span>
           </div>
           <div class="header-right">
             <template v-if="graphData">
@@ -189,8 +189,8 @@
                 <line x1="50" y1="72" x2="74" y2="66" stroke="#000" stroke-width="1"/>
               </svg>
             </div>
-            <p class="waiting-text">Waiting for ontology generation</p>
-            <p class="waiting-hint">Graph construction will start automatically after completion</p>
+            <p class="waiting-text">Waiting for scenario extraction</p>
+            <p class="waiting-hint">Scenario graph construction will start automatically after extraction completes</p>
           </div>
           
           <!-- Constructing but no data yet -->
@@ -200,7 +200,7 @@
               <div class="loading-ring"></div>
               <div class="loading-ring"></div>
             </div>
-            <p class="waiting-text">Graph constructing...</p>
+            <p class="waiting-text">Building the scenario graph...</p>
             <p class="waiting-hint">Data is about to be displayed...</p>
           </div>
           
@@ -568,8 +568,8 @@ const initProject = async () => {
 const handleNewProject = async () => {
   const pending = getPendingUpload()
   
-  if (!pending.isPending || pending.files.length === 0) {
-    error.value = 'There are no files to upload, please go back to the home page and try again'
+  if (!pending.isPending || !pending.simulationRequirement?.trim()) {
+    error.value = 'There is no scenario text to process. Please go back to the home page and try again.'
     loading.value = false
     return
   }
@@ -577,7 +577,11 @@ const handleNewProject = async () => {
   try {
     loading.value = true
     currentPhase.value = 0 // Ontology generation phase
-    ontologyProgress.value = { message: 'Uploading files and analyzing documents...' }
+    ontologyProgress.value = {
+      message: pending.files.length > 0
+        ? 'Uploading files and analyzing documents...'
+        : 'Analyzing the scenario prompt...'
+    }
     
     // Build FormData
     const formDataObj = new FormData()

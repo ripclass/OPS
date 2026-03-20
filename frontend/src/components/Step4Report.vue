@@ -8,7 +8,7 @@
           <!-- Report Header -->
           <div class="report-header-block">
             <div class="report-meta">
-              <span class="report-tag">Prediction Report</span>
+              <span class="report-tag">OPS Insight Report</span>
               <span class="report-id">ID: {{ reportId || 'REF-2024-X92' }}</span>
             </div>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
@@ -58,7 +58,7 @@
                       <path d="M12 2a10 10 0 0 1 10 10" stroke-width="4" stroke="#4B5563" stroke-linecap="round"></path>
                     </svg>
                   </div>
-                  <span class="loading-text">正在生成{{ section.title }}...</span>
+                  <span class="loading-text">Generating {{ section.title }}...</span>
                 </div>
               </div>
             </div>
@@ -72,7 +72,7 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">Waiting for Report Agent...</span>
+          <span class="waiting-text">Waiting for the OPS report agent...</span>
         </div>
       </div>
 
@@ -129,7 +129,7 @@
 
           <!-- Next Step Button - Display after completion -->
           <button v-if="isComplete" class="next-step-btn" @click="goToInteraction">
-            <span>Engage in Deep Interaction</span>
+            <span>Open Live Interactions</span>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -166,11 +166,11 @@
                   <!-- Report Start -->
                   <template v-if="log.action === 'report_start'">
                     <div class="info-row">
-                      <span class="info-key">Simulation</span>
+                      <span class="info-key">Run</span>
                       <span class="info-val mono">{{ log.details?.simulation_id }}</span>
                     </div>
                     <div class="info-row" v-if="log.details?.simulation_requirement">
-                      <span class="info-key">Requirement</span>
+                      <span class="info-key">Scenario</span>
                       <span class="info-val">{{ log.details.simulation_requirement }}</span>
                     </div>
                   </template>
@@ -182,7 +182,7 @@
                   <template v-if="log.action === 'planning_complete'">
                     <div class="status-message success">{{ log.details?.message }}</div>
                     <div class="outline-badge" v-if="log.details?.outline">
-                      {{ log.details.outline.sections?.length || 0 }} sections planned
+                      {{ log.details.outline.sections?.length || 0 }} sections outlined
                     </div>
                   </template>
 
@@ -315,12 +315,12 @@
                         Final: {{ log.details?.has_final_answer ? 'Yes' : 'No' }}
                       </span>
                     </div>
-                    <!-- Show special提示 when it is the final answer -->
+                    <!-- Show a special hint when it is the final answer -->
                     <div v-if="log.details?.has_final_answer" class="final-answer-hint">
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>Section "{{ log.section_title }}" content generated</span>
+                      <span>Section "{{ log.section_title }}" drafted</span>
                     </div>
                     <div v-if="expandedLogs.has(log.timestamp) && log.details?.response" class="llm-content">
                       <pre>{{ log.details.response }}</pre>
@@ -334,7 +334,7 @@
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                       </svg>
-                      <span>Report Generation Complete</span>
+                      <span>Insight report complete</span>
                     </div>
                   </template>
                 </div>
@@ -869,80 +869,430 @@ const parseInterview = (text) => {
       const quotesMatch = block.match(/\*\*关键引言:\*\*\n([\s\S]*?)(?=\n---|\n####|$)/)
       if (quotesMatch) {
         const quotesText = quotesMatch[1]
-        // Prioritize matching > "text" format
         let quoteMatches = quotesText.match(/> "([^"]+)"/g)
-        // Rollback: Match > "text" or > "text" (Chinese quotation marks)
         if (!quoteMatches) {
-          quoteMatches = quotesText.match(/> """]([^\u201D""]+)[\u201D""]/g)
+          quoteMatches = quotesText.match(/> [\u201C"]([^\u201D"]+)[\u201D"]/g)
         }
         if (quoteMatches) {
           interview.quotes = quoteMatches
-            .map(q => q.replace(/^> [\u201C""]|[\u201D""const formatSize = (length) => { "1. ", "2. ", "1、", "（1）", "(1)" etc.
-          return text.replace(/^\s*\d+[\.\、\)）]\s*/, '').trim()
+            .map(q => q.replace(/^> [\u201C"]|[\u201D"]$/g, '').trim())
+            .filter(Boolean)
         }
-        
-        const activeIndex = ref(0)
-        const expandedAnswers = ref(new Set())
-        //  Maintain a separate platform selection state for each question-answer pair
-        const platformTabs = reactive({}) // { 'agentIdx-qIdx': 'twitter' | 'reddit' }
-        
-        // Get the current platform selection for a given question
-        const getPlatformTab = (agentIdx, qIdx) => {
-      const key = `__PH_0__-__PH_1__`
+      }
+
+      if (interview.name || interview.title) {
+        result.interviews.push(interview)
+      }
+    })
+
+    // Extract the interview summary
+    const summaryMatch = text.match(/### 采访摘要与核心观点\n([\s\S]*?)$/)
+    if (summaryMatch) {
+      result.summary = summaryMatch[1].trim()
+    }
+  } catch (e) {
+    console.warn('Parse interview failed:', e)
+  }
+
+  return result
+}
+
+const parseQuickSearch = (text) => {
+  const result = {
+    query: '',
+    count: 0,
+    facts: [],
+    edges: [],
+    nodes: []
+  }
+
+  try {
+    const queryMatch = text.match(/搜索查询:\s*(.+?)(?:\n|$)/)
+    if (queryMatch) result.query = queryMatch[1].trim()
+
+    const countMatch = text.match(/找到\s*(\d+)\s*条/)
+    if (countMatch) result.count = parseInt(countMatch[1])
+
+    const factsSection = text.match(/### 相关事实:\n([\s\S]*)$/)
+    if (factsSection) {
+      const lines = factsSection[1].split('\n').filter(l => l.match(/^\d+\./))
+      result.facts = lines.map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean)
+    }
+
+    const edgesSection = text.match(/### 相关边:\n([\s\S]*?)(?=\n###|$)/)
+    if (edgesSection) {
+      const lines = edgesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
+      result.edges = lines.map(l => {
+        const match = l.match(/^-\s*(.+?)\s*--\[(.+?)\]-->\s*(.+)$/)
+        if (match) {
+          return { source: match[1].trim(), relation: match[2].trim(), target: match[3].trim() }
+        }
+        return null
+      }).filter(Boolean)
+    }
+
+    const nodesSection = text.match(/### 相关节点:\n([\s\S]*?)(?=\n###|$)/)
+    if (nodesSection) {
+      const lines = nodesSection[1].split('\n').filter(l => l.trim().startsWith('-'))
+      result.nodes = lines.map(l => {
+        const match = l.match(/^-\s*\*\*(.+?)\*\*\s*\((.+?)\)/)
+        if (match) return { name: match[1].trim(), type: match[2].trim() }
+        const simpleMatch = l.match(/^-\s*(.+)$/)
+        if (simpleMatch) return { name: simpleMatch[1].trim(), type: '' }
+        return null
+      }).filter(Boolean)
+    }
+  } catch (e) {
+    console.warn('Parse quick_search failed:', e)
+  }
+
+  return result
+}
+
+// Insight Display Component - Enhanced with full data rendering
+const InsightDisplay = {
+  props: ['result', 'resultLength'],
+  setup(props) {
+    const activeTab = ref('facts')
+    const expandedFacts = ref(false)
+    const expandedEntities = ref(false)
+    const expandedRelations = ref(false)
+    const INITIAL_SHOW_COUNT = 5
+
+    const formatSize = (length) => {
+      if (!length) return ''
+      if (length >= 1000) {
+        return `${(length / 1000).toFixed(1)}k chars`
+      }
+      return `${length} chars`
+    }
+
+    return () => h('div', { class: 'insight-display' }, [
+      h('div', { class: 'insight-header' }, [
+        h('div', { class: 'header-main' }, [
+          h('div', { class: 'header-title' }, 'Deep Insight'),
+          h('div', { class: 'header-stats' }, [
+            h('span', { class: 'stat-item' }, [
+              h('span', { class: 'stat-value' }, props.result.stats.facts || props.result.facts.length),
+              h('span', { class: 'stat-label' }, 'Facts')
+            ]),
+            h('span', { class: 'stat-divider' }, '/'),
+            h('span', { class: 'stat-item' }, [
+              h('span', { class: 'stat-value' }, props.result.stats.entities || props.result.entities.length),
+              h('span', { class: 'stat-label' }, 'Entities')
+            ]),
+            h('span', { class: 'stat-divider' }, '/'),
+            h('span', { class: 'stat-item' }, [
+              h('span', { class: 'stat-value' }, props.result.stats.relationships || props.result.relations.length),
+              h('span', { class: 'stat-label' }, 'Relations')
+            ]),
+            props.resultLength && h('span', { class: 'stat-divider' }, '·'),
+            props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
+          ])
+        ]),
+        props.result.query && h('div', { class: 'header-topic' }, props.result.query),
+        props.result.simulationRequirement && h('div', { class: 'header-scenario' }, [
+          h('span', { class: 'scenario-label' }, 'Scenario: '),
+          h('span', { class: 'scenario-text' }, props.result.simulationRequirement)
+        ])
+      ]),
+
+      h('div', { class: 'insight-tabs' }, [
+        h('button', {
+          class: ['insight-tab', { active: activeTab.value === 'facts' }],
+          onClick: () => { activeTab.value = 'facts' }
+        }, [h('span', { class: 'tab-label' }, `Key Facts (${props.result.facts.length})`)]),
+        h('button', {
+          class: ['insight-tab', { active: activeTab.value === 'entities' }],
+          onClick: () => { activeTab.value = 'entities' }
+        }, [h('span', { class: 'tab-label' }, `Core Entities (${props.result.entities.length})`)]),
+        h('button', {
+          class: ['insight-tab', { active: activeTab.value === 'relations' }],
+          onClick: () => { activeTab.value = 'relations' }
+        }, [h('span', { class: 'tab-label' }, `Relations (${props.result.relations.length})`)]),
+        props.result.subQueries.length > 0 && h('button', {
+          class: ['insight-tab', { active: activeTab.value === 'subqueries' }],
+          onClick: () => { activeTab.value = 'subqueries' }
+        }, [h('span', { class: 'tab-label' }, `Sub-Questions (${props.result.subQueries.length})`)])
+      ]),
+
+      h('div', { class: 'insight-content' }, [
+        activeTab.value === 'facts' && props.result.facts.length > 0 && h('div', { class: 'facts-panel' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Latest Relevant Facts'),
+            h('span', { class: 'panel-count' }, `${props.result.facts.length} total`)
+          ]),
+          h('div', { class: 'facts-list' },
+            (expandedFacts.value ? props.result.facts : props.result.facts.slice(0, INITIAL_SHOW_COUNT)).map((fact, i) =>
+              h('div', { class: 'fact-item', key: i }, [
+                h('span', { class: 'fact-number' }, i + 1),
+                h('div', { class: 'fact-content' }, fact)
+              ])
+            )
+          ),
+          props.result.facts.length > INITIAL_SHOW_COUNT && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedFacts.value = !expandedFacts.value }
+          }, expandedFacts.value ? 'Collapse ▲' : `Show all ${props.result.facts.length} ▼`)
+        ]),
+        activeTab.value === 'entities' && props.result.entities.length > 0 && h('div', { class: 'entities-panel' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Core Entities'),
+            h('span', { class: 'panel-count' }, `${props.result.entities.length} total`)
+          ]),
+          h('div', { class: 'entities-grid' },
+            (expandedEntities.value ? props.result.entities : props.result.entities.slice(0, 12)).map((entity, i) =>
+              h('div', { class: 'entity-tag', key: i, title: entity.summary || '' }, [
+                h('span', { class: 'entity-name' }, entity.name),
+                h('span', { class: 'entity-type' }, entity.type),
+                entity.relatedFactsCount > 0 && h('span', { class: 'entity-fact-count' }, `${entity.relatedFactsCount} facts`)
+              ])
+            )
+          ),
+          props.result.entities.length > 12 && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedEntities.value = !expandedEntities.value }
+          }, expandedEntities.value ? 'Collapse ▲' : `Show all ${props.result.entities.length} ▼`)
+        ]),
+        activeTab.value === 'relations' && props.result.relations.length > 0 && h('div', { class: 'relations-panel' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Relations'),
+            h('span', { class: 'panel-count' }, `${props.result.relations.length} total`)
+          ]),
+          h('div', { class: 'relations-list' },
+            (expandedRelations.value ? props.result.relations : props.result.relations.slice(0, INITIAL_SHOW_COUNT)).map((rel, i) =>
+              h('div', { class: 'relation-item', key: i }, [
+                h('span', { class: 'rel-source' }, rel.source),
+                h('span', { class: 'rel-arrow' }, [
+                  h('span', { class: 'rel-line' }),
+                  h('span', { class: 'rel-label' }, rel.relation),
+                  h('span', { class: 'rel-line' })
+                ]),
+                h('span', { class: 'rel-target' }, rel.target)
+              ])
+            )
+          ),
+          props.result.relations.length > INITIAL_SHOW_COUNT && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedRelations.value = !expandedRelations.value }
+          }, expandedRelations.value ? 'Collapse ▲' : `Show all ${props.result.relations.length} ▼`)
+        ]),
+        activeTab.value === 'subqueries' && props.result.subQueries.length > 0 && h('div', { class: 'subqueries-panel' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Sub-Questions'),
+            h('span', { class: 'panel-count' }, `${props.result.subQueries.length} total`)
+          ]),
+          h('div', { class: 'subqueries-list' },
+            props.result.subQueries.map((sq, i) =>
+              h('div', { class: 'subquery-item', key: i }, [
+                h('span', { class: 'subquery-number' }, `Q${i + 1}`),
+                h('div', { class: 'subquery-text' }, sq)
+              ])
+            )
+          )
+        ]),
+        activeTab.value === 'facts' && props.result.facts.length === 0 && h('div', { class: 'empty-state' }, 'No key facts available'),
+        activeTab.value === 'entities' && props.result.entities.length === 0 && h('div', { class: 'empty-state' }, 'No core entities available'),
+        activeTab.value === 'relations' && props.result.relations.length === 0 && h('div', { class: 'empty-state' }, 'No relations available')
+      ])
+    ])
+  }
+}
+
+// Panorama Display Component - Enhanced with Active/Historical tabs
+const PanoramaDisplay = {
+  props: ['result', 'resultLength'],
+  setup(props) {
+    const activeTab = ref('active')
+    const expandedActive = ref(false)
+    const expandedHistorical = ref(false)
+    const expandedEntities = ref(false)
+    const INITIAL_SHOW_COUNT = 5
+
+    const formatSize = (length) => {
+      if (!length) return ''
+      if (length >= 1000) {
+        return `${(length / 1000).toFixed(1)}k chars`
+      }
+      return `${length} chars`
+    }
+
+    return () => h('div', { class: 'panorama-display' }, [
+      h('div', { class: 'panorama-header' }, [
+        h('div', { class: 'header-main' }, [
+          h('div', { class: 'header-title' }, 'Panorama Search'),
+          h('div', { class: 'header-stats' }, [
+            h('span', { class: 'stat-item' }, [
+              h('span', { class: 'stat-value' }, props.result.stats.nodes),
+              h('span', { class: 'stat-label' }, 'Nodes')
+            ]),
+            h('span', { class: 'stat-divider' }, '/'),
+            h('span', { class: 'stat-item' }, [
+              h('span', { class: 'stat-value' }, props.result.stats.edges),
+              h('span', { class: 'stat-label' }, 'Edges')
+            ]),
+            props.resultLength && h('span', { class: 'stat-divider' }, '·'),
+            props.resultLength && h('span', { class: 'stat-size' }, formatSize(props.resultLength))
+          ])
+        ]),
+        props.result.query && h('div', { class: 'header-topic' }, props.result.query)
+      ]),
+
+      h('div', { class: 'panorama-tabs' }, [
+        h('button', {
+          class: ['panorama-tab', { active: activeTab.value === 'active' }],
+          onClick: () => { activeTab.value = 'active' }
+        }, [h('span', { class: 'tab-label' }, `Active Facts (${props.result.activeFacts.length})`)]),
+        h('button', {
+          class: ['panorama-tab', { active: activeTab.value === 'historical' }],
+          onClick: () => { activeTab.value = 'historical' }
+        }, [h('span', { class: 'tab-label' }, `Historical Facts (${props.result.historicalFacts.length})`)]),
+        h('button', {
+          class: ['panorama-tab', { active: activeTab.value === 'entities' }],
+          onClick: () => { activeTab.value = 'entities' }
+        }, [h('span', { class: 'tab-label' }, `Entities (${props.result.entities.length})`)])
+      ]),
+
+      h('div', { class: 'panorama-content' }, [
+        activeTab.value === 'active' && h('div', { class: 'facts-panel active-facts' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Active Facts'),
+            h('span', { class: 'panel-count' }, `${props.result.activeFacts.length} total`)
+          ]),
+          props.result.activeFacts.length > 0 ? h('div', { class: 'facts-list' },
+            (expandedActive.value ? props.result.activeFacts : props.result.activeFacts.slice(0, INITIAL_SHOW_COUNT)).map((fact, i) =>
+              h('div', { class: 'fact-item active', key: i }, [
+                h('span', { class: 'fact-number' }, i + 1),
+                h('div', { class: 'fact-content' }, fact)
+              ])
+            )
+          ) : h('div', { class: 'empty-state' }, 'No active facts available'),
+          props.result.activeFacts.length > INITIAL_SHOW_COUNT && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedActive.value = !expandedActive.value }
+          }, expandedActive.value ? 'Collapse ▲' : `Show all ${props.result.activeFacts.length} ▼`)
+        ]),
+        activeTab.value === 'historical' && h('div', { class: 'facts-panel historical-facts' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Historical Facts'),
+            h('span', { class: 'panel-count' }, `${props.result.historicalFacts.length} total`)
+          ]),
+          props.result.historicalFacts.length > 0 ? h('div', { class: 'facts-list' },
+            (expandedHistorical.value ? props.result.historicalFacts : props.result.historicalFacts.slice(0, INITIAL_SHOW_COUNT)).map((fact, i) =>
+              h('div', { class: 'fact-item historical', key: i }, [
+                h('span', { class: 'fact-number' }, i + 1),
+                h('div', { class: 'fact-content' }, [
+                  (() => {
+                    const timeMatch = fact.match(/^\[(.+?)\]\s*(.*)$/)
+                    if (timeMatch) {
+                      return [
+                        h('span', { class: 'fact-time' }, timeMatch[1]),
+                        h('span', { class: 'fact-text' }, timeMatch[2])
+                      ]
+                    }
+                    return h('span', { class: 'fact-text' }, fact)
+                  })()
+                ])
+              ])
+            )
+          ) : h('div', { class: 'empty-state' }, 'No historical facts available'),
+          props.result.historicalFacts.length > INITIAL_SHOW_COUNT && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedHistorical.value = !expandedHistorical.value }
+          }, expandedHistorical.value ? 'Collapse ▲' : `Show all ${props.result.historicalFacts.length} ▼`)
+        ]),
+        activeTab.value === 'entities' && h('div', { class: 'entities-panel' }, [
+          h('div', { class: 'panel-header' }, [
+            h('span', { class: 'panel-title' }, 'Entities'),
+            h('span', { class: 'panel-count' }, `${props.result.entities.length} total`)
+          ]),
+          props.result.entities.length > 0 ? h('div', { class: 'entities-grid' },
+            (expandedEntities.value ? props.result.entities : props.result.entities.slice(0, 8)).map((entity, i) =>
+              h('div', { class: 'entity-tag', key: i }, [
+                h('span', { class: 'entity-name' }, entity.name),
+                entity.type && h('span', { class: 'entity-type' }, entity.type)
+              ])
+            )
+          ) : h('div', { class: 'empty-state' }, 'No related entities available'),
+          props.result.entities.length > 8 && h('button', {
+            class: 'expand-btn',
+            onClick: () => { expandedEntities.value = !expandedEntities.value }
+          }, expandedEntities.value ? 'Collapse ▲' : `Show all ${props.result.entities.length} ▼`)
+        ])
+      ])
+    ])
+  }
+}
+
+// Interview Display Component - Conversation style
+const InterviewDisplay = {
+  props: ['result', 'resultLength'],
+  setup(props) {
+    const formatSize = (length) => {
+      if (!length) return ''
+      if (length >= 1000) {
+        return `${(length / 1000).toFixed(1)}k chars`
+      }
+      return `${length} chars`
+    }
+
+    const cleanQuoteText = (text) => {
+      if (!text) return ''
+      return text.replace(/^\s*\d+[\.、\)）]\s*/, '').trim()
+    }
+
+    const activeIndex = ref(0)
+    const expandedAnswers = ref(new Set())
+    const platformTabs = reactive({})
+
+    const getPlatformTab = (agentIdx, qIdx) => {
+      const key = `${agentIdx}-${qIdx}`
       return platformTabs[key] || 'twitter'
     }
-        
-        // Set the platform selection for a given question
-        const setPlatformTab = (agentIdx, qIdx, platform) => {
-      const key = `__PH_2__-__PH_3__`
+
+    const setPlatformTab = (agentIdx, qIdx, platform) => {
+      const key = `${agentIdx}-${qIdx}`
       platformTabs[key] = platform
     }
-        
-        const toggleAnswer = (key) => {
-          const newSet = new Set(expandedAnswers.value)
-          if (newSet.has(key)) {
-            newSet.delete(key)
-          } else {
-            newSet.add(key)
-          }
-          expandedAnswers.value = newSet
-        }
-        
-        const formatAnswer = (text, expanded) => {
+
+    const toggleAnswer = (key) => {
+      const newSet = new Set(expandedAnswers.value)
+      if (newSet.has(key)) {
+        newSet.delete(key)
+      } else {
+        newSet.add(key)
+      }
+      expandedAnswers.value = newSet
+    }
+
+    const formatAnswer = (text, expanded) => {
       if (!text) return ''
       if (expanded || text.length <= 400) return text
       return text.substring(0, 400) + '...'
     }
-        
-        // Check if the text is placeholder text
-        const isPlaceholderText = (text) => {
+
+    const isPlaceholderText = (text) => {
       if (!text) return true
       const t = text.trim()
-      return t === '（该平台未获得回复）' || t === '(该平台未获得回复)' || t === '[无回复]'
+      return t === '（该平台未获得回复）' || t === '(该平台未获得回复)' || t === '[无回复]' || t === '(No Response from the Platform)'
     }
 
-        // Try to split the answer by question numbers
-        const splitAnswerByQuestions = (answerText, questionCount) => {
-          if (!answerText || questionCount <= 0) return [answerText]
-          if (isPlaceholderText(answerText)) return ['']
+    const splitAnswerByQuestions = (answerText, questionCount) => {
+      if (!answerText || questionCount <= 0) return [answerText]
+      if (isPlaceholderText(answerText)) return ['']
 
-          // Support two numbering formats:
-          // 1. "问题X：" Or "问题X:" (in Chinese format, backend new format)
-      // 2. "1. " Or "\n1. " (number.dot, for old format compatibility)
       let matches = []
       let match
 
-      // Prioritize trying "问题X：" Format:
-      const cnPattern = /(?:^|[\r\n]+)问题(\d+)[：:]\s*/g;
+      const cnPattern = /(?:^|[\r\n]+)问题(\d+)[：:]\s*/g
       while ((match = cnPattern.exec(answerText)) !== null) {
         matches.push({
           num: parseInt(match[1]),
           index: match.index,
           fullMatch: match[0]
-        });
+        })
       }
 
-      // If no match is found, fallback to "数字." %E6%A0%BC%E5%BC%8F
       if (matches.length === 0) {
         const numPattern = /(?:^|[\r\n]+)(\d+)\.\s+/g
         while ((match = numPattern.exec(answerText)) !== null) {
@@ -954,37 +1304,32 @@ const parseInterview = (text) => {
         }
       }
 
-      // %E5%A6%82%E6%9E%9C%E6%B2%A1%E6%9C%89%E6%89%BE%E5%88%B0%E7%BC%96%E5%8F%B7%E6%88%96%E5%8F%AA%E6%89%BE%E5%88%B0%E4%B8%80%E4%B8%AA，%E8%BF%94%E5%9B%9E%E6%95%B4%E4%BD%93
       if (matches.length <= 1) {
         const cleaned = answerText
-          .replace(/^%E9%97%AE%E9%A2%98\d+[：:]\s*/, '')
+          .replace(/^问题\d+[：:]\s*/, '')
           .replace(/^\d+\.\s+/, '')
           .trim()
         return [cleaned || answerText]
       }
 
-      // %E6%8C%89%E7%BC%96%E5%8F%B7%E6%8F%90%E5%8F%96%E5%90%84%E9%83%A8%E5%88%86
       const parts = []
       for (let i = 0; i < matches.length; i++) {
         const current = matches[i]
         const next = matches[i + 1]
-
         const startIdx = current.index + current.fullMatch.length
         const endIdx = next ? next.index : answerText.length
-
         let part = answerText.substring(startIdx, endIdx).trim()
         part = part.replace(/[\r\n]+$/, '').trim()
         parts.push(part)
       }
 
-      if (parts.length > 0 && parts.some(p => p)) {
+      if (parts.length > 0 && parts.some(Boolean)) {
         return parts
       }
 
       return [answerText]
     }
-    
-    // %E8%8E%B7%E5%8F%96%E6%9F%90%E4%B8%AA%E9%97%AE%E9%A2%98%E5%AF%B9%E5%BA%94%E7%9A%84%E5%9B%9E%E7%AD%94
+
     const getAnswerForQuestion = (interview, qIdx, platform) => {
       const answer = platform === 'twitter' ? interview.twitterAnswer : (interview.redditAnswer || interview.twitterAnswer)
       if (!answer || isPlaceholderText(answer)) return answer || ''
@@ -992,26 +1337,21 @@ const parseInterview = (text) => {
       const questionCount = interview.questions?.length || 1
       const answers = splitAnswerByQuestions(answer, questionCount)
 
-      // %E5%88%86%E5%89%B2%E6%88%90%E5%8A%9F%E4%B8%94%E7%B4%A2%E5%BC%95%E6%9C%89%E6%95%88
       if (answers.length > 1 && qIdx < answers.length) {
         return answers[qIdx] || ''
       }
 
-      // %E5%88%86%E5%89%B2%E5%A4%B1%E8%B4%A5：%E7%AC%AC%E4%B8%80%E4%B8%AA%E9%97%AE%E9%A2%98%E8%BF%94%E5%9B%9E%E5%AE%8C%E6%95%B4%E5%9B%9E%E7%AD%94，%E5%85%B6%E4%BD%99%E8%BF%94%E5%9B%9E%E7%A9%BA
       return qIdx === 0 ? answer : ''
     }
-    
-    // %E6%A3%80%E6%9F%A5%E6%9F%90%E4%B8%AA%E9%97%AE%E9%A2%98%E6%98%AF%E5%90%A6%E6%9C%89%E5%8F%8C%E5%B9%B3%E5%8F%B0%E5%9B%9E%E7%AD%94（%E8%BF%87%E6%BB%A4%E5%8D%A0%E4%BD%8D%E6%96%87%E6%9C%AC）
+
     const hasMultiplePlatforms = (interview, qIdx) => {
       if (!interview.twitterAnswer || !interview.redditAnswer) return false
       const twitterAnswer = getAnswerForQuestion(interview, qIdx, 'twitter')
       const redditAnswer = getAnswerForQuestion(interview, qIdx, 'reddit')
-      // %E4%B8%A4%E4%B8%AA%E5%B9%B3%E5%8F%B0%E9%83%BD%E6%9C%89%E7%9C%9F%E5%AE%9E%E5%9B%9E%E7%AD%94（%E9%9D%9E%E5%8D%A0%E4%BD%8D%E6%96%87%E6%9C%AC）%E4%B8%94%E5%86%85%E5%AE%B9%E4%B8%8D%E5%90%8C
       return !isPlaceholderText(twitterAnswer) && !isPlaceholderText(redditAnswer) && twitterAnswer !== redditAnswer
     }
-    
+
     return () => h('div', { class: 'interview-display' }, [
-      // Header Section
       h('div', { class: 'interview-header' }, [
         h('div', { class: 'header-main' }, [
           h('div', { class: 'header-title' }, 'Agent Interview'),
@@ -1031,9 +1371,7 @@ const parseInterview = (text) => {
         ]),
         props.result.topic && h('div', { class: 'header-topic' }, props.result.topic)
       ]),
-      
-      // Agent Selector Tabs
-      props.result.interviews.length > 0 && h('div', { class: 'agent-tabs' }, 
+      props.result.interviews.length > 0 && h('div', { class: 'agent-tabs' },
         props.result.interviews.map((interview, i) => h('button', {
           class: ['agent-tab', { active: activeIndex.value === i }],
           key: i,
@@ -1043,10 +1381,7 @@ const parseInterview = (text) => {
           h('span', { class: 'tab-name' }, interview.title || interview.name || `Agent ${i + 1}`)
         ]))
       ),
-      
-      // Active Interview Detail
       props.result.interviews.length > 0 && h('div', { class: 'interview-detail' }, [
-        // Agent Profile Card
         h('div', { class: 'agent-profile' }, [
           h('div', { class: 'profile-avatar' }, props.result.interviews[activeIndex.value]?.name?.charAt(0) || 'A'),
           h('div', { class: 'profile-info' }, [
@@ -1055,17 +1390,13 @@ const parseInterview = (text) => {
             props.result.interviews[activeIndex.value]?.bio && h('div', { class: 'profile-bio' }, props.result.interviews[activeIndex.value].bio)
           ])
         ]),
-        
-        // Selection Reason - %E9%80%89%E6%8B%A9%E7%90%86%E7%94%B1
         props.result.interviews[activeIndex.value]?.selectionReason && h('div', { class: 'selection-reason' }, [
-          h('div', { class: 'reason-label' }, '%E9%80%89%E6%8B%A9%E7%90%86%E7%94%B1'),
+          h('div', { class: 'reason-label' }, 'Selection Reason'),
           h('div', { class: 'reason-content' }, props.result.interviews[activeIndex.value].selectionReason)
         ]),
-        
-        // Q&A Conversation Thread - %E4%B8%80%E9%97%AE%E4%B8%80%E7%AD%94%E6%A0%B7%E5%BC%8F
-        h('div', { class: 'qa-thread' }, 
-          (props.result.interviews[activeIndex.value]?.questions?.length > 0 
-            ? props.result.interviews[activeIndex.value].questions 
+        h('div', { class: 'qa-thread' },
+          (props.result.interviews[activeIndex.value]?.questions?.length > 0
+            ? props.result.interviews[activeIndex.value].questions
             : [props.result.interviews[activeIndex.value]?.question || 'No question available']
           ).map((question, qIdx) => {
             const interview = props.result.interviews[activeIndex.value]
@@ -1077,7 +1408,6 @@ const parseInterview = (text) => {
             const isPlaceholder = isPlaceholderText(answerText)
 
             return h('div', { class: 'qa-pair', key: qIdx }, [
-              // Question Block
               h('div', { class: 'qa-question' }, [
                 h('div', { class: 'qa-badge q-badge' }, `Q${qIdx + 1}`),
                 h('div', { class: 'qa-content' }, [
@@ -1085,14 +1415,11 @@ const parseInterview = (text) => {
                   h('div', { class: 'qa-text' }, question)
                 ])
               ]),
-
-              // Answer Block
               answerText && h('div', { class: ['qa-answer', { 'answer-placeholder': isPlaceholder }] }, [
                 h('div', { class: 'qa-badge a-badge' }, `A${qIdx + 1}`),
                 h('div', { class: 'qa-content' }, [
                   h('div', { class: 'qa-answer-header' }, [
                     h('div', { class: 'qa-sender' }, interview?.name || 'Agent'),
-                    // %E5%8F%8C%E5%B9%B3%E5%8F%B0%E5%88%87%E6%8D%A2%E6%8C%89%E9%92%AE（%E4%BB%85%E5%9C%A8%E6%9C%89%E7%9C%9F%E5%AE%9E%E5%8F%8C%E5%B9%B3%E5%8F%B0%E5%9B%9E%E7%AD%94%E6%97%B6%E6%98%BE%E7%A4%BA）
                     hasDualPlatform && h('div', { class: 'platform-switch' }, [
                       h('button', {
                         class: ['platform-btn', { active: currentPlatform === 'twitter' }],
@@ -1103,7 +1430,7 @@ const parseInterview = (text) => {
                           h('line', { x1: '2', y1: '12', x2: '22', y2: '12' }),
                           h('path', { d: 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z' })
                         ]),
-                        h('span', {}, '%E4%B8%96%E7%95%8C1')
+                        h('span', {}, 'Twitter')
                       ]),
                       h('button', {
                         class: ['platform-btn', { active: currentPlatform === 'reddit' }],
@@ -1112,7 +1439,7 @@ const parseInterview = (text) => {
                         h('svg', { class: 'platform-icon', viewBox: '0 0 24 24', width: 12, height: 12, fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
                           h('path', { d: 'M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z' })
                         ]),
-                        h('span', {}, '%E4%B8%96%E7%95%8C2')
+                        h('span', {}, 'Reddit')
                       ])
                     ])
                   ]),
@@ -1124,7 +1451,6 @@ const parseInterview = (text) => {
                           .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                           .replace(/\n/g, '<br>')
                   }),
-                  // Expand/Collapse Button（%E5%8D%A0%E4%BD%8D%E6%96%87%E6%9C%AC%E4%B8%8D%E6%98%BE%E7%A4%BA）
                   !isPlaceholder && answerText.length > 400 && h('button', {
                     class: 'expand-answer-btn',
                     onClick: () => toggleAnswer(expandKey)
@@ -1134,16 +1460,14 @@ const parseInterview = (text) => {
             ])
           })
         ),
-        
-        // Key Quotes Section
         props.result.interviews[activeIndex.value]?.quotes?.length > 0 && h('div', { class: 'quotes-section' }, [
           h('div', { class: 'quotes-header' }, 'Key Quotes'),
           h('div', { class: 'quotes-list' },
             props.result.interviews[activeIndex.value].quotes.slice(0, 3).map((quote, qi) => {
               const cleanedQuote = cleanQuoteText(quote)
-              const displayQuote = cleanedQuote.length > 200 ? cleanedQuote.substring(0, 200) + '...' : cleanedQuote
-              return h('blockquote', { 
-                key: qi, 
+              const displayQuote = cleanedQuote.length > 200 ? `${cleanedQuote.substring(0, 200)}...` : cleanedQuote
+              return h('blockquote', {
+                key: qi,
                 class: 'quote-item',
                 innerHTML: renderMarkdown(displayQuote)
               })
@@ -1151,13 +1475,11 @@ const parseInterview = (text) => {
           )
         ])
       ]),
-
-      // Summary Section (Collapsible)
       props.result.summary && h('div', { class: 'summary-section' }, [
         h('div', { class: 'summary-header' }, 'Interview Summary'),
-        h('div', { 
+        h('div', {
           class: 'summary-content',
-          innerHTML: renderMarkdown(props.result.summary.length > 500 ? props.result.summary.substring(0, 500) + '...' : props.result.summary)
+          innerHTML: renderMarkdown(props.result.summary.length > 500 ? `${props.result.summary.substring(0, 500)}...` : props.result.summary)
         })
       ])
     ])
@@ -1464,10 +1786,10 @@ const renderMarkdown = (content) => {
   let processedContent = content.replace(/^##\s+.+\n+/, '')
   
   // %E5%A4%84%E7%90%86%E4%BB%A3%E7%A0%81%E5%9D%97
-  let html = processedContent.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>
+  let html = processedContent.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
   
   // Process inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="inline-code"$1</code>')
+  html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
   
   // Process headings
   html = html.replace(/^#### (.+)$/gm, '<h5 class="md-h5">$1</h5>')
@@ -1764,7 +2086,7 @@ const stopPolling = () => {
 // Lifecycle
 onMounted(() => {
   if (props.reportId) {
-    addLog(`Report Agent initialized: ${props.reportId}`)
+    addLog(`OPS report agent initialized: ${props.reportId}`)
     startPolling()
   }
 })

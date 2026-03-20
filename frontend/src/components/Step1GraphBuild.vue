@@ -6,7 +6,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">01</span>
-            <span class="step-title">Ontology Generation</span>
+            <span class="step-title">Scenario Ontology</span>
           </div>
           <div class="step-status">
             <span v-if="currentPhase > 0" class="badge success">Completed</span>
@@ -18,7 +18,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/graph/ontology/generate</p>
           <p class="description">
-            LLM Analyzes Document Content and Simulation Requirements, Extracts Real Seeds, and Automatically Generates Suitable Ontology Structures
+            OPS extracts actors, institutions, locations, and event structure from the scenario brief and supporting material.
           </p>
 
           <!-- Loading / Progress -->
@@ -110,7 +110,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">02</span>
-            <span class="step-title">GraphRAG Construction</span>
+            <span class="step-title">Memory Graph</span>
           </div>
           <div class="step-status">
             <span v-if="currentPhase > 1" class="badge success">Completed</span>
@@ -122,7 +122,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/graph/build</p>
           <p class="description">
-            Based on the generated ontology, automatically segment the document and then call Zep to build a knowledge graph, extract entities and relationships, and form a chronological memory and community summary
+            Using the extracted ontology, OPS segments the source material, builds the knowledge graph, and assembles memory traces and community summaries.
           </p>
           
           <!-- Stats Cards -->
@@ -148,7 +148,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">03</span>
-            <span class="step-title">Build Complete</span>
+            <span class="step-title">Scenario Graph Ready</span>
           </div>
           <div class="step-status">
             <span v-if="currentPhase >= 2" class="badge accent">In Progress</span>
@@ -157,14 +157,14 @@
         
         <div class="card-content">
           <p class="api-note">POST /api/simulation/create</p>
-          <p class="description">Ontology Graph Construction is Complete. Please Proceed to the Next Step for Simulation Environment Setup</p>
+          <p class="description">The scenario graph is ready. Continue to population setup to generate personas and world parameters.</p>
           <button 
             class="action-btn" 
             :disabled="currentPhase < 2 || creatingSimulation"
             @click="handleEnterEnvSetup"
           >
             <span v-if="creatingSimulation" class="spinner-sm"></span>
-            {{ creatingSimulation ? 'Creating...' : 'Enter Environment Setup ➝' }}
+            {{ creatingSimulation ? 'Creating...' : 'Enter Population Setup ->' }}
           </button>
         </div>
       </div>
@@ -173,7 +173,7 @@
     <!-- Bottom Info / Logs -->
     <div class="system-logs">
       <div class="log-header">
-        <span class="log-title">SYSTEM DASHBOARD</span>
+        <span class="log-title">OPS WORKBENCH</span>
         <span class="log-id">{{ projectData?.project_id || 'NO_PROJECT' }}</span>
       </div>
       <div class="log-content" ref="logContent">

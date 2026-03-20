@@ -1,5 +1,5 @@
 """
-MiroFish Backend - Flask application factory
+OPS Backend - Flask application factory
 """
 
 import os
@@ -36,7 +36,7 @@ def create_app(config_class=Config):
     
     if should_log_startup:
         logger.info("=" * 50)
-        logger.info("MiroFish Backend starting...")
+        logger.info("OPS Backend starting...")
         logger.info("=" * 50)
         if not app.config.get('ZEP_ENABLED'):
             logger.warning("ZEP_API_KEY is not configured, Zep map related functions will be unavailable, but local UI and non-Zep functions can be started normally")
@@ -73,10 +73,9 @@ def create_app(config_class=Config):
     # health check
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'service': 'MiroFish Backend'}
+        return {'status': 'ok', 'service': 'OPS Backend'}
     
     if should_log_startup:
-        logger.info("MiroFish Backend startup completed")
+        logger.info("OPS Backend startup completed")
     
     return app
-

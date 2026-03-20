@@ -6,7 +6,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">01</span>
-            <span class="step-title">Initialize Simulation Instance</span>
+            <span class="step-title">Initialize OPS Run</span>
           </div>
           <div class="step-status">
             <span v-if="phase > 0" class="badge success">Completed</span>
@@ -17,7 +17,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/create</p>
           <p class="description">
-            Create a new simulation instance and load the world parameter templates.
+            Create a new OPS run and load the population and world parameter templates.
           </p>
 
           <div v-if="simulationId" class="info-card">
@@ -46,7 +46,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">02</span>
-            <span class="step-title">Generate Agent Persona</span>
+            <span class="step-title">Generate Population Personas</span>
           </div>
           <div class="step-status">
             <span v-if="phase > 1" class="badge success">Completed</span>
@@ -58,29 +58,29 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            Use the seed context to extract entities and relationships from the knowledge graph, initialize simulated people, and give them distinct behaviors and memories.
+            Use the scenario graph to initialize simulated people, assign culturally grounded traits, and prepare distinct behavior and memory profiles.
           </p>
 
           <!-- Profiles Stats -->
           <div v-if="profiles.length > 0" class="stats-grid">
             <div class="stat-card">
               <span class="stat-value">{{ profiles.length }}</span>
-              <span class="stat-label">Current Agent Count</span>
+              <span class="stat-label">Generated Agents</span>
             </div>
             <div class="stat-card">
               <span class="stat-value">{{ expectedTotal || '-' }}</span>
-              <span class="stat-label">Expected Agent Count</span>
+              <span class="stat-label">Target Population Size</span>
             </div>
             <div class="stat-card">
               <span class="stat-value">{{ totalTopicsCount }}</span>
-              <span class="stat-label">Seed-Linked Topic Count</span>
+              <span class="stat-label">Scenario-linked Topics</span>
             </div>
           </div>
 
           <!-- Profiles List Preview -->
           <div v-if="profiles.length > 0" class="profiles-preview">
             <div class="preview-header">
-              <span class="preview-title">Generated Agent Personas</span>
+              <span class="preview-title">Generated OPS Personas</span>
             </div>
             <div class="profiles-list">
               <div 
@@ -118,7 +118,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">03</span>
-            <span class="step-title">Generate Dual-Platform Simulation Configuration</span>
+            <span class="step-title">Generate World Configuration</span>
           </div>
           <div class="step-status">
             <span v-if="phase > 2" class="badge success">Completed</span>
@@ -130,7 +130,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            The LLM sets time flow, recommendation algorithms, active periods, speaking frequency, and event triggers based on the simulation goals and seed context.
+            The LLM configures time flow, platform behavior, activity windows, speaking frequency, and event triggers based on the scenario and population design.
           </p>
           
           <!-- Config Preview -->
@@ -139,40 +139,40 @@
             <div class="config-block">
               <div class="config-grid">
                 <div class="config-item">
-                  <span class="config-item-label">Simulation Duration</span>
+                  <span class="config-item-label">Run Duration</span>
                   <span class="config-item-value">{{ simulationConfig.time_config?.total_simulation_hours || '-' }} hours</span>
                 </div>
                 <div class="config-item">
-                  <span class="config-item-label">Round Duration</span>
+                  <span class="config-item-label">Round Length</span>
                   <span class="config-item-value">{{ simulationConfig.time_config?.minutes_per_round || '-' }} minutes</span>
                 </div>
                 <div class="config-item">
-                  <span class="config-item-label">Total Rounds</span>
+                  <span class="config-item-label">Planned Rounds</span>
                   <span class="config-item-value">{{ Math.floor((simulationConfig.time_config?.total_simulation_hours * 60 / simulationConfig.time_config?.minutes_per_round)) || '-' }} rounds</span>
                 </div>
                 <div class="config-item">
-                  <span class="config-item-label">Hourly Activity</span>
+                  <span class="config-item-label">Hourly Activity Window</span>
                   <span class="config-item-value">{{ simulationConfig.time_config?.agents_per_hour_min }}-{{ simulationConfig.time_config?.agents_per_hour_max }}</span>
                 </div>
               </div>
               <div class="time-periods">
                 <div class="period-item">
-                  <span class="period-label">Peak Hours</span>
+                  <span class="period-label">Peak Window</span>
                   <span class="period-hours">{{ simulationConfig.time_config?.peak_hours?.join(':00, ') }}:00</span>
                   <span class="period-multiplier">x{{ simulationConfig.time_config?.peak_activity_multiplier }}</span>
                 </div>
                 <div class="period-item">
-                  <span class="period-label">Work Hours</span>
+                  <span class="period-label">Work Window</span>
                   <span class="period-hours">{{ simulationConfig.time_config?.work_hours?.[0] }}:00-{{ simulationConfig.time_config?.work_hours?.slice(-1)[0] }}:00</span>
                   <span class="period-multiplier">x{{ simulationConfig.time_config?.work_activity_multiplier }}</span>
                 </div>
                 <div class="period-item">
-                  <span class="period-label">Morning Hours</span>
+                  <span class="period-label">Morning Window</span>
                   <span class="period-hours">{{ simulationConfig.time_config?.morning_hours?.[0] }}:00-{{ simulationConfig.time_config?.morning_hours?.slice(-1)[0] }}:00</span>
                   <span class="period-multiplier">x{{ simulationConfig.time_config?.morning_activity_multiplier }}</span>
                 </div>
                 <div class="period-item">
-                  <span class="period-label">Off-Peak Hours</span>
+                  <span class="period-label">Off-Peak Window</span>
                   <span class="period-hours">{{ simulationConfig.time_config?.off_peak_hours?.[0] }}:00-{{ simulationConfig.time_config?.off_peak_hours?.slice(-1)[0] }}:00</span>
                   <span class="period-multiplier">x{{ simulationConfig.time_config?.off_peak_activity_multiplier }}</span>
                 </div>
@@ -182,7 +182,7 @@
             <!-- Agent Configuration -->
             <div class="config-block">
               <div class="config-block-header">
-                <span class="config-block-title">Agent Configuration</span>
+                <span class="config-block-title">Population Configuration</span>
                 <span class="config-block-badge">{{ simulationConfig.agent_configs?.length || 0 }} agents</span>
               </div>
               <div class="agents-cards">
@@ -267,12 +267,12 @@
             <!-- Platform Configuration -->
             <div class="config-block">
               <div class="config-block-header">
-                <span class="config-block-title">Algorithm Configuration</span>
+                <span class="config-block-title">Platform Configuration</span>
               </div>
               <div class="platforms-grid">
                 <div v-if="simulationConfig.twitter_config" class="platform-card">
                   <div class="platform-card-header">
-                    <span class="platform-name">Platform 1: Feed</span>
+                    <span class="platform-name">Platform 1: Feed Stream</span>
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
@@ -299,7 +299,7 @@
                 </div>
                 <div v-if="simulationConfig.reddit_config" class="platform-card">
                   <div class="platform-card-header">
-                    <span class="platform-name">Platform 2: Topics and Communities</span>
+                    <span class="platform-name">Platform 2: Forums and Communities</span>
                   </div>
                   <div class="platform-params">
                     <div class="param-row">
@@ -330,7 +330,7 @@
             <!-- LLM Reasoning Configuration -->
             <div v-if="simulationConfig.generation_reasoning" class="config-block">
               <div class="config-block-header">
-                <span class="config-block-title">LLM Configuration Reasoning</span>
+                <span class="config-block-title">LLM Planning Notes</span>
               </div>
               <div class="reasoning-content">
                 <div 
@@ -351,7 +351,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">04</span>
-            <span class="step-title">Initial Activation Orchestration</span>
+            <span class="step-title">Launch Conditions</span>
           </div>
           <div class="step-status">
             <span v-if="phase > 3" class="badge success">Completed</span>
@@ -363,7 +363,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/prepare</p>
           <p class="description">
-            Automatically generate initial activation events and hot topics based on narrative direction to guide the initial state of the simulated world.
+            Automatically generate the opening event sequence and early topics that set the initial state of the simulated world.
           </p>
 
           <div v-if="simulationConfig?.event_config" class="orchestration-content">
@@ -387,7 +387,7 @@
 
             <!-- Hot Topics -->
             <div class="topics-section">
-              <span class="box-label">Initial Hot Topics</span>
+              <span class="box-label">Initial Topics</span>
               <div class="hot-topics-grid">
                 <span v-for="topic in simulationConfig.event_config.hot_topics" :key="topic" class="hot-topic-tag">
                   # {{ topic }}
@@ -439,8 +439,8 @@
           <div v-if="simulationConfig && autoGeneratedRounds" class="rounds-config-section">
             <div class="rounds-header">
               <div class="header-left">
-                <span class="section-title">Simulation Round Settings</span>
-                <span class="section-desc">MiroFish plans a simulation lasting <span class="desc-highlight">{{ simulationConfig?.time_config?.total_simulation_hours || '-' }}</span> hours. Each round represents <span class="desc-highlight">{{ simulationConfig?.time_config?.minutes_per_round || '-' }}</span> minutes of simulated time.</span>
+                <span class="section-title">Round Settings</span>
+                <span class="section-desc">OPS recommends a run lasting <span class="desc-highlight">{{ simulationConfig?.time_config?.total_simulation_hours || '-' }}</span> hours. Each round represents <span class="desc-highlight">{{ simulationConfig?.time_config?.minutes_per_round || '-' }}</span> minutes of simulated time.</span>
               </div>
               <label class="switch-control">
                 <input type="checkbox" v-model="useCustomRounds">
@@ -514,14 +514,14 @@
               class="action-btn secondary"
               @click="$emit('go-back')"
             >
-              <- Back to Graph Building
+              <- Back to Scenario Graph
             </button>
             <button 
               class="action-btn primary"
               :disabled="phase < 4"
               @click="handleStartSimulation"
             >
-              Start Dual-Platform Simulation ->
+              Start OPS Simulation ->
             </button>
           </div>
         </div>
