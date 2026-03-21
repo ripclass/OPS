@@ -190,8 +190,9 @@ const handleNewProject = async () => {
   const pending = getPendingUpload()
   const hasScenario = !!pending.simulationRequirement?.trim()
   const hasFiles = pending.files.length > 0
+  const hasSourceUrls = (pending.sourceUrls || []).length > 0
 
-  if (!pending.isPending || (!hasFiles && !hasScenario)) {
+  if (!pending.isPending || ((!hasFiles && !hasSourceUrls) && !hasScenario)) {
     error.value = 'No pending scenario input found.'
     addLog('Error: No pending scenario input found for new project.')
     return
@@ -200,16 +201,20 @@ const handleNewProject = async () => {
   try {
     loading.value = true
     currentPhase.value = 0
-    ontologyProgress.value = { message: hasFiles ? 'Uploading and analyzing source material...' : 'Analyzing scenario brief...' }
-    addLog(hasFiles ? 'Starting scenario extraction: uploading source material...' : 'Starting scenario extraction from the scenario brief...')
+    const hasExternalSources = hasFiles || hasSourceUrls
+    ontologyProgress.value = { message: hasExternalSources ? 'Importing and analyzing source material...' : 'Analyzing scenario brief...' }
+    addLog(hasExternalSources ? 'Starting scenario extraction: importing source material...' : 'Starting scenario extraction from the scenario brief...')
     
     const formData = new FormData()
     pending.files.forEach(f => formData.append('files', f))
+    ;(pending.sourceUrls || []).forEach((url) => {
+      formData.append('source_urls', url)
+    })
     formData.append('simulation_requirement', pending.simulationRequirement)
     
     const res = await generateOntology(formData)
     if (res.success) {
-      clearPendingUpload()
+      clearPendingUpload({ preserveOpsConfig: true })
       currentProjectId.value = res.data.project_id
       projectData.value = res.data
       

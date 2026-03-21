@@ -1091,6 +1091,25 @@ class ReportAgent:
 
         return tool_calls
 
+    def _extract_final_answer(self, response: Optional[str]) -> str:
+        """Extract the last usable Final Answer block from an LLM response."""
+        if not response:
+            return ""
+
+        text = str(response).strip()
+        if not text:
+            return ""
+
+        if "Final Answer:" in text:
+            parts = [part.strip() for part in text.split("Final Answer:") if part.strip()]
+            candidate = parts[-1] if parts else ""
+        else:
+            candidate = text
+
+        # Remove any tool-call XML that may have leaked into the final answer body.
+        candidate = re.sub(r'<tool_call>.*?</tool_call>', '', candidate, flags=re.DOTALL).strip()
+        return candidate
+
     def _is_valid_tool_call(self, data: dict) -> bool:
         """Verify whether the parsed JSON is a legal tool call"""
         # Supports two key names: {"name": ..., "parameters": ...} and {"tool": ..., "params": ...}
@@ -1265,9 +1284,11 @@ class ReportAgent:
         tool_calls_count = 0
         max_iterations = 5  # Maximum number of iteration rounds
         min_tool_calls = 3  # Minimum number of tool calls
-        conflict_retries = 0  # The number of consecutive conflicts between tool calls and Final Answer at the same time
         used_tools = set()  # Record the tool name that has been called
         all_tools = {"insight_forge", "panorama_search", "quick_search", "interview_agents"}
+        best_final_answer = ""
+        last_non_empty_response = ""
+        consecutive_final_only_responses = 0
 
         # Report context for sub-issue generation in InsightForge
         report_context = f"Chapter title:{section.title}\nSimulation requirements:{self.simulation_requirement}"
@@ -1299,47 +1320,48 @@ class ReportAgent:
                 break
 
             logger.debug(f"LLM response:{response[:200]}...")
+            if response.strip():
+                last_non_empty_response = response.strip()
 
             # Parse once and reuse the results
             tool_calls = self._parse_tool_calls(response)
             has_tool_calls = bool(tool_calls)
             has_final_answer = "Final Answer:" in response
 
-            # â”€â”€ Conflict handling: LLM outputs tool calls and Final Answer at the same time â”€â”€
+            final_answer_candidate = self._extract_final_answer(response) if has_final_answer else ""
+            if final_answer_candidate:
+                best_final_answer = final_answer_candidate
+            if has_final_answer and not has_tool_calls:
+                consecutive_final_only_responses += 1
+            else:
+                consecutive_final_only_responses = 0
+
+            # â”€â”€ Deterministic conflict handling: mixed tool call + Final Answer â”€â”€
             if has_tool_calls and has_final_answer:
-                conflict_retries += 1
                 logger.warning(
                     f"chapter{section.title} No.{iteration+1} wheel:"
-                    f"LLM outputs tool calls and Final Answer simultaneously (section{conflict_retries} conflict)"
+                    " LLM outputs tool calls and Final Answer simultaneously; "
+                    "resolving deterministically"
                 )
-
-                if conflict_retries <= 2:
-                    # The first two times: discard this response and ask LLM to reply again.
-                    messages.append({"role": "assistant", "content": response})
-                    messages.append({
-                        "role": "user",
-                        "content": (
-                            "[Format Error] You included both tool call and Final Answer in one reply, which is not allowed. \\n"
-                            "Each reply can only do one of the following two things:\\n"
-                            "- Call a tool (output a <tool_call> block, do not write Final Answer)\\n"
-                            "- Output final content (start with 'Final Answer:', do not include <tool_call>)\\n"
-                            "Please reply again and only do one of these things."
-                        ),
-                    })
-                    continue
-                else:
-                    # The third time: downgrade processing, truncate to the first tool call, force execution
-                    logger.warning(
-                        f"chapter{section.title}: continuous{conflict_retries} conflict,"
-                        "Downgrade to truncate execution of first tool call"
+                if tool_calls_count < min_tool_calls:
+                    logger.info(
+                        f"chapter{section.title}: tool quota not met ({tool_calls_count}/{min_tool_calls}), "
+                        "preferring the first valid tool call"
                     )
-                    first_tool_end = response.find('</tool_call>')
-                    if first_tool_end != -1:
-                        response = response[:first_tool_end + len('</tool_call>')]
-                        tool_calls = self._parse_tool_calls(response)
-                        has_tool_calls = bool(tool_calls)
                     has_final_answer = False
-                    conflict_retries = 0
+                elif final_answer_candidate:
+                    logger.info(
+                        f"chapter{section.title}: tool quota satisfied ({tool_calls_count}/{min_tool_calls}), "
+                        "accepting Final Answer and ignoring tool calls"
+                    )
+                    has_tool_calls = False
+                    tool_calls = []
+                else:
+                    logger.warning(
+                        f"chapter{section.title}: mixed response has no usable Final Answer content; "
+                        "executing the first valid tool call"
+                    )
+                    has_final_answer = False
 
             # Logging LLM responses
             if self.report_logger:
@@ -1356,6 +1378,20 @@ class ReportAgent:
             if has_final_answer:
                 # The number of times the tool has been called is insufficient. Refuse and ask to continue adjusting the tool.
                 if tool_calls_count < min_tool_calls:
+                    if tool_calls_count > 0 and best_final_answer and consecutive_final_only_responses >= 2:
+                        logger.warning(
+                            f"chapter{section.title} Unable to reach the ideal tool quota after repeated "
+                            "final-answer-only responses; accepting the best available content to avoid stalling"
+                        )
+                        if self.report_logger:
+                            self.report_logger.log_section_content(
+                                section_title=section.title,
+                                section_index=section_index,
+                                content=best_final_answer,
+                                tool_calls_count=tool_calls_count
+                            )
+                        return best_final_answer
+
                     messages.append({"role": "assistant", "content": response})
                     unused_tools = all_tools - used_tools
                     unused_hint = f"(These tools have not been used yet, it is recommended to use them:{', '.join(unused_tools)}ï¼‰" if unused_tools else ""
@@ -1370,7 +1406,7 @@ class ReportAgent:
                     continue
 
                 # End normally
-                final_answer = response.split("Final Answer:")[-1].strip()
+                final_answer = final_answer_candidate
                 logger.info(f"chapter{section.title} Generation completed (tool call:{tool_calls_count}Second-rate)")
 
                 if self.report_logger:
@@ -1482,23 +1518,34 @@ class ReportAgent:
         
         # The maximum number of iterations is reached and content is forced to be generated.
         logger.warning(f"chapter{section.title} The maximum number of iterations is reached and forced generation")
-        messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
-        
-        response = self.llm.chat(
-            messages=messages,
-            temperature=0.5,
-            max_tokens=4096
-        )
-
-        # Check if LLM returns None when forced closing
-        if response is None:
-            logger.error(f"chapter{section.title} When forcing closing, LLM returns None and uses the default error prompt.")
-            final_answer = f"(Generation of this chapter failed: LLM returned an empty response, please try again later)"
-        elif "Final Answer:" in response:
-            final_answer = response.split("Final Answer:")[-1].strip()
+        if best_final_answer:
+            logger.warning(
+                f"chapter{section.title} Reuse the best available Final Answer after max iterations "
+                f"(tool call:{tool_calls_count}Second-rate)"
+            )
+            final_answer = best_final_answer
+        elif last_non_empty_response:
+            logger.warning(
+                f"chapter{section.title} No explicit Final Answer available after max iterations; "
+                "using the last non-empty response as fallback"
+            )
+            final_answer = self._extract_final_answer(last_non_empty_response)
         else:
-            final_answer = response
-        
+            messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
+            
+            response = self.llm.chat(
+                messages=messages,
+                temperature=0.5,
+                max_tokens=4096
+            )
+
+            # Check if LLM returns None when forced closing
+            if response is None:
+                logger.error(f"chapter{section.title} When forcing closing, LLM returns None and uses the default error prompt.")
+                final_answer = f"(Generation of this chapter failed: LLM returned an empty response, please try again later)"
+            else:
+                final_answer = self._extract_final_answer(response)
+
         # Record chapter content and generate completion log
         if self.report_logger:
             self.report_logger.log_section_content(

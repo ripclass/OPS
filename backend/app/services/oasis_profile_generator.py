@@ -77,6 +77,12 @@ class OasisAgentProfile:
 
     def __post_init__(self):
         """Normalize persistent state defaults after dataclass initialization."""
+        self.age = self._clamp_int(self.age, 0, 120)
+        self.trust_government = self._clamp_int(self.trust_government, 0, 10)
+        self.shame_sensitivity = self._clamp_int(self.shame_sensitivity, 0, 10)
+        self.influence_radius = self._clamp_int(self.influence_radius, 0, 1_000_000)
+        self.fb_intensity = self._clamp_int(self.fb_intensity, 0, 10)
+
         if self.current_trust_government is None and self.trust_government is not None:
             self.current_trust_government = self._clamp_int(self.trust_government, 0, 10)
         elif self.current_trust_government is not None:

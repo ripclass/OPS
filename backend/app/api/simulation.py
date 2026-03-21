@@ -452,6 +452,12 @@ def prepare_simulation():
                 "error": f"Project does not exist:{state.project_id}"
             }), 404
         
+        simulation_requirement_override = (data.get('simulation_requirement_override') or '').strip()
+        if simulation_requirement_override:
+            logger.info(f"Applying simulation requirement override for project {state.project_id}")
+            project.simulation_requirement = simulation_requirement_override
+            ProjectManager.save_project(project)
+
         # Get simulation requirements
         simulation_requirement = project.simulation_requirement or ""
         if not simulation_requirement:

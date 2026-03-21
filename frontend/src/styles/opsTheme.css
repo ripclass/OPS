@@ -7,8 +7,8 @@
   --ops-accent-soft: #f7d9cb;
   --ops-success: #186b4e;
   --ops-error: #a83232;
-  --ops-surface: rgba(255, 253, 248, 0.92);
-  --ops-surface-alt: #f8f5ec;
+  --ops-surface: #ffffff;
+  --ops-surface-alt: #ffffff;
   --ops-surface-strong: #111827;
   --ops-border: rgba(17, 24, 39, 0.08);
   --ops-border-strong: rgba(17, 24, 39, 0.14);
@@ -28,13 +28,12 @@ body {
   margin: 0;
   font-family: var(--ops-font-display);
   color: var(--ops-ink);
-  background:
-    radial-gradient(circle at top right, rgba(201, 75, 34, 0.08), transparent 30%),
-    linear-gradient(180deg, #f8f5ec 0%, #f0eadf 100%);
+  background: #ffffff;
 }
 
 #app {
   min-height: 100vh;
+  background: #ffffff;
 }
 
 * {

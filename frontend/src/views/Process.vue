@@ -577,9 +577,10 @@ const handleNewProject = async () => {
   try {
     loading.value = true
     currentPhase.value = 0 // Ontology generation phase
+    const hasUploadedSources = pending.files.length > 0 || (pending.sourceUrls || []).length > 0
     ontologyProgress.value = {
-      message: pending.files.length > 0
-        ? 'Uploading files and analyzing documents...'
+      message: hasUploadedSources
+        ? 'Importing source material and analyzing documents...'
         : 'Analyzing the scenario prompt...'
     }
     
@@ -587,6 +588,9 @@ const handleNewProject = async () => {
     const formDataObj = new FormData()
     pending.files.forEach(file => {
       formDataObj.append('files', file)
+    })
+    ;(pending.sourceUrls || []).forEach((url) => {
+      formDataObj.append('source_urls', url)
     })
     formDataObj.append('simulation_requirement', pending.simulationRequirement)
     

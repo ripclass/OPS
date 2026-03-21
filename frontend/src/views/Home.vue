@@ -10,8 +10,8 @@
     </nav>
 
     <div class="main-content">
-      <section class="hero-section">
-        <div class="hero-left">
+      <section class="hero-section" :style="heroSectionStyle">
+        <div class="hero-left hero-copy-card">
           <div class="tag-row">
             <span class="orange-tag">Organic Population Simulation</span>
             <span class="version-text">/ South Asia Preview</span>
@@ -38,15 +38,9 @@
           <div class="decoration-square"></div>
         </div>
 
-        <div class="hero-right">
-          <div class="logo-container">
-            <img src="../assets/logo/ops_logo_left.jpeg" alt="OPS Logo" class="hero-logo" />
-          </div>
-
-          <button class="scroll-down-btn" @click="scrollToBottom">
-            v
-          </button>
-        </div>
+        <button class="scroll-down-btn" @click="scrollToBottom">
+          v
+        </button>
       </section>
 
       <section class="dashboard-section">
@@ -134,7 +128,7 @@
             <div class="console-section">
               <div class="console-header">
                 <span class="console-label">01 / Source Material</span>
-                <span class="console-meta">Optional Uploads: PDF, MD, TXT</span>
+                <span class="console-meta">Optional Uploads: PDF, MD, MARKDOWN, TXT</span>
               </div>
 
               <div
@@ -149,7 +143,7 @@
                   ref="fileInput"
                   type="file"
                   multiple
-                  accept=".pdf,.md,.txt"
+                  accept=".pdf,.md,.markdown,.txt"
                   style="display: none"
                   :disabled="loading"
                   @change="handleFileSelect"
@@ -170,6 +164,22 @@
                     <button class="remove-btn" @click.stop="removeFile(index)">x</button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div class="console-section url-section">
+              <div class="console-header">
+                <span class="console-label">&gt;_ 01B / Source URLs</span>
+                <span class="console-meta">One public URL per line</span>
+              </div>
+              <div class="input-wrapper url-input-wrapper">
+                <textarea
+                  v-model="formData.sourceUrls"
+                  class="code-input url-input"
+                  rows="4"
+                  :disabled="loading"
+                  placeholder="https://example.com/news-article&#10;https://example.com/blog-post"
+                ></textarea>
               </div>
             </div>
 
@@ -199,7 +209,7 @@
                 :disabled="!canSubmit || loading"
                 @click="startSimulation"
               >
-                <span v-if="!loading">Launch OPS</span>
+                <span v-if="!loading">Continue to Population Setup</span>
                 <span v-else>Initializing...</span>
                 <span class="btn-arrow">-&gt;</span>
               </button>
@@ -219,9 +229,11 @@ import { useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 
 const router = useRouter()
+const heroImageUrl = new URL('../assets/logo/ops_logo_left.png', import.meta.url).href
 
 const formData = ref({
   simulationRequirement: '',
+  sourceUrls: '',
 })
 
 const files = ref([])
@@ -230,6 +242,9 @@ const isDragOver = ref(false)
 const fileInput = ref(null)
 
 const canSubmit = computed(() => formData.value.simulationRequirement.trim() !== '')
+const heroSectionStyle = computed(() => ({
+  '--hero-image': `url("${heroImageUrl}")`,
+}))
 
 const triggerFileInput = () => {
   if (!loading.value) {
@@ -237,10 +252,17 @@ const triggerFileInput = () => {
   }
 }
 
+const normalizeSourceUrls = (rawValue) => {
+  return String(rawValue || '')
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean)
+}
+
 const addFiles = (newFiles) => {
   const validFiles = newFiles.filter((file) => {
     const ext = file.name.split('.').pop()?.toLowerCase()
-    return ['pdf', 'md', 'txt'].includes(ext)
+    return ['pdf', 'md', 'markdown', 'txt'].includes(ext)
   })
   files.value.push(...validFiles)
 }
@@ -284,7 +306,12 @@ const startSimulation = () => {
   }
 
   import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
-    setPendingUpload(files.value, formData.value.simulationRequirement)
+    setPendingUpload(
+      files.value,
+      formData.value.simulationRequirement,
+      undefined,
+      normalizeSourceUrls(formData.value.sourceUrls)
+    )
     router.push({
       name: 'Process',
       params: { projectId: 'new' },
@@ -353,14 +380,32 @@ const startSimulation = () => {
 
 .hero-section {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-end;
   margin-bottom: 80px;
   position: relative;
+  min-height: 620px;
+  padding: 48px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background-image: var(--hero-image);
+  background-position: right center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-color: #ffffff;
 }
 
 .hero-left {
-  flex: 1;
-  padding-right: 60px;
+  flex: 0 1 720px;
+}
+
+.hero-copy-card {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08);
+  padding: 42px 44px;
+  max-width: 720px;
 }
 
 .tag-row {
@@ -382,7 +427,7 @@ const startSimulation = () => {
 }
 
 .version-text {
-  color: #999;
+  color: #666;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
@@ -391,26 +436,24 @@ const startSimulation = () => {
   font-size: 4.5rem;
   line-height: 1.2;
   font-weight: 500;
-  margin: 0 0 40px;
+  margin: 0 0 32px;
   letter-spacing: -2px;
   color: var(--black);
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #000000 0%, #444444 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--black);
   display: inline-block;
 }
 
 .hero-desc {
   font-size: 1.05rem;
   line-height: 1.8;
-  color: var(--gray-text);
-  max-width: 640px;
-  margin-bottom: 50px;
+  color: #303030;
+  max-width: 620px;
+  margin-bottom: 34px;
   font-weight: 400;
-  text-align: justify;
+  text-align: left;
 }
 
 .hero-desc p {
@@ -460,42 +503,27 @@ const startSimulation = () => {
   background: var(--orange);
 }
 
-.hero-right {
-  flex: 0.8;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.logo-container {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 40px;
-}
-
-.hero-logo {
-  max-width: 500px;
-  width: 100%;
-}
-
 .scroll-down-btn {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
   width: 40px;
   height: 40px;
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--orange);
+  color: var(--black);
   font-size: 1.1rem;
   transition: all 0.2s;
+  z-index: 1;
 }
 
 .scroll-down-btn:hover {
   border-color: var(--orange);
+  color: var(--orange);
 }
 
 .dashboard-section {
@@ -639,6 +667,10 @@ const startSimulation = () => {
   padding-top: 0;
 }
 
+.url-section {
+  padding-top: 0;
+}
+
 .console-header {
   display: flex;
   justify-content: space-between;
@@ -761,6 +793,10 @@ const startSimulation = () => {
   background: #fafafa;
 }
 
+.url-input-wrapper {
+  min-height: 132px;
+}
+
 .code-input {
   width: 100%;
   border: none;
@@ -772,6 +808,10 @@ const startSimulation = () => {
   resize: vertical;
   outline: none;
   min-height: 150px;
+}
+
+.url-input {
+  min-height: 120px;
 }
 
 .model-badge {
@@ -844,17 +884,65 @@ const startSimulation = () => {
   }
 
   .hero-section {
-    flex-direction: column;
+    min-height: 520px;
+    padding: 28px;
+    background-size: 78%;
   }
 
   .hero-left {
-    padding-right: 0;
-    margin-bottom: 40px;
+    max-width: none;
   }
 
-  .hero-logo {
-    max-width: 200px;
+  .hero-copy-card {
+    padding: 28px 24px;
+  }
+
+  .main-title {
+    font-size: 3rem;
+    letter-spacing: -1px;
+  }
+
+  .scroll-down-btn {
+    right: 20px;
+    bottom: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 32px 18px;
+  }
+
+  .navbar {
+    padding: 0 18px;
+  }
+
+  .hero-section {
+    min-height: 460px;
+    padding: 18px;
+    background-position: center top;
+    background-size: 120%;
+  }
+
+  .hero-copy-card {
+    padding: 22px 18px;
+  }
+
+  .tag-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .main-title {
+    font-size: 2.2rem;
     margin-bottom: 20px;
+  }
+
+  .hero-desc {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 22px;
   }
 }
 </style>

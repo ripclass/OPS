@@ -41,11 +41,234 @@
         </div>
       </div>
 
-      <!-- Step 02: Generate Agent Persona -->
-      <div class="step-card" :class="{ 'active': phase === 1, 'completed': phase > 1 }">
+      <!-- Step 02: OPS Run Design -->
+      <div class="step-card" :class="{ 'active': !designCommitted, 'completed': designCommitted }">
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">02</span>
+            <span class="step-title">Configure OPS Run</span>
+          </div>
+          <div class="step-status">
+            <span v-if="designCommitted" class="badge success">Applied</span>
+            <span v-else class="badge processing">Input Required</span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <p class="api-note">OPS INPUT MODEL</p>
+          <p class="description">
+            Define geography, audience mode, scale, and outputs before persona generation begins.
+          </p>
+
+          <div class="ops-design-layout">
+            <div class="design-block">
+              <span class="design-block-title">Run Type</span>
+              <div class="choice-grid two-col">
+                <button
+                  v-for="option in runTypeOptions"
+                  :key="option.value"
+                  type="button"
+                  class="choice-card"
+                  :class="{ active: opsConfig.runType === option.value }"
+                  @click="setRunType(option.value)"
+                >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="opsConfig.runType === 'Regional multi-country'" class="design-block">
+              <span class="design-block-title">Origin Countries</span>
+              <div class="choice-grid multi-country-grid">
+                <label
+                  v-for="option in countryOptions"
+                  :key="option.value"
+                  class="check-card"
+                  :class="{ active: opsConfig.originCountries.includes(option.value) }"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="opsConfig.originCountries.includes(option.value)"
+                    @change="toggleOriginCountry(option.value)"
+                  >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </label>
+              </div>
+            </div>
+
+            <div v-else class="design-block">
+              <span class="design-block-title">Origin Country</span>
+              <div class="choice-grid country-grid">
+                <button
+                  v-for="option in countryOptions"
+                  :key="option.value"
+                  type="button"
+                  class="choice-card"
+                  :class="{ active: opsConfig.originCountry === option.value }"
+                  @click="opsConfig.originCountry = option.value"
+                >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="opsConfig.runType === 'Diaspora'" class="design-block">
+              <span class="design-block-title">Audience Region</span>
+              <div class="choice-grid region-grid">
+                <button
+                  v-for="option in regionOptions"
+                  :key="option.value"
+                  type="button"
+                  class="choice-card compact"
+                  :class="{ active: opsConfig.audienceRegion === option.value }"
+                  @click="opsConfig.audienceRegion = option.value"
+                >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="opsConfig.runType === 'Corridor-based'" class="design-block">
+              <span class="design-block-title">Corridor</span>
+              <div class="input-shell">
+                <input
+                  v-model.trim="opsConfig.corridor"
+                  type="text"
+                  class="text-input"
+                  placeholder="Example: GCC -> Bangladesh remittance households"
+                >
+              </div>
+            </div>
+
+            <div class="design-block">
+              <span class="design-block-title">Demographic Segments</span>
+              <div class="choice-grid segments-grid">
+                <label
+                  v-for="option in segmentOptions"
+                  :key="option.value"
+                  class="check-card"
+                  :class="{ active: opsConfig.segments.includes(option.value) }"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="opsConfig.segments.includes(option.value)"
+                    @change="toggleSegment(option.value)"
+                  >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="design-block">
+              <span class="design-block-title">Target Agents</span>
+              <div class="choice-grid compact-grid">
+                <button
+                  v-for="option in agentCountOptions"
+                  :key="option.value"
+                  type="button"
+                  class="choice-card compact"
+                  :class="{ active: opsConfig.targetAgents === option.value }"
+                  @click="opsConfig.targetAgents = option.value"
+                >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.estimateLabel }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="design-block">
+              <span class="design-block-title">Requested Outputs</span>
+              <div class="choice-grid compact-grid">
+                <label
+                  v-for="option in outputOptions"
+                  :key="option.value"
+                  class="check-card compact"
+                  :class="{ active: opsConfig.requestedOutputs.includes(option.value) }"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="opsConfig.requestedOutputs.includes(option.value)"
+                    @change="toggleOutput(option.value)"
+                  >
+                  <span class="choice-label">{{ option.label }}</span>
+                  <span class="choice-desc">{{ option.description }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-shell">
+            <div class="review-header">
+              <span class="review-title">Run Review</span>
+              <span class="review-badge">{{ opsEstimateLabel }}</span>
+            </div>
+
+            <div class="review-grid">
+              <div class="review-item wide">
+                <span class="info-label">Scenario Brief</span>
+                <p class="review-scenario">{{ baseScenarioRequirement || 'No scenario brief available.' }}</p>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Run Type</span>
+                <span class="info-value">{{ opsConfig.runType }}</span>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Geography</span>
+                <span class="info-value">{{ geographySummary }}</span>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Segments</span>
+                <span class="info-value">{{ segmentsSummary }}</span>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Target Scale</span>
+                <span class="info-value">{{ targetAgentsSummary }}</span>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Outputs</span>
+                <span class="info-value">{{ outputsSummary }}</span>
+              </div>
+              <div class="review-item">
+                <span class="info-label">Launch Mode</span>
+                <span class="info-value">{{ billingModeLabel }}</span>
+              </div>
+            </div>
+
+            <div v-if="designErrors.length" class="validation-box">
+              <div class="validation-title">Complete the OPS run design before preparing the environment.</div>
+              <div v-for="error in designErrors" :key="error" class="validation-line">{{ error }}</div>
+            </div>
+
+            <div class="action-group dual">
+              <button
+                class="action-btn secondary"
+                @click="$emit('go-back')"
+              >
+                <- Back to Scenario Graph
+              </button>
+              <button
+                class="action-btn primary"
+                :disabled="!canApplyDesign || applyDesignLoading"
+                @click="handleApplyDesignAndPrepare"
+              >
+                <span v-if="!applyDesignLoading">{{ designCommitted ? 'Re-apply Design ->' : 'Apply Design and Prepare ->' }}</span>
+                <span v-else>Preparing...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 03: Generate Agent Persona -->
+      <div class="step-card" :class="{ 'active': phase === 1, 'completed': phase > 1 }">
+        <div class="card-header">
+          <div class="step-info">
+            <span class="step-num">03</span>
             <span class="step-title">Generate Population Personas</span>
           </div>
           <div class="step-status">
@@ -113,11 +336,11 @@
         </div>
       </div>
 
-      <!-- Step 03: Generate Dual-Platform Simulation Configuration -->
+      <!-- Step 04: Generate Dual-Platform Simulation Configuration -->
       <div class="step-card" :class="{ 'active': phase === 2, 'completed': phase > 2 }">
         <div class="card-header">
           <div class="step-info">
-            <span class="step-num">03</span>
+            <span class="step-num">04</span>
             <span class="step-title">Generate World Configuration</span>
           </div>
           <div class="step-status">
@@ -346,11 +569,11 @@
         </div>
       </div>
 
-      <!-- Step 04: Initial Activation Choreography -->
+      <!-- Step 05: Initial Activation Choreography -->
       <div class="step-card" :class="{ 'active': phase === 3, 'completed': phase > 3 }">
         <div class="card-header">
           <div class="step-info">
-            <span class="step-num">04</span>
+            <span class="step-num">05</span>
             <span class="step-title">Launch Conditions</span>
           </div>
           <div class="step-status">
@@ -418,11 +641,11 @@
         </div>
       </div>
 
-      <!-- Step 05: Preparation Complete -->
+      <!-- Step 06: Preparation Complete -->
       <div class="step-card" :class="{ 'active': phase === 4 }">
         <div class="card-header">
           <div class="step-info">
-            <span class="step-num">05</span>
+            <span class="step-num">06</span>
             <span class="step-title">Preparation Complete</span>
           </div>
           <div class="step-status">
@@ -633,13 +856,30 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { 
-  prepareSimulation, 
-  getPrepareStatus, 
+import {
+  prepareSimulation,
+  getPrepareStatus,
   getSimulationProfilesRealtime,
-  getSimulationConfig,
-  getSimulationConfigRealtime 
+  getSimulationConfigRealtime
 } from '../api/simulation'
+import { getPendingUpload, setPendingOpsConfig } from '../store/pendingUpload'
+import {
+  RUN_TYPE_OPTIONS,
+  COUNTRY_OPTIONS,
+  SEGMENT_OPTIONS,
+  REGION_OPTIONS,
+  OUTPUT_OPTIONS,
+  AGENT_COUNT_OPTIONS,
+  getAgentEstimateLabel,
+  getTargetAgentsLabel
+} from '../constants/opsWizard'
+import {
+  normalizeOpsConfig,
+  parseOpsSimulationRequirement,
+  buildOpsSimulationRequirement,
+  getOpsGeographySummary,
+  validateOpsConfig
+} from '../utils/opsRunDesign'
 
 const props = defineProps({
   simulationId: String,  // Passed from Parent Component
@@ -662,6 +902,23 @@ const expectedTotal = ref(null)
 const simulationConfig = ref(null)
 const selectedProfile = ref(null)
 const showProfilesDetail = ref(true)
+const applyDesignLoading = ref(false)
+const designCommitted = ref(false)
+const baseScenarioRequirement = ref('')
+
+const pendingState = getPendingUpload()
+const isDemoMode = (import.meta.env.VITE_DEMO_MODE ?? 'true') !== 'false'
+const opsConfig = ref(normalizeOpsConfig({
+  ...pendingState.opsConfig,
+  demoModeBypass: isDemoMode || pendingState.opsConfig?.demoModeBypass,
+}))
+
+const runTypeOptions = RUN_TYPE_OPTIONS
+const countryOptions = COUNTRY_OPTIONS
+const segmentOptions = SEGMENT_OPTIONS
+const regionOptions = REGION_OPTIONS
+const outputOptions = OUTPUT_OPTIONS
+const agentCountOptions = AGENT_COUNT_OPTIONS
 
 // Duplicate log handling: record the last key status values.
 let lastLoggedMessage = ''
@@ -684,7 +941,7 @@ watch(currentStage, (newStage) => {
       startConfigPolling()
     }
   } else if (newStage === 'Prepare Simulation Script' || newStage === 'copying_scripts') {
-    phase.value = 2 // Remain in the configuration phase.
+    phase.value = 3
   }
 })
 
@@ -714,6 +971,20 @@ const displayProfiles = computed(() => {
     return profiles.value
   }
   return profiles.value.slice(0, 6)
+})
+
+const designValidation = computed(() => validateOpsConfig(opsConfig.value))
+const designErrors = computed(() => designValidation.value.errors)
+const canApplyDesign = computed(() => {
+  return Boolean(props.simulationId && baseScenarioRequirement.value.trim() && designValidation.value.valid)
+})
+const opsEstimateLabel = computed(() => getAgentEstimateLabel(opsConfig.value.targetAgents))
+const geographySummary = computed(() => getOpsGeographySummary(opsConfig.value))
+const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'None selected')
+const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
+const outputsSummary = computed(() => opsConfig.value.requestedOutputs.join(', ') || 'None selected')
+const billingModeLabel = computed(() => {
+  return (isDemoMode || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
 })
 
 // Look up the username for a given agent id.
@@ -765,38 +1036,149 @@ const selectProfile = (profile) => {
   selectedProfile.value = profile
 }
 
-// Automatically start preparing the simulation.
-const startPrepareSimulation = async () => {
+const setRunType = (runType) => {
+  const nextConfig = normalizeOpsConfig({
+    ...opsConfig.value,
+    runType,
+  })
+
+  if (runType !== 'Regional multi-country') {
+    nextConfig.originCountries = []
+  }
+  if (runType !== 'Diaspora') {
+    nextConfig.audienceRegion = ''
+  }
+  if (runType !== 'Corridor-based') {
+    nextConfig.corridor = ''
+  }
+
+  opsConfig.value = nextConfig
+}
+
+const toggleOriginCountry = (country) => {
+  const current = new Set(opsConfig.value.originCountries)
+  if (current.has(country)) {
+    current.delete(country)
+  } else {
+    current.add(country)
+  }
+
+  opsConfig.value = normalizeOpsConfig({
+    ...opsConfig.value,
+    originCountries: Array.from(current),
+  })
+}
+
+const toggleSegment = (segment) => {
+  const current = new Set(opsConfig.value.segments)
+  if (current.has(segment)) {
+    current.delete(segment)
+  } else {
+    current.add(segment)
+  }
+
+  opsConfig.value = normalizeOpsConfig({
+    ...opsConfig.value,
+    segments: Array.from(current),
+  })
+}
+
+const toggleOutput = (output) => {
+  const current = new Set(opsConfig.value.requestedOutputs)
+  if (current.has(output)) {
+    current.delete(output)
+  } else {
+    current.add(output)
+  }
+
+  opsConfig.value = normalizeOpsConfig({
+    ...opsConfig.value,
+    requestedOutputs: Array.from(current),
+  })
+}
+
+const syncOpsConfigFromProject = () => {
+  const requirementSource =
+    props.projectData?.simulation_requirement ||
+    pendingState.simulationRequirement ||
+    ''
+
+  const parsed = parseOpsSimulationRequirement(requirementSource)
+  baseScenarioRequirement.value = parsed.baseRequirement || pendingState.simulationRequirement || ''
+
+  if (parsed.hasMetadata) {
+    opsConfig.value = normalizeOpsConfig({
+      ...parsed.opsConfig,
+      demoModeBypass: isDemoMode || parsed.opsConfig.demoModeBypass,
+    })
+    designCommitted.value = true
+  } else {
+    opsConfig.value = normalizeOpsConfig({
+      ...opsConfig.value,
+      demoModeBypass: isDemoMode || opsConfig.value.demoModeBypass,
+    })
+  }
+
+  setPendingOpsConfig(opsConfig.value)
+}
+
+const resetPreparationState = () => {
+  stopPolling()
+  stopProfilesPolling()
+  stopConfigPolling()
+  taskId.value = null
+  prepareProgress.value = 0
+  currentStage.value = ''
+  progressMessage.value = ''
+  profiles.value = []
+  entityTypes.value = []
+  expectedTotal.value = null
+  simulationConfig.value = null
+  lastLoggedMessage = ''
+  lastLoggedProfileCount = 0
+  lastLoggedConfigStage = ''
+}
+
+const startPrepareSimulation = async ({ forceRegenerate = false, simulationRequirementOverride = '' } = {}) => {
   if (!props.simulationId) {
     addLog('Error: Missing simulationId')
     emit('update-status', 'error')
-    return
+    return false
   }
-  
-  // Mark step 1 as done and move into persona generation.
+
+  resetPreparationState()
   phase.value = 1
   addLog(`Simulation instance created: ${props.simulationId}`)
   addLog('Preparing the simulation environment...')
   emit('update-status', 'processing')
-  
+
   try {
-    const res = await prepareSimulation({
+    const payload = {
       simulation_id: props.simulationId,
       use_llm_for_profiles: true,
-      parallel_profile_count: 5
-    })
-    
+      parallel_profile_count: 5,
+    }
+
+    if (forceRegenerate) {
+      payload.force_regenerate = true
+    }
+    if (simulationRequirementOverride) {
+      payload.simulation_requirement_override = simulationRequirementOverride
+    }
+
+    const res = await prepareSimulation(payload)
+
     if (res.success && res.data) {
       if (res.data.already_prepared) {
         addLog('Detected completed preparation, using it directly')
         await loadPreparedData()
-        return
+        return true
       }
-      
+
       taskId.value = res.data.task_id
       addLog(`Preparation task started`)
       addLog(`  - Task ID: ${res.data.task_id}`)
-      
+
       // Use the expected entity count returned by the prepare endpoint.
       if (res.data.expected_entities_count) {
         expectedTotal.value = res.data.expected_entities_count
@@ -805,19 +1187,57 @@ const startPrepareSimulation = async () => {
           addLog(`  - Entity types: ${res.data.entity_types.join(', ')}`)
         }
       }
-      
+
       addLog('Starting to poll preparation progress...')
       // Start polling progress.
       startPolling()
       // Start fetching persona previews in real time.
       startProfilesPolling()
+      return true
     } else {
       addLog(`Preparation failed: ${res.error || 'unknown error'}`)
       emit('update-status', 'error')
+      return false
     }
   } catch (err) {
     addLog(`Preparation exception: ${err.message}`)
     emit('update-status', 'error')
+    return false
+  }
+}
+
+const handleApplyDesignAndPrepare = async () => {
+  const validation = validateOpsConfig(opsConfig.value)
+  if (!validation.valid || !props.simulationId) {
+    return
+  }
+
+  const committedConfig = normalizeOpsConfig({
+    ...validation.normalized,
+    demoModeBypass: isDemoMode || validation.normalized.demoModeBypass,
+  })
+
+  opsConfig.value = committedConfig
+  setPendingOpsConfig(committedConfig)
+
+  const simulationRequirementOverride = buildOpsSimulationRequirement(
+    baseScenarioRequirement.value,
+    committedConfig
+  )
+
+  applyDesignLoading.value = true
+
+  try {
+    const started = await startPrepareSimulation({
+      forceRegenerate: designCommitted.value || phase.value > 0,
+      simulationRequirementOverride,
+    })
+
+    if (started) {
+      designCommitted.value = true
+    }
+  } finally {
+    applyDesignLoading.value = false
   }
 }
 
@@ -1055,6 +1475,24 @@ const loadPreparedData = async () => {
   }
 }
 
+const checkExistingPreparedData = async () => {
+  if (!props.simulationId) return
+
+  try {
+    const res = await getPrepareStatus({
+      simulation_id: props.simulationId,
+    })
+
+    if (res.success && res.data?.already_prepared) {
+      addLog('Detected an existing prepared environment')
+      designCommitted.value = true
+      await loadPreparedData()
+    }
+  } catch (err) {
+    console.warn('Failed to check existing preparation state:', err)
+  }
+}
+
 // Keep the log view pinned to the latest entry.
 const logContent = ref(null)
 watch(() => props.systemLogs?.length, () => {
@@ -1065,12 +1503,27 @@ watch(() => props.systemLogs?.length, () => {
   })
 })
 
-onMounted(() => {
-  // Automatically start the preparation flow.
-  if (props.simulationId) {
-    addLog('Step 2: Initialize environment setup')
-    startPrepareSimulation()
-  }
+watch(
+  opsConfig,
+  (value) => {
+    setPendingOpsConfig(value)
+  },
+  { deep: true }
+)
+
+watch(
+  () => props.projectData?.simulation_requirement,
+  () => {
+    syncOpsConfigFromProject()
+  },
+  { immediate: true }
+)
+
+onMounted(async () => {
+  if (!props.simulationId) return
+  addLog('Step 2: Initialize environment setup')
+  syncOpsConfigFromProject()
+  await checkExistingPreparedData()
 })
 
 onUnmounted(() => {
@@ -1238,6 +1691,208 @@ onUnmounted(() => {
   border-radius: 6px;
   padding: 16px;
   margin-top: 16px;
+}
+
+.ops-design-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.design-block {
+  padding-top: 18px;
+  border-top: 1px solid #EAEAEA;
+}
+
+.design-block:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.design-block-title {
+  display: inline-flex;
+  margin-bottom: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.choice-grid.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compact-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.country-grid,
+.multi-country-grid,
+.segments-grid,
+.region-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.choice-card,
+.check-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.choice-card:hover,
+.check-card:hover {
+  border-color: rgba(255, 87, 34, 0.45);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.choice-card.active,
+.check-card.active {
+  border-color: #FF5722;
+  box-shadow: 0 0 0 1px rgba(255, 87, 34, 0.18);
+}
+
+.choice-card.compact,
+.check-card.compact {
+  min-height: 112px;
+}
+
+.check-card input {
+  margin: 0;
+}
+
+.choice-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.choice-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #666;
+}
+
+.input-shell {
+  display: flex;
+}
+
+.text-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #111827;
+  background: #FFFFFF;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text-input:focus {
+  border-color: #FF5722;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.08);
+}
+
+.review-shell {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #EAEAEA;
+  border-radius: 8px;
+  background: #FAFAFA;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.review-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.review-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 87, 34, 0.12);
+  color: #B93815;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid #ECECEC;
+  border-radius: 8px;
+}
+
+.review-item.wide {
+  grid-column: 1 / -1;
+}
+
+.review-scenario {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.validation-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid #F5C5B8;
+  background: #FFF6F3;
+}
+
+.validation-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #B93815;
+  margin-bottom: 6px;
+}
+
+.validation-line {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9A3412;
 }
 
 .info-row {
@@ -2558,6 +3213,27 @@ onUnmounted(() => {
 
 .highlight-tip:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .choice-grid,
+  .compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .choice-grid,
+  .choice-grid.two-col,
+  .country-grid,
+  .multi-country-grid,
+  .segments-grid,
+  .region-grid,
+  .compact-grid,
+  .review-grid,
+  .action-group.dual {
+    grid-template-columns: 1fr;
+  }
 }
 
 @keyframes fadeIn {

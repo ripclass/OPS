@@ -392,7 +392,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAgentLog, getConsoleLog } from '../api/report'
+import { getAgentLog, getConsoleLog, getReport, getReportProgress, getReportSections } from '../api/report'
 
 const router = useRouter()
 
@@ -423,6 +423,8 @@ const expandedContent = ref(new Set())
 const expandedLogs = ref(new Set())
 const collapsedSections = ref(new Set())
 const isComplete = ref(false)
+const reportStatus = ref('pending')
+const reportError = ref('')
 const startTime = ref(null)
 const leftPanel = ref(null)
 const rightPanel = ref(null)
@@ -1561,14 +1563,18 @@ const QuickSearchDisplay = {
 
 // Computed
 const statusClass = computed(() => {
+  if (reportStatus.value === 'failed' && !isComplete.value) return 'error'
   if (isComplete.value) return 'completed'
-  if (agentLogs.value.length > 0) return 'processing'
+  if (reportStatus.value === 'completed') return 'completed'
+  if (agentLogs.value.length > 0 || reportStatus.value === 'generating' || reportStatus.value === 'planning') return 'processing'
   return 'pending'
 })
 
 const statusText = computed(() => {
+  if (reportStatus.value === 'failed' && !isComplete.value) return reportError.value || 'Failed'
   if (isComplete.value) return 'Completed'
-  if (agentLogs.value.length > 0) return 'Generating...'
+  if (reportStatus.value === 'completed') return 'Completed'
+  if (agentLogs.value.length > 0 || reportStatus.value === 'generating' || reportStatus.value === 'planning') return 'Generating...'
   return 'Waiting'
 })
 
@@ -1874,6 +1880,73 @@ const getLogLevelClass = (log) => {
 // Polling
 let agentLogTimer = null
 let consoleLogTimer = null
+let reportStateTimer = null
+
+const applyReportCompletionState = () => {
+  isComplete.value = true
+  reportStatus.value = 'completed'
+  currentSectionIndex.value = null
+  emit('update-status', 'completed')
+}
+
+const mergeGeneratedSections = (sections = []) => {
+  if (!Array.isArray(sections) || sections.length === 0) return
+  const nextSections = { ...generatedSections.value }
+  sections.forEach((section) => {
+    if (section?.section_index && section.content && !nextSections[section.section_index]) {
+      nextSections[section.section_index] = section.content
+    }
+  })
+  generatedSections.value = nextSections
+}
+
+const fetchReportState = async () => {
+  if (!props.reportId) return
+
+  try {
+    const [reportRes, progressRes, sectionsRes] = await Promise.allSettled([
+      getReport(props.reportId),
+      getReportProgress(props.reportId),
+      getReportSections(props.reportId),
+    ])
+
+    if (reportRes.status === 'fulfilled' && reportRes.value?.success && reportRes.value.data) {
+      const report = reportRes.value.data
+      if (report.status) {
+        reportStatus.value = report.status
+      }
+      if (report.error) {
+        reportError.value = report.error
+      }
+      if (report.outline) {
+        reportOutline.value = report.outline
+      }
+      if (report.status === 'completed') {
+        applyReportCompletionState()
+      }
+    }
+
+    if (progressRes.status === 'fulfilled' && progressRes.value?.success && progressRes.value.data) {
+      const progress = progressRes.value.data
+      if (progress.status) {
+        reportStatus.value = progress.status
+      }
+      if (progress.status === 'completed') {
+        applyReportCompletionState()
+      }
+    }
+
+    if (sectionsRes.status === 'fulfilled' && sectionsRes.value?.success && sectionsRes.value.data) {
+      const sectionsData = sectionsRes.value.data
+      mergeGeneratedSections(sectionsData.sections)
+      if (sectionsData.is_complete) {
+        applyReportCompletionState()
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch report state:', err)
+  }
+}
 
 const fetchAgentLog = async () => {
   if (!props.reportId) return
@@ -1907,9 +1980,7 @@ const fetchAgentLog = async () => {
           }
           
           if (log.action === 'report_complete') {
-            isComplete.value = true
-            currentSectionIndex.value = null  // %E7%A1%AE%E4%BF%9D%E6%B8%85%E9%99%A4 loading %E7%8A%B6%E6%80%81
-            emit('update-status', 'completed')
+            applyReportCompletionState()
             stopPolling()
             // %E6%BB%9A%E5%8A%A8%E9%80%BB%E8%BE%91%E7%BB%9F%E4%B8%80%E5%9C%A8%E5%BE%AA%E7%8E%AF%E7%BB%93%E6%9D%9F%E5%90%8E%E7%9A%84 nextTick %E4%B8%AD%E5%A4%84%E7%90%86
           }
@@ -2009,13 +2080,15 @@ const fetchConsoleLog = async () => {
 }
 
 const startPolling = () => {
-  if (agentLogTimer || consoleLogTimer) return
+  if (agentLogTimer || consoleLogTimer || reportStateTimer) return
   
+  fetchReportState()
   fetchAgentLog()
   fetchConsoleLog()
   
   agentLogTimer = setInterval(fetchAgentLog, 2000)
   consoleLogTimer = setInterval(fetchConsoleLog, 1500)
+  reportStateTimer = setInterval(fetchReportState, 2500)
 }
 
 const stopPolling = () => {
@@ -2026,6 +2099,10 @@ const stopPolling = () => {
   if (consoleLogTimer) {
     clearInterval(consoleLogTimer)
     consoleLogTimer = null
+  }
+  if (reportStateTimer) {
+    clearInterval(reportStateTimer)
+    reportStateTimer = null
   }
 }
 
@@ -2054,6 +2131,8 @@ watch(() => props.reportId, (newId) => {
     expandedLogs.value = new Set()
     collapsedSections.value = new Set()
     isComplete.value = false
+    reportStatus.value = 'pending'
+    reportError.value = ''
     startTime.value = null
     
     startPolling()

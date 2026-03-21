@@ -1,11 +1,3 @@
-export const USE_CASE_OPTIONS = [
-  { value: 'Policy', label: 'Policy', description: 'Pre-test reaction to public decisions and institutional announcements.' },
-  { value: 'Health', label: 'Health', description: 'Forecast response to campaigns, shortages, outbreaks, or care access shifts.' },
-  { value: 'Brand', label: 'Brand', description: 'Model demand shocks, reputation swings, and commercial rumor spread.' },
-  { value: 'Crisis', label: 'Crisis', description: 'Track narrative escalation under social, political, or security stress.' },
-  { value: 'Disaster', label: 'Disaster', description: 'Map behavioral shifts during floods, shortages, displacement, or warning events.' },
-]
-
 export const RUN_TYPE_OPTIONS = [
   { value: 'Domestic', label: 'Domestic', description: 'One-country public response inside a single national context.' },
   { value: 'Diaspora', label: 'Diaspora', description: 'Overseas communities linked to one origin country and family networks back home.' },

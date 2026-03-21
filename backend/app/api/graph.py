@@ -14,6 +14,7 @@ from ..services.ontology_generator import OntologyGenerator
 from ..services.graph_builder import GraphBuilderService
 from ..services.text_processor import TextProcessor
 from ..utils.file_parser import FileParser
+from ..utils.url_source_extractor import fetch_public_url_source, URLSourceExtractionError
 from ..utils.logger import get_logger
 from ..models.task import TaskManager, TaskStatus
 from ..models.project import ProjectManager, ProjectStatus
@@ -127,6 +128,7 @@ def generate_ontology():
     
     parameter:
         files: Uploaded files (PDF/MD/TXT), multiple
+        source_urls: public source URLs, multiple (optional)
         simulation_requirement: simulation requirement description (required)
         project_name: project name (optional)
         additional_context: additional description (optional)
@@ -153,6 +155,11 @@ def generate_ontology():
         simulation_requirement = request.form.get('simulation_requirement', '')
         project_name = request.form.get('project_name', 'Unnamed Project')
         additional_context = request.form.get('additional_context', '')
+        source_urls = []
+        for raw_url in request.form.getlist('source_urls'):
+            normalized = str(raw_url or '').strip()
+            if normalized and normalized not in source_urls:
+                source_urls.append(normalized)
         
         logger.debug(f"Project name:{project_name}")
         logger.debug(f"Simulation requirements:{simulation_requirement[:100]}...")
@@ -193,6 +200,39 @@ def generate_ontology():
                 text = TextProcessor.preprocess_text(text)
                 document_texts.append(text)
                 all_text += f"\n\n=== {file_info['original_filename']} ===\n{text}"
+
+        for source_url in source_urls:
+            try:
+                extracted_source = fetch_public_url_source(source_url)
+            except URLSourceExtractionError as exc:
+                ProjectManager.delete_project(project.project_id)
+                return jsonify({
+                    "success": False,
+                    "error": f"Failed to import URL '{source_url}': {exc}"
+                }), 400
+
+            artifact_text = (
+                f"Source URL: {extracted_source.url}\n"
+                f"Source Title: {extracted_source.title}\n"
+                f"Content Type: {extracted_source.content_type}\n\n"
+                f"{extracted_source.text}"
+            )
+            file_info = ProjectManager.save_text_artifact_to_project(
+                project.project_id,
+                artifact_text,
+                extracted_source.artifact_filename
+            )
+            project.files.append({
+                "filename": file_info["original_filename"],
+                "size": file_info["size"],
+                "source_type": "url",
+                "source_url": extracted_source.url,
+                "source_title": extracted_source.title,
+            })
+
+            text = TextProcessor.preprocess_text(extracted_source.text)
+            document_texts.append(text)
+            all_text += f"\n\n=== {extracted_source.title} ({extracted_source.url}) ===\n{text}"
         
         # Allow scenario-only projects by treating the simulation requirement as the seed text
         # when no documents are uploaded.

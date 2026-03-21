@@ -7,6 +7,7 @@ import os
 import json
 import uuid
 import shutil
+import re
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -270,6 +271,40 @@ class ProjectManager:
             "path": file_path,
             "size": file_size
         }
+
+    @classmethod
+    def save_text_artifact_to_project(cls, project_id: str, text: str, original_filename: str) -> Dict[str, str]:
+        """
+        Save plain text content as a project source artifact.
+
+        Args:
+            project_id: project ID
+            text: text content
+            original_filename: display filename / provenance label
+
+        Returns:
+            File information dictionary {filename, path, size}
+        """
+        files_dir = cls._get_project_files_dir(project_id)
+        os.makedirs(files_dir, exist_ok=True)
+
+        basename, ext = os.path.splitext(original_filename)
+        safe_basename = re.sub(r'[^A-Za-z0-9._-]+', '_', basename or 'source').strip('._') or 'source'
+        safe_ext = ext.lower() if ext else '.txt'
+        safe_filename = f"{uuid.uuid4().hex[:8]}_{safe_basename[:48]}{safe_ext}"
+        file_path = os.path.join(files_dir, safe_filename)
+
+        with open(file_path, 'w', encoding='utf-8') as handle:
+            handle.write(text)
+
+        file_size = os.path.getsize(file_path)
+
+        return {
+            "original_filename": original_filename,
+            "saved_filename": safe_filename,
+            "path": file_path,
+            "size": file_size
+        }
     
     @classmethod
     def save_extracted_text(cls, project_id: str, text: str) -> None:
@@ -302,4 +337,3 @@ class ProjectManager:
             for f in os.listdir(files_dir) 
             if os.path.isfile(os.path.join(files_dir, f))
         ]
-
