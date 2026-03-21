@@ -1,31 +1,31 @@
 <template>
   <div class="ops-home">
-    <nav class="topbar">
-      <div class="brand-lockup">
-        <span class="brand-mark">OPS</span>
-        <div class="brand-copy">
-          <span class="brand-name">Organic Population Simulation</span>
-          <span class="brand-tagline">How South Asia actually responds</span>
-        </div>
-      </div>
-
-      <a href="https://github.com/ripclass/OPS" target="_blank" rel="noreferrer" class="repo-link">
-        Source repository
-      </a>
-    </nav>
+    <OpsProductHeader active-view="wizard" section-label="OPS Flow · Wizard">
+      <template #actions>
+        <a href="https://github.com/ripclass/OPS" target="_blank" rel="noreferrer" class="repo-link">
+          Source repository
+        </a>
+      </template>
+    </OpsProductHeader>
 
     <main class="page-shell">
-      <section class="hero-panel">
+      <section class="hero-panel" :class="{ compact: currentStep > 1 }">
         <div class="hero-copy">
-          <div class="hero-kicker">OPS Simulation Wizard</div>
+          <div class="hero-kicker">OPS Flow · Wizard</div>
           <h1>Launch a South Asia population run in five guided steps.</h1>
           <p>
             Define the scenario, choose the population slice, price the run, and launch the existing OPS
             simulation stack without changing the backend workflow underneath it.
           </p>
+
+          <div class="hero-chips">
+            <span class="meta-chip">Scenario brief</span>
+            <span class="meta-chip">Population design</span>
+            <span class="meta-chip">Launch orchestration</span>
+          </div>
         </div>
 
-        <div class="hero-aside">
+        <div v-if="currentStep === 1" class="hero-aside">
           <div class="hero-card">
             <div class="hero-card-label">Built for</div>
             <div class="hero-card-value">Policy, health, brand, crisis, and disaster response modeling</div>
@@ -34,8 +34,8 @@
         </div>
       </section>
 
-      <section class="wizard-layout">
-        <aside class="wizard-rail">
+      <section class="wizard-layout" :class="{ single: currentStep === 1 || currentStep === 5 }">
+        <aside v-if="currentStep > 1 && currentStep < 5" class="wizard-rail">
           <div class="rail-card">
             <div class="rail-heading">Launch Sequence</div>
             <div class="step-list">
@@ -61,15 +61,19 @@
           </div>
 
           <div class="rail-card">
-            <div class="rail-heading">Current Run Summary</div>
+            <div class="rail-heading">Scenario Snapshot</div>
             <div class="summary-grid">
               <div class="summary-item">
                 <span class="summary-label">Use case</span>
                 <span class="summary-value">{{ form.useCase }}</span>
               </div>
               <div class="summary-item">
-                <span class="summary-label">Country</span>
-                <span class="summary-value">{{ form.country }}</span>
+                <span class="summary-label">Run type</span>
+                <span class="summary-value">{{ form.runType }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Geography</span>
+                <span class="summary-value">{{ geographySummary }}</span>
               </div>
               <div class="summary-item">
                 <span class="summary-label">Segments</span>
@@ -121,11 +125,11 @@
                   id="scenario-brief"
                   v-model="form.scenario"
                   class="scenario-input"
-                  placeholder="Describe the trigger, the audience, and the location. Example: The government announces a 40% rice price increase next month. How do low-income households in Sylhet, Kolkata, and Karachi respond?"
+                  :placeholder="scenarioPlaceholder"
                   rows="8"
                 ></textarea>
                 <div class="field-hint">
-                  This text becomes the primary scenario seed passed into the existing OPS ontology endpoint.
+                  Start with the event itself. Geography and audience structure are configured in the next step.
                 </div>
               </div>
 
@@ -194,15 +198,32 @@
 
             <div v-else-if="currentStep === 2" class="stage-body step-body">
               <div class="field-block">
-                <span class="field-label">Country or audience base</span>
+                <span class="field-label">Run type</span>
+                <div class="chip-grid">
+                  <button
+                    v-for="runType in RUN_TYPE_OPTIONS"
+                    :key="runType.value"
+                    type="button"
+                    class="choice-chip"
+                    :class="{ selected: form.runType === runType.value }"
+                    @click="setRunType(runType.value)"
+                  >
+                    <span class="choice-title">{{ runType.label }}</span>
+                    <span class="choice-meta">{{ runType.description }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="form.runType === 'Domestic'" class="field-block">
+                <span class="field-label">Origin country</span>
                 <div class="chip-grid">
                   <button
                     v-for="country in COUNTRY_OPTIONS"
                     :key="country.value"
                     type="button"
                     class="choice-chip"
-                    :class="{ selected: form.country === country.value }"
-                    @click="form.country = country.value"
+                    :class="{ selected: form.originCountry === country.value }"
+                    @click="form.originCountry = country.value"
                   >
                     <span class="choice-title">{{ country.label }}</span>
                     <span class="choice-meta">{{ country.description }}</span>
@@ -210,9 +231,139 @@
                 </div>
               </div>
 
+              <template v-else-if="form.runType === 'Diaspora'">
+                <div class="field-block">
+                  <span class="field-label">Origin country</span>
+                  <div class="chip-grid">
+                    <button
+                      v-for="country in COUNTRY_OPTIONS"
+                      :key="country.value"
+                      type="button"
+                      class="choice-chip"
+                      :class="{ selected: form.originCountry === country.value }"
+                      @click="form.originCountry = country.value"
+                    >
+                      <span class="choice-title">{{ country.label }}</span>
+                      <span class="choice-meta">{{ country.description }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="field-block">
+                  <div class="field-label-row">
+                    <span class="field-label">Audience region</span>
+                    <span class="field-meta">Where the diaspora public is located</span>
+                  </div>
+                  <div class="chip-grid compact">
+                    <button
+                      v-for="region in REGION_OPTIONS"
+                      :key="region.value"
+                      type="button"
+                      class="choice-chip"
+                      :class="{ selected: form.audienceRegion === region.value }"
+                      @click="form.audienceRegion = region.value"
+                    >
+                      <span class="choice-title">{{ region.label }}</span>
+                      <span class="choice-meta">{{ region.description }}</span>
+                    </button>
+                  </div>
+                  <input
+                    v-model="form.audienceRegion"
+                    type="text"
+                    class="text-input"
+                    placeholder="Or enter a custom audience region"
+                  />
+                </div>
+              </template>
+
+              <template v-else-if="form.runType === 'Corridor-based'">
+                <div class="field-block">
+                  <div class="field-label-row">
+                    <span class="field-label">Origin countries</span>
+                    <span class="field-meta">Select one for single-origin or several for mixed-origin corridors</span>
+                  </div>
+                  <div class="chip-grid">
+                    <button
+                      v-for="country in COUNTRY_OPTIONS"
+                      :key="country.value"
+                      type="button"
+                      class="choice-chip"
+                      :class="{ selected: form.originCountries.includes(country.value) }"
+                      @click="toggleOriginCountry(country.value)"
+                    >
+                      <span class="choice-title">{{ country.label }}</span>
+                      <span class="choice-meta">{{ country.description }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="two-column-grid">
+                  <div class="field-block">
+                    <div class="field-label-row">
+                      <span class="field-label">Sender region</span>
+                      <span class="field-meta">Where the outward payment originates</span>
+                    </div>
+                    <div class="chip-grid compact">
+                      <button
+                        v-for="region in REGION_OPTIONS"
+                        :key="`sender-${region.value}`"
+                        type="button"
+                        class="choice-chip"
+                        :class="{ selected: form.corridorSenderRegion === region.value }"
+                        @click="form.corridorSenderRegion = region.value"
+                      >
+                        <span class="choice-title">{{ region.label }}</span>
+                        <span class="choice-meta">{{ region.description }}</span>
+                      </button>
+                    </div>
+                    <input
+                      v-model="form.corridorSenderRegion"
+                      type="text"
+                      class="text-input"
+                      placeholder="Or enter a custom sender region"
+                    />
+                  </div>
+
+                  <div class="field-block">
+                    <span class="field-label">Recipient region or country</span>
+                    <input
+                      v-model="form.corridorRecipientRegion"
+                      type="text"
+                      class="text-input"
+                      placeholder="Example: Bangladesh, Nepal, Sri Lanka, global recipient households"
+                    />
+                    <div class="field-hint">
+                      Use this mode for Western Union-style fee changes, corridor disruption, or remittance policy shifts.
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <template v-else>
+                <div class="field-block">
+                  <div class="field-label-row">
+                    <span class="field-label">Origin countries</span>
+                    <span class="field-meta">Select at least two countries for a regional run</span>
+                  </div>
+                  <div class="chip-grid">
+                    <button
+                      v-for="country in COUNTRY_OPTIONS"
+                      :key="country.value"
+                      type="button"
+                      class="choice-chip"
+                      :class="{ selected: form.originCountries.includes(country.value) }"
+                      @click="toggleOriginCountry(country.value)"
+                    >
+                      <span class="choice-title">{{ country.label }}</span>
+                      <span class="choice-meta">{{ country.description }}</span>
+                    </button>
+                  </div>
+                </div>
+              </template>
+
               <div class="field-block">
                 <div class="field-label-row">
-                  <span class="field-label">Demographic segments</span>
+                  <span class="field-label">Segments</span>
                   <span class="field-meta">Select one or more segments to scope the run</span>
                 </div>
                 <div class="checkbox-grid">
@@ -262,7 +413,7 @@
                   class="text-input"
                   placeholder="Enter the target scale for internal scoping"
                 />
-                <div class="field-hint">Pricing for custom scale is manual. The estimate remains “Contact us”.</div>
+                <div class="field-hint">Pricing for custom scale is manual. The estimate remains `Contact us`.</div>
               </div>
 
               <div class="two-column-grid">
@@ -288,8 +439,7 @@
                   <span class="estimate-kicker">Estimated cost</span>
                   <span class="estimate-price">{{ estimatedCostLabel }}</span>
                   <p class="estimate-copy">
-                    Pricing is front-end only in this phase. The wizard still launches the existing OPS stack with
-                    the same backend API contract.
+                    {{ demoMode ? 'Demo mode bypasses checkout. Pricing is still shown for positioning.' : 'The backend launch sequence is unchanged. Checkout only appears when this environment enables it.' }}
                   </p>
                 </div>
               </div>
@@ -308,8 +458,18 @@
                 </div>
 
                 <div class="review-card">
-                  <span class="review-label">Population</span>
-                  <p class="review-value">{{ form.country }} / {{ segmentsLabel }}</p>
+                  <span class="review-label">Run type</span>
+                  <p class="review-value">{{ form.runType }}</p>
+                </div>
+
+                <div class="review-card">
+                  <span class="review-label">Geography</span>
+                  <p class="review-value">{{ geographySummary }}</p>
+                </div>
+
+                <div class="review-card">
+                  <span class="review-label">Segments</span>
+                  <p class="review-value">{{ segmentsLabel }}</p>
                 </div>
 
                 <div class="review-card">
@@ -331,43 +491,40 @@
               <div class="review-panel">
                 <div class="review-panel-copy">
                   <div class="field-label-row">
-                    <span class="field-label">Payment gate</span>
-                    <span class="field-meta">Frontend only for this phase</span>
+                    <span class="field-label">{{ demoMode ? 'Demo mode' : 'Launch gate' }}</span>
+                    <span class="field-meta">{{ demoMode ? 'No checkout required' : 'Checkout only when configured' }}</span>
                   </div>
 
-                  <p>
-                    The Stripe step is external in this version. Open checkout in a new tab, complete payment there,
-                    then confirm in this wizard before OPS launches the existing backend sequence.
-                  </p>
+                  <p>{{ reviewLaunchMessage }}</p>
 
-                  <div v-if="!checkoutUrl" class="field-warning">
-                    Stripe checkout is not configured in this environment. Set
-                    <code>VITE_STRIPE_CHECKOUT_URL</code> to enable launch.
+                  <div v-if="showCheckoutWarning" class="field-warning">
+                    Stripe checkout is not configured in this environment. Launch is still available because billing is not enforced server-side in this phase.
                   </div>
                 </div>
 
                 <div class="payment-actions">
+                  <template v-if="showCheckoutFlow">
+                    <button
+                      type="button"
+                      class="secondary-button"
+                      @click="openCheckout"
+                    >
+                      Open checkout
+                    </button>
+
+                    <label class="confirm-row" :class="{ disabled: !payment.checkoutOpened }">
+                      <input v-model="payment.confirmed" type="checkbox" :disabled="!payment.checkoutOpened" />
+                      <span>I completed checkout and want to continue to launch.</span>
+                    </label>
+                  </template>
+
                   <button
                     type="button"
                     class="primary-button"
-                    :disabled="!checkoutUrl"
-                    @click="openCheckout"
-                  >
-                    Pay and open checkout
-                  </button>
-
-                  <label class="confirm-row" :class="{ disabled: !payment.checkoutOpened }">
-                    <input v-model="payment.confirmed" type="checkbox" :disabled="!payment.checkoutOpened" />
-                    <span>I completed checkout and want to continue to launch.</span>
-                  </label>
-
-                  <button
-                    type="button"
-                    class="secondary-button"
-                    :disabled="!checkoutUrl || !payment.confirmed || launchBusy"
+                    :disabled="launchPrimaryDisabled"
                     @click="beginLaunch"
                   >
-                    Continue to launch
+                    {{ launchPrimaryLabel }}
                   </button>
                 </div>
               </div>
@@ -483,7 +640,20 @@
         </section>
       </section>
 
-      <HistoryDatabase />
+      <section class="archive-shell">
+        <button
+          type="button"
+          class="archive-toggle"
+          :aria-expanded="showArchive"
+          @click="showArchive = !showArchive"
+        >
+          {{ showArchive ? 'Hide simulation archive' : 'Open simulation archive' }}
+        </button>
+
+        <div v-if="showArchive" class="archive-panel">
+          <HistoryDatabase />
+        </div>
+      </section>
     </main>
   </div>
 </template>
@@ -494,10 +664,13 @@ import { useRouter } from 'vue-router'
 import { buildGraph, generateOntology, getProject, getTaskStatus } from '../api/graph'
 import { createSimulation, getPrepareStatus, prepareSimulation, startSimulation } from '../api/simulation'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
+import OpsProductHeader from '../components/OpsProductHeader.vue'
 import {
   AGENT_COUNT_OPTIONS,
   COUNTRY_OPTIONS,
   OUTPUT_OPTIONS,
+  REGION_OPTIONS,
+  RUN_TYPE_OPTIONS,
   SEGMENT_OPTIONS,
   USE_CASE_OPTIONS,
   getAgentEstimateLabel,
@@ -506,15 +679,17 @@ import {
 
 const router = useRouter()
 
-const STORAGE_KEY = 'ops-wizard-state-v1'
+const STORAGE_KEY = 'ops-wizard-state-v2'
 const checkoutUrl = (import.meta.env.VITE_STRIPE_CHECKOUT_URL || '').trim()
+const demoMode = String(import.meta.env.VITE_DEMO_MODE ?? 'true').trim().toLowerCase() !== 'false'
+const showArchive = ref(false)
 
 const steps = [
-  { id: 1, title: 'Scenario Brief', summary: 'Define the trigger, uploads, and use case.' },
-  { id: 2, title: 'Population Selector', summary: 'Scope geography and demographic segments.' },
-  { id: 3, title: 'Configuration', summary: 'Choose scale, outputs, and estimate.' },
-  { id: 4, title: 'Review and Launch', summary: 'Confirm the package and trigger checkout.' },
-  { id: 5, title: 'Launching', summary: 'Orchestrate the existing OPS backend flow.' },
+  { id: 1, title: 'Scenario', summary: 'Describe the public trigger and attach optional evidence.' },
+  { id: 2, title: 'Audience', summary: 'Choose run type, geography, and segments.' },
+  { id: 3, title: 'Configuration', summary: 'Pick scale, outputs, and pricing context.' },
+  { id: 4, title: 'Review', summary: 'Confirm the package before launch.' },
+  { id: 5, title: 'Launching', summary: 'Run the existing OPS backend flow.' },
 ]
 
 const launchPhases = [
@@ -561,7 +736,12 @@ const files = ref([])
 const form = reactive({
   scenario: '',
   useCase: 'Policy',
-  country: 'Bangladesh',
+  runType: 'Domestic',
+  originCountry: 'Bangladesh',
+  originCountries: ['Bangladesh', 'India'],
+  audienceRegion: 'GCC',
+  corridorSenderRegion: 'GCC',
+  corridorRecipientRegion: 'Bangladesh',
   segments: ['Urban working class'],
   agentScale: '100',
   customAgentCount: '',
@@ -594,18 +774,99 @@ const segmentsLabel = computed(() => (form.segments.length ? form.segments.join(
 const outputsLabel = computed(() => (form.outputs.length ? form.outputs.join(', ') : 'Live dashboard only'))
 const targetAgentsLabel = computed(() => getTargetAgentsLabel(form.agentScale, form.customAgentCount))
 const estimatedCostLabel = computed(() => getAgentEstimateLabel(form.agentScale))
+const selectedOriginCountriesLabel = computed(() => (
+  form.originCountries.length ? form.originCountries.join(', ') : 'No origin countries selected'
+))
+const geographySummary = computed(() => {
+  if (form.runType === 'Domestic') {
+    return form.originCountry
+  }
+  if (form.runType === 'Diaspora') {
+    return `${form.originCountry} diaspora in ${form.audienceRegion || 'an external region'}`
+  }
+  if (form.runType === 'Corridor-based') {
+    return `${selectedOriginCountriesLabel.value} · ${form.corridorSenderRegion || 'sender region'} -> ${form.corridorRecipientRegion || 'recipient region'}`
+  }
+  return selectedOriginCountriesLabel.value
+})
+const scenarioPreview = computed(() => {
+  const text = form.scenario.trim()
+  if (!text) {
+    return 'No scenario entered yet.'
+  }
+  return text.length > 180 ? `${text.slice(0, 177).trim()}...` : text
+})
+const showCheckoutFlow = computed(() => !demoMode && Boolean(checkoutUrl))
+const showCheckoutWarning = computed(() => !demoMode && !checkoutUrl)
+const launchPrimaryDisabled = computed(() => launchBusy.value || (showCheckoutFlow.value && !payment.confirmed))
+const launchPrimaryLabel = computed(() => {
+  if (demoMode) {
+    return launchBusy.value ? 'Launching demo...' : 'Launch demo'
+  }
+  if (showCheckoutFlow.value) {
+    return launchBusy.value ? 'Launching...' : 'Continue to launch'
+  }
+  return launchBusy.value ? 'Launching...' : 'Launch without checkout'
+})
+const reviewLaunchMessage = computed(() => {
+  if (demoMode) {
+    return 'Demo mode is active. Pricing remains visible, but checkout is bypassed so you can preview the full product flow.'
+  }
+  if (showCheckoutFlow.value) {
+    return 'Checkout opens in a new tab. Complete it there, then confirm in this wizard before launch.'
+  }
+  return 'Checkout is not configured in this environment, so launch stays available without an external payment handoff.'
+})
+const scenarioPlaceholder = computed(() => {
+  if (form.runType === 'Domestic') {
+    const examples = {
+      Bangladesh: 'Describe the public event. Example: The government raises rice prices before Eid. How do low-income households in Dhaka respond?',
+      India: 'Describe the public event. Example: A state government changes LPG subsidy rules. How do urban working-class families in Kolkata respond?',
+      Pakistan: 'Describe the public event. Example: Fuel prices rise ahead of Ramadan. How do lower-income households in Karachi respond?',
+      Nepal: 'Describe the public event. Example: Cooking gas prices rise before a festival period. How do households in Kathmandu respond?',
+      'Sri Lanka': 'Describe the public event. Example: A power tariff revision is announced. How do middle-class households in Colombo respond?',
+    }
+    return examples[form.originCountry] || examples.Bangladesh
+  }
+  if (form.runType === 'Diaspora') {
+    return `Describe the diaspora trigger. Example: ${form.originCountry} workers in ${form.audienceRegion || 'the GCC'} see an incoming remittance fee increase. How do they react online and inside family networks back home?`
+  }
+  if (form.runType === 'Corridor-based') {
+    return `Describe the corridor event. Example: A remittance provider raises transfer fees from ${form.corridorSenderRegion || 'the GCC'} to ${form.corridorRecipientRegion || 'Bangladesh'}. How do senders and recipient households react across that corridor?`
+  }
+  return `Describe the regional shock. Example: A food price spike moves across ${selectedOriginCountriesLabel.value}. How do households, media, and rumor networks react across borders?`
+})
 
 const metadataRequirement = computed(() => {
-  return `[OPS Wizard Metadata]
-Use case: ${form.useCase}
-Country: ${form.country}
-Segments: ${form.segments.join(', ') || 'None selected'}
-Target agents: ${targetAgentsLabel.value}
-Requested outputs: ${form.outputs.join(', ') || 'None selected'}
-[/OPS Wizard Metadata]
+  const lines = [
+    '[OPS Wizard Metadata]',
+    `Use case: ${form.useCase}`,
+    `Run type: ${form.runType}`,
+  ]
 
-Scenario:
-${form.scenario.trim()}`
+  if (form.runType === 'Domestic' || form.runType === 'Diaspora') {
+    lines.push(`Origin country: ${form.originCountry}`)
+  } else {
+    lines.push(`Origin countries: ${form.originCountries.join(', ') || 'None selected'}`)
+  }
+
+  if (form.runType === 'Diaspora') {
+    lines.push(`Audience region: ${form.audienceRegion || 'Not specified'}`)
+  }
+
+  if (form.runType === 'Corridor-based') {
+    lines.push(`Corridor: ${form.corridorSenderRegion || 'Unknown sender'} -> ${form.corridorRecipientRegion || 'Unknown recipient'}`)
+  }
+
+  lines.push(`Segments: ${form.segments.join(', ') || 'None selected'}`)
+  lines.push(`Target agents: ${targetAgentsLabel.value}`)
+  lines.push(`Requested outputs: ${form.outputs.join(', ') || 'None selected'}`)
+  lines.push('[/OPS Wizard Metadata]')
+  lines.push('')
+  lines.push('Scenario:')
+  lines.push(form.scenario.trim())
+
+  return lines.join('\n')
 })
 
 const launchHeadline = computed(() => {
@@ -624,7 +885,21 @@ const stepIsValid = (step) => {
   }
 
   if (step === 2) {
-    return Boolean(form.country) && form.segments.length > 0
+    if (!form.segments.length) {
+      return false
+    }
+    if (form.runType === 'Domestic') {
+      return Boolean(form.originCountry)
+    }
+    if (form.runType === 'Diaspora') {
+      return Boolean(form.originCountry) && Boolean(form.audienceRegion.trim())
+    }
+    if (form.runType === 'Corridor-based') {
+      return form.originCountries.length > 0 &&
+        Boolean(form.corridorSenderRegion.trim()) &&
+        Boolean(form.corridorRecipientRegion.trim())
+    }
+    return form.originCountries.length > 1
   }
 
   if (step === 3) {
@@ -712,12 +987,48 @@ const removeFile = (index) => {
   files.value.splice(index, 1)
 }
 
+const setRunType = (value) => {
+  form.runType = value
+
+  if (!form.originCountry) {
+    form.originCountry = 'Bangladesh'
+  }
+  if (!form.originCountries.length) {
+    form.originCountries = ['Bangladesh', 'India']
+  }
+  if (value === 'Diaspora' && !form.audienceRegion) {
+    form.audienceRegion = 'GCC'
+  }
+  if (value === 'Corridor-based') {
+    if (!form.originCountries.length) {
+      form.originCountries = [form.originCountry || 'Bangladesh']
+    }
+    if (!form.corridorSenderRegion) {
+      form.corridorSenderRegion = 'GCC'
+    }
+    if (!form.corridorRecipientRegion) {
+      form.corridorRecipientRegion = form.originCountry || 'Bangladesh'
+    }
+  }
+  if (value === 'Regional multi-country' && form.originCountries.length < 2) {
+    form.originCountries = ['Bangladesh', 'India']
+  }
+}
+
 const toggleSegment = (value) => {
   if (form.segments.includes(value)) {
     form.segments = form.segments.filter((item) => item !== value)
     return
   }
   form.segments = [...form.segments, value]
+}
+
+const toggleOriginCountry = (value) => {
+  if (form.originCountries.includes(value)) {
+    form.originCountries = form.originCountries.filter((item) => item !== value)
+    return
+  }
+  form.originCountries = [...form.originCountries, value]
 }
 
 const toggleOutput = (value) => {
@@ -729,7 +1040,7 @@ const toggleOutput = (value) => {
 }
 
 const openCheckout = () => {
-  if (!checkoutUrl) {
+  if (!checkoutUrl || demoMode) {
     return
   }
 
@@ -825,14 +1136,14 @@ const extractErrorMessage = (error) => {
 }
 
 const beginLaunch = async () => {
-  if (!checkoutUrl || !payment.confirmed || launchBusy.value) {
+  if (launchPrimaryDisabled.value || launchBusy.value) {
     return
   }
 
   resetLaunchState()
   currentStep.value = 5
   launch.fileNames = files.value.map((file) => file.name)
-  addLaunchActivity('Checkout confirmed. Preparing the OPS launch sequence.')
+  addLaunchActivity(demoMode ? 'Demo launch confirmed. Preparing the OPS launch sequence.' : 'Review confirmed. Preparing the OPS launch sequence.')
   await resumeLaunch()
 }
 
@@ -1053,7 +1364,12 @@ const serializeState = () => {
     form: {
       scenario: form.scenario,
       useCase: form.useCase,
-      country: form.country,
+      runType: form.runType,
+      originCountry: form.originCountry,
+      originCountries: [...form.originCountries],
+      audienceRegion: form.audienceRegion,
+      corridorSenderRegion: form.corridorSenderRegion,
+      corridorRecipientRegion: form.corridorRecipientRegion,
       segments: [...form.segments],
       agentScale: form.agentScale,
       customAgentCount: form.customAgentCount,
@@ -1094,11 +1410,16 @@ const restoreState = () => {
     if (saved.form) {
       form.scenario = saved.form.scenario || ''
       form.useCase = saved.form.useCase || 'Policy'
-      form.country = saved.form.country || 'Bangladesh'
-      form.segments = Array.isArray(saved.form.segments) ? saved.form.segments : ['Urban working class']
+      form.runType = saved.form.runType || 'Domestic'
+      form.originCountry = saved.form.originCountry || 'Bangladesh'
+      form.originCountries = Array.isArray(saved.form.originCountries) && saved.form.originCountries.length ? saved.form.originCountries : ['Bangladesh', 'India']
+      form.audienceRegion = saved.form.audienceRegion || 'GCC'
+      form.corridorSenderRegion = saved.form.corridorSenderRegion || 'GCC'
+      form.corridorRecipientRegion = saved.form.corridorRecipientRegion || 'Bangladesh'
+      form.segments = Array.isArray(saved.form.segments) && saved.form.segments.length ? saved.form.segments : ['Urban working class']
       form.agentScale = saved.form.agentScale || '100'
       form.customAgentCount = saved.form.customAgentCount || ''
-      form.outputs = Array.isArray(saved.form.outputs) ? saved.form.outputs : ['PDF report']
+      form.outputs = Array.isArray(saved.form.outputs) && saved.form.outputs.length ? saved.form.outputs : ['PDF report']
     }
 
     if (saved.payment) {
@@ -1147,7 +1468,12 @@ watch(
     currentStep: currentStep.value,
     scenario: form.scenario,
     useCase: form.useCase,
-    country: form.country,
+    runType: form.runType,
+    originCountry: form.originCountry,
+    originCountries: [...form.originCountries],
+    audienceRegion: form.audienceRegion,
+    corridorSenderRegion: form.corridorSenderRegion,
+    corridorRecipientRegion: form.corridorRecipientRegion,
     segments: [...form.segments],
     agentScale: form.agentScale,
     customAgentCount: form.customAgentCount,
@@ -1191,96 +1517,37 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-:root {
-  --ops-ink: #0c111d;
-  --ops-muted: #6b7280;
-  --ops-accent: #c94b22;
-  --ops-accent-soft: #f7d9cb;
-  --ops-dark: #111827;
-  --ops-success: #186b4e;
-  --ops-error: #a83232;
-  --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
-
 .ops-home {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top right, rgba(201, 75, 34, 0.08), transparent 30%),
-    linear-gradient(180deg, #f8f5ec 0%, #f0eadf 100%);
   color: var(--ops-ink);
-  font-family: var(--font-display);
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 32px;
-  border-bottom: 1px solid rgba(12, 17, 29, 0.08);
-  background: rgba(255, 253, 248, 0.78);
-  backdrop-filter: blur(14px);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.brand-lockup {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #111827 0%, #26334b 100%);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-}
-
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.brand-name {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.brand-tagline {
-  font-size: 0.75rem;
-  color: var(--ops-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
+  font-family: var(--ops-font-display);
 }
 
 .repo-link {
-  color: var(--ops-dark);
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ops-border-strong);
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--ops-ink-soft);
   text-decoration: none;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.82rem;
-  border-bottom: 1px solid transparent;
+  font-weight: 700;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .repo-link:hover {
-  border-color: var(--ops-dark);
+  transform: translateY(-1px);
+  border-color: rgba(201, 75, 34, 0.35);
 }
 
 .page-shell {
   max-width: 1480px;
   margin: 0 auto;
-  padding: 40px 32px 72px;
+  padding: 34px 32px 72px;
 }
 
 .hero-panel {
@@ -1290,13 +1557,17 @@ onMounted(async () => {
   align-items: stretch;
 }
 
+.hero-panel.compact {
+  grid-template-columns: 1fr;
+}
+
 .hero-copy,
 .hero-aside {
-  background: rgba(255, 253, 248, 0.85);
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--ops-surface);
+  border: 1px solid var(--ops-border);
   border-radius: 28px;
   padding: 32px;
-  box-shadow: 0 25px 60px rgba(17, 24, 39, 0.06);
+  box-shadow: var(--ops-shadow);
 }
 
 .hero-kicker {
@@ -1306,11 +1577,32 @@ onMounted(async () => {
   border-radius: 999px;
   background: var(--ops-accent-soft);
   color: var(--ops-accent);
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.16em;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.05);
+  color: var(--ops-ink-soft);
+  font-family: var(--ops-font-mono);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .hero-copy h1 {
@@ -1343,7 +1635,7 @@ onMounted(async () => {
 }
 
 .hero-card-label {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -1369,6 +1661,16 @@ onMounted(async () => {
   align-items: start;
 }
 
+.wizard-layout.single {
+  grid-template-columns: 1fr;
+}
+
+.wizard-layout.single .wizard-stage {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .wizard-rail {
   display: flex;
   flex-direction: column;
@@ -1379,10 +1681,10 @@ onMounted(async () => {
 
 .rail-card,
 .stage-card {
-  background: rgba(255, 253, 248, 0.92);
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--ops-surface);
+  border: 1px solid var(--ops-border);
   border-radius: 28px;
-  box-shadow: 0 25px 60px rgba(17, 24, 39, 0.06);
+  box-shadow: var(--ops-shadow);
 }
 
 .rail-card {
@@ -1390,7 +1692,7 @@ onMounted(async () => {
 }
 
 .rail-heading {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1447,7 +1749,7 @@ onMounted(async () => {
   height: 42px;
   border-radius: 12px;
   background: #f3efe5;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -1505,7 +1807,7 @@ onMounted(async () => {
 }
 
 .summary-label {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.72rem;
   color: var(--ops-muted);
   text-transform: uppercase;
@@ -1536,7 +1838,7 @@ onMounted(async () => {
 }
 
 .stage-step {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -1608,7 +1910,7 @@ onMounted(async () => {
 }
 
 .field-meta {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1622,13 +1924,13 @@ onMounted(async () => {
   border: 1px solid rgba(17, 24, 39, 0.12);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.9);
-  color: var(--ops-dark);
+  color: var(--ops-ink);
 }
 
 .scenario-input,
 .text-input {
   padding: 18px 20px;
-  font-family: var(--font-display);
+  font-family: var(--ops-font-display);
   font-size: 1rem;
   line-height: 1.6;
   resize: vertical;
@@ -1764,7 +2066,7 @@ onMounted(async () => {
 }
 
 .file-chip-name {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.82rem;
   word-break: break-word;
 }
@@ -1773,7 +2075,7 @@ onMounted(async () => {
   border: 0;
   background: transparent;
   color: var(--ops-accent);
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -1826,7 +2128,7 @@ onMounted(async () => {
 
 .pricing-estimate,
 .estimate-price {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--ops-accent);
@@ -1845,7 +2147,7 @@ onMounted(async () => {
 .launch-progress-label,
 .launch-kicker,
 .launch-log-header {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1873,7 +2175,7 @@ onMounted(async () => {
   margin: 0;
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--ops-dark);
+  color: var(--ops-ink);
 }
 
 .review-panel {
@@ -1911,7 +2213,7 @@ onMounted(async () => {
 .metadata-preview pre {
   margin: 0;
   padding: 20px;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.8rem;
   line-height: 1.7;
   overflow-x: auto;
@@ -1953,7 +2255,7 @@ onMounted(async () => {
 }
 
 .launch-progress-value {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 1.7rem;
   font-weight: 700;
 }
@@ -1994,7 +2296,7 @@ onMounted(async () => {
   height: 52px;
   border-radius: 14px;
   background: #f3efe5;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-weight: 700;
 }
 
@@ -2026,7 +2328,7 @@ onMounted(async () => {
 
 .launch-step-state {
   align-self: center;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.76rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -2050,6 +2352,35 @@ onMounted(async () => {
 
 .launch-grid {
   grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+}
+
+.archive-shell {
+  margin-top: 28px;
+}
+
+.archive-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ops-ink-soft);
+  font-family: var(--ops-font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.archive-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(201, 75, 34, 0.35);
+}
+
+.archive-panel {
+  margin-top: 18px;
 }
 
 .launch-log {
@@ -2077,21 +2408,21 @@ onMounted(async () => {
 }
 
 .launch-log-time {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.74rem;
   color: var(--ops-muted);
 }
 
 .launch-log-text {
   line-height: 1.55;
-  color: var(--ops-dark);
+  color: var(--ops-ink);
 }
 
 .launch-state-row {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   font-size: 0.78rem;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(17, 24, 39, 0.08);
@@ -2136,7 +2467,7 @@ onMounted(async () => {
 .secondary-button {
   border: 1px solid rgba(17, 24, 39, 0.14);
   background: #fff;
-  color: var(--ops-dark);
+  color: var(--ops-ink);
 }
 
 .stage-footer {
@@ -2152,7 +2483,7 @@ onMounted(async () => {
 }
 
 code {
-  font-family: var(--font-mono);
+  font-family: var(--ops-font-mono);
   background: rgba(17, 24, 39, 0.05);
   padding: 2px 6px;
   border-radius: 8px;
@@ -2185,7 +2516,6 @@ code {
 }
 
 @media (max-width: 760px) {
-  .topbar,
   .page-shell,
   .stage-card,
   .rail-card,
@@ -2193,12 +2523,6 @@ code {
   .hero-aside {
     padding-left: 18px;
     padding-right: 18px;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
   }
 
   .review-grid,

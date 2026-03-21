@@ -1,52 +1,54 @@
 <template>
   <div class="ops-run-dashboard">
-    <header class="dashboard-header">
-      <div class="brand-lockup">
-        <button type="button" class="back-link" @click="goBackToSetup">
-          Back to configuration
-        </button>
-        <div class="brand-mark">OPS</div>
-        <div class="brand-copy">
-          <div class="brand-name">Organic Population Simulation</div>
-          <div class="brand-tagline">How South Asia actually responds</div>
+    <OpsProductHeader
+      active-view="run"
+      :simulation-id="simulationId"
+      section-label="OPS Flow · Live Run"
+    >
+      <template #actions>
+        <div class="header-actions">
+          <button type="button" class="ghost-btn" @click="goBackToSetup">
+            Back to configuration
+          </button>
+          <button type="button" class="ghost-btn" @click="goToExpertView">
+            Expert view
+          </button>
+          <button type="button" class="ghost-btn" :disabled="isRefreshing" @click="refreshDashboard">
+            {{ isRefreshing ? 'Refreshing...' : 'Refresh now' }}
+          </button>
+          <button
+            v-if="isRunnable && !isStarting"
+            type="button"
+            class="ghost-btn"
+            :disabled="isStopping"
+            @click="handleStopSimulation"
+          >
+            {{ isStopping ? 'Stopping...' : 'Stop run' }}
+          </button>
+          <button
+            v-if="isCompleted"
+            type="button"
+            class="primary-btn"
+            :disabled="isGeneratingReport"
+            @click="handleGenerateReport"
+          >
+            {{ isGeneratingReport ? 'Preparing report...' : 'Generate insight report' }}
+          </button>
         </div>
-      </div>
-
-      <div class="header-actions">
-        <button type="button" class="ghost-btn" :disabled="isRefreshing" @click="refreshDashboard">
-          {{ isRefreshing ? 'Refreshing...' : 'Refresh now' }}
-        </button>
-        <button
-          v-if="isRunnable && !isStarting"
-          type="button"
-          class="ghost-btn"
-          :disabled="isStopping"
-          @click="handleStopSimulation"
-        >
-          {{ isStopping ? 'Stopping...' : 'Stop run' }}
-        </button>
-        <button
-          v-if="isCompleted"
-          type="button"
-          class="primary-btn"
-          :disabled="isGeneratingReport"
-          @click="handleGenerateReport"
-        >
-          {{ isGeneratingReport ? 'Preparing report...' : 'Generate insight report' }}
-        </button>
-      </div>
-    </header>
+      </template>
+    </OpsProductHeader>
 
     <main class="dashboard-shell">
       <section class="hero-panel">
         <div class="hero-copy">
-          <div class="hero-kicker">Live Simulation Dashboard</div>
+          <div class="hero-kicker">OPS Flow · Live Run</div>
           <h1>{{ projectData?.name || `OPS Run ${simulationId}` }}</h1>
           <p>{{ scenarioSummary }}</p>
 
           <div class="hero-chips">
             <span v-if="wizardMetadata.useCase" class="meta-chip">{{ wizardMetadata.useCase }}</span>
-            <span v-if="wizardMetadata.country" class="meta-chip">{{ wizardMetadata.country }}</span>
+            <span v-if="wizardMetadata.runType" class="meta-chip">{{ wizardMetadata.runType }}</span>
+            <span v-if="geographyLabel" class="meta-chip">{{ geographyLabel }}</span>
             <span v-if="wizardMetadata.segments" class="meta-chip">{{ wizardMetadata.segments }}</span>
             <span v-if="wizardMetadata.targetAgents" class="meta-chip">
               {{ wizardMetadata.targetAgents }} agents
@@ -101,145 +103,170 @@
         </div>
       </section>
 
-      <section v-if="errorMessage" class="error-banner">
-        <div class="error-title">Dashboard warning</div>
-        <div class="error-copy">{{ errorMessage }}</div>
-      </section>
+      <section class="run-layout">
+        <div class="run-main">
+          <section v-if="errorMessage" class="error-banner">
+            <div class="error-title">Dashboard warning</div>
+            <div class="error-copy">{{ errorMessage }}</div>
+          </section>
 
-      <section class="stat-grid">
-        <article class="stat-card">
-          <div class="stat-label">Agents responded</div>
-          <div class="stat-value">{{ formatNumber(respondedAgentsCount) }}</div>
-          <div class="stat-note">Unique agents with public actions in this run</div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-label">Sharing news</div>
-          <div class="stat-value">{{ formatNumber(sharingAgentsCount) }}</div>
-          <div class="stat-note">Agents actively reposting, quoting, or broadcasting</div>
-        </article>
-        <article class="stat-card accent">
-          <div class="stat-label">Total reach</div>
-          <div class="stat-value">{{ formatNumber(totalReachEstimate) }}</div>
-          <div class="stat-note">Estimated secondary reach from visible public activity</div>
-        </article>
-      </section>
-
-      <section class="dashboard-grid">
-        <article class="emotion-card">
-          <div class="panel-heading">
-            <div>
-              <div class="panel-kicker">Pulse</div>
-              <h2>Emotion distribution</h2>
-            </div>
-            <span class="panel-caption">Derived from live post text and action patterns</span>
-          </div>
-
-          <div class="emotion-stack">
-            <div v-for="item in emotionDistribution" :key="item.label" class="emotion-row">
-              <div class="emotion-head">
-                <span>{{ item.label }}</span>
-                <span>{{ item.count }}</span>
-              </div>
-              <div class="emotion-track">
-                <div
-                  class="emotion-fill"
-                  :class="item.tone"
-                  :style="{ width: `${item.percent}%` }"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="amplifier-card">
-          <div class="panel-heading">
-            <div>
-              <div class="panel-kicker">Network pressure</div>
-              <h2>Amplifier nodes</h2>
-            </div>
-            <span class="panel-caption">Weighted by reach, intensity, and share behavior</span>
-          </div>
-
-          <div v-if="topAmplifiers.length" class="amplifier-list">
-            <div v-for="agent in topAmplifiers" :key="agent.lookupKey" class="amplifier-row">
+          <section class="feed-panel">
+            <div class="panel-heading">
               <div>
-                <div class="amplifier-name">{{ agent.name }}</div>
-                <div class="amplifier-meta">
-                  {{ agent.profession }} / {{ agent.location }} / {{ formatNumber(agent.reach) }} reach
+                <div class="panel-kicker">Live feed</div>
+                <h2>Agent posts and shares</h2>
+              </div>
+              <span class="panel-caption">Bangla text with an English summary below</span>
+            </div>
+
+            <div v-if="isLoading && !feedItems.length" class="feed-empty">
+              Waiting for the first wave of responses...
+            </div>
+
+            <div v-else-if="!feedItems.length" class="feed-empty">
+              No public posts have been recorded yet. The dashboard will refresh automatically.
+            </div>
+
+            <div v-else class="feed-list">
+              <article
+                v-for="item in feedItems"
+                :key="item.id"
+                class="feed-card"
+                :class="{ amplifier: item.isAmplifier }"
+              >
+                <div class="feed-topline">
+                  <div>
+                    <div class="feed-name-row">
+                      <h3>{{ item.name }}</h3>
+                      <span v-if="item.isAmplifier" class="amp-badge">Amplifier node</span>
+                    </div>
+                    <div class="feed-meta">
+                      <span>{{ item.ageLabel }}</span>
+                      <span>{{ item.location }}</span>
+                      <span>{{ item.occupation }}</span>
+                    </div>
+                  </div>
+
+                  <div class="feed-badges">
+                    <span class="emotion-badge" :class="item.emotionTone">{{ item.emotion }}</span>
+                    <span class="platform-badge">{{ item.platformLabel }}</span>
+                    <span class="share-badge">{{ formatNumber(item.shareCount) }} shares</span>
+                  </div>
+                </div>
+
+                <div class="feed-copy">
+                  <div class="copy-block">
+                    <div class="copy-label">Bangla post</div>
+                    <p>{{ item.originalText }}</p>
+                  </div>
+
+                  <div class="copy-block translation">
+                    <div class="copy-label">English translation</div>
+                    <p>{{ item.translation }}</p>
+                  </div>
+                </div>
+
+                <div class="feed-footer">
+                  <span>Estimated reach {{ formatNumber(item.estimatedReach) }}</span>
+                  <span>Round {{ item.round }}</span>
+                  <span>{{ item.timeLabel }}</span>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <aside class="run-rail">
+          <section class="continuity-strip">
+            <article class="continuity-card">
+              <span class="continuity-label">Use case</span>
+              <span class="continuity-value">{{ wizardMetadata.useCase || 'Scenario run' }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Geography</span>
+              <span class="continuity-value">{{ populationLabel }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Outputs</span>
+              <span class="continuity-value">{{ requestedOutputsLabel }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Flow stage</span>
+              <span class="continuity-value">{{ currentStageLabel }}</span>
+            </article>
+          </section>
+
+          <section class="stat-grid">
+            <article class="stat-card">
+              <div class="stat-label">Agents responded</div>
+              <div class="stat-value">{{ formatNumber(respondedAgentsCount) }}</div>
+              <div class="stat-note">Unique agents with public actions in this run</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">Sharing news</div>
+              <div class="stat-value">{{ formatNumber(sharingAgentsCount) }}</div>
+              <div class="stat-note">Agents actively reposting, quoting, or broadcasting</div>
+            </article>
+            <article class="stat-card accent">
+              <div class="stat-label">Total reach</div>
+              <div class="stat-value">{{ formatNumber(totalReachEstimate) }}</div>
+              <div class="stat-note">Estimated secondary reach from visible public activity</div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid">
+            <article class="emotion-card">
+              <div class="panel-heading">
+                <div>
+                  <div class="panel-kicker">Pulse</div>
+                  <h2>Emotion distribution</h2>
+                </div>
+                <span class="panel-caption">Derived from live post text and action patterns</span>
+              </div>
+
+              <div class="emotion-stack">
+                <div v-for="item in emotionDistribution" :key="item.label" class="emotion-row">
+                  <div class="emotion-head">
+                    <span>{{ item.label }}</span>
+                    <span>{{ item.count }}</span>
+                  </div>
+                  <div class="emotion-track">
+                    <div
+                      class="emotion-fill"
+                      :class="item.tone"
+                      :style="{ width: `${item.percent}%` }"
+                    ></div>
+                  </div>
                 </div>
               </div>
-              <div class="amplifier-score">{{ Math.round(agent.score) }}</div>
-            </div>
-          </div>
-          <div v-else class="empty-panel">
-            Amplifier scoring will appear once agent actions begin streaming in.
-          </div>
-        </article>
-      </section>
+            </article>
 
-      <section class="feed-panel">
-        <div class="panel-heading">
-          <div>
-            <div class="panel-kicker">Live feed</div>
-            <h2>Agent posts and shares</h2>
-          </div>
-          <span class="panel-caption">Bangla text with an English summary below</span>
-        </div>
-
-        <div v-if="isLoading && !feedItems.length" class="feed-empty">
-          Waiting for the first wave of responses...
-        </div>
-
-        <div v-else-if="!feedItems.length" class="feed-empty">
-          No public posts have been recorded yet. The dashboard will refresh automatically.
-        </div>
-
-        <div v-else class="feed-list">
-          <article
-            v-for="item in feedItems"
-            :key="item.id"
-            class="feed-card"
-            :class="{ amplifier: item.isAmplifier }"
-          >
-            <div class="feed-topline">
-              <div>
-                <div class="feed-name-row">
-                  <h3>{{ item.name }}</h3>
-                  <span v-if="item.isAmplifier" class="amp-badge">Amplifier node</span>
+            <article class="amplifier-card">
+              <div class="panel-heading">
+                <div>
+                  <div class="panel-kicker">Network pressure</div>
+                  <h2>Amplifier nodes</h2>
                 </div>
-                <div class="feed-meta">
-                  <span>{{ item.ageLabel }}</span>
-                  <span>{{ item.location }}</span>
-                  <span>{{ item.occupation }}</span>
+                <span class="panel-caption">Weighted by reach, intensity, and share behavior</span>
+              </div>
+
+              <div v-if="topAmplifiers.length" class="amplifier-list">
+                <div v-for="agent in topAmplifiers" :key="agent.lookupKey" class="amplifier-row">
+                  <div>
+                    <div class="amplifier-name">{{ agent.name }}</div>
+                    <div class="amplifier-meta">
+                      {{ agent.profession }} / {{ agent.location }} / {{ formatNumber(agent.reach) }} reach
+                    </div>
+                  </div>
+                  <div class="amplifier-score">{{ Math.round(agent.score) }}</div>
                 </div>
               </div>
-
-              <div class="feed-badges">
-                <span class="emotion-badge" :class="item.emotionTone">{{ item.emotion }}</span>
-                <span class="platform-badge">{{ item.platformLabel }}</span>
-                <span class="share-badge">{{ formatNumber(item.shareCount) }} shares</span>
+              <div v-else class="empty-panel">
+                Amplifier scoring will appear once agent actions begin streaming in.
               </div>
-            </div>
-
-            <div class="feed-copy">
-              <div class="copy-block">
-                <div class="copy-label">Bangla post</div>
-                <p>{{ item.originalText }}</p>
-              </div>
-
-              <div class="copy-block translation">
-                <div class="copy-label">English translation</div>
-                <p>{{ item.translation }}</p>
-              </div>
-            </div>
-
-            <div class="feed-footer">
-              <span>Estimated reach {{ formatNumber(item.estimatedReach) }}</span>
-              <span>Round {{ item.round }}</span>
-              <span>{{ item.timeLabel }}</span>
-            </div>
-          </article>
-        </div>
+            </article>
+          </section>
+        </aside>
       </section>
     </main>
   </div>
@@ -260,6 +287,7 @@ import {
   stopSimulation,
 } from '../api/simulation'
 import { generateReport } from '../api/report'
+import OpsProductHeader from '../components/OpsProductHeader.vue'
 
 const props = defineProps({
   simulationId: String,
@@ -331,7 +359,11 @@ function parseWizardMetadata(text) {
     }
 
     if (label === 'use case') metadata.useCase = value
-    if (label === 'country') metadata.country = value
+    if (label === 'country' || label === 'origin country') metadata.originCountry = value
+    if (label === 'origin countries') metadata.originCountries = value
+    if (label === 'run type') metadata.runType = value
+    if (label === 'audience region') metadata.audienceRegion = value
+    if (label === 'corridor') metadata.corridor = value
     if (label === 'segments') metadata.segments = value
     if (label === 'target agents') metadata.targetAgents = value
     if (label === 'requested outputs') metadata.outputs = value
@@ -863,8 +895,30 @@ function goBackToSetup() {
   router.push({ name: 'Simulation', params: { simulationId: simulationId.value } })
 }
 
+function goToExpertView() {
+  router.push({ name: 'Simulation', params: { simulationId: simulationId.value } })
+}
+
 const wizardMetadata = computed(() => parseWizardMetadata(projectData.value?.simulation_requirement || ''))
 const scenarioSummary = computed(() => extractScenarioText(projectData.value?.simulation_requirement || projectData.value?.analysis_summary || ''))
+const geographyLabel = computed(() => {
+  if (wizardMetadata.value.corridor) {
+    return wizardMetadata.value.corridor
+  }
+  if (wizardMetadata.value.audienceRegion && wizardMetadata.value.originCountry) {
+    return `${wizardMetadata.value.originCountry} diaspora in ${wizardMetadata.value.audienceRegion}`
+  }
+  if (wizardMetadata.value.originCountries) {
+    return wizardMetadata.value.originCountries
+  }
+  return wizardMetadata.value.originCountry || ''
+})
+const populationLabel = computed(() => {
+  const country = geographyLabel.value || 'South Asia'
+  const segments = wizardMetadata.value.segments || 'General population'
+  return `${country} / ${segments}`
+})
+const requestedOutputsLabel = computed(() => wizardMetadata.value.outputs || 'Live dashboard')
 
 const progressPercent = computed(() => {
   const raw = Number(runStatus.value?.progress_percent || 0)
@@ -898,6 +952,15 @@ const isRunnable = computed(() => {
 const isCompleted = computed(() => {
   const state = String(runStatus.value?.runner_status || simulationData.value?.status || '').toLowerCase()
   return state === 'completed' || state === 'stopped' || checkPlatformsCompleted(runStatus.value)
+})
+const currentStageLabel = computed(() => {
+  if (isCompleted.value) {
+    return 'Ready for report generation'
+  }
+  if (isStarting.value) {
+    return 'Starting live run'
+  }
+  return 'Monitoring live responses'
 })
 
 const currentRound = computed(() => {
@@ -1120,25 +1183,8 @@ onUnmounted(() => {
 <style scoped>
 .ops-run-dashboard {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top right, rgba(10, 78, 122, 0.08), transparent 30%),
-    linear-gradient(180deg, #f7f5ee 0%, #ffffff 48%, #fbfaf6 100%);
-  color: #101010;
-  font-family: 'Space Grotesk', 'Noto Sans', system-ui, sans-serif;
-}
-
-.dashboard-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 20px 32px;
-  backdrop-filter: blur(18px);
-  background: rgba(247, 245, 238, 0.9);
-  border-bottom: 1px solid rgba(16, 16, 16, 0.08);
+  color: var(--ops-ink);
+  font-family: var(--ops-font-display);
 }
 
 .brand-lockup,
@@ -1221,16 +1267,18 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .ghost-btn {
-  border: 1px solid rgba(16, 16, 16, 0.1);
-  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid var(--ops-border-strong);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ops-ink-soft);
 }
 
 .primary-btn {
-  border: 1px solid #111;
-  background: #111;
+  border: 1px solid var(--ops-accent);
+  background: var(--ops-accent);
   color: #fff;
 }
 
@@ -1247,6 +1295,7 @@ onUnmounted(() => {
 }
 
 .hero-panel,
+.run-layout,
 .dashboard-grid,
 .stat-grid,
 .feed-copy,
@@ -1260,6 +1309,20 @@ onUnmounted(() => {
   gap: 24px;
 }
 
+.run-layout {
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.78fr);
+  gap: 24px;
+  margin-top: 24px;
+  align-items: start;
+}
+
+.run-main,
+.run-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .hero-copy,
 .hero-status-card,
 .stat-card,
@@ -1267,10 +1330,10 @@ onUnmounted(() => {
 .amplifier-card,
 .feed-panel,
 .error-banner {
-  border: 1px solid rgba(16, 16, 16, 0.08);
+  border: 1px solid var(--ops-border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 22px 40px rgba(17, 17, 17, 0.05);
+  background: var(--ops-surface);
+  box-shadow: var(--ops-shadow);
 }
 
 .hero-copy,
@@ -1321,8 +1384,8 @@ onUnmounted(() => {
 
 .meta-chip.subtle,
 .share-badge {
-  background: #eef2f7;
-  color: #46566a;
+  background: rgba(17, 24, 39, 0.05);
+  color: var(--ops-ink-soft);
 }
 
 .hero-status-card,
@@ -1348,10 +1411,10 @@ onUnmounted(() => {
   font-weight: 800;
 }
 
-.status-value.live { color: #154c68; }
-.status-value.success { color: #1b6e4b; }
+.status-value.live { color: var(--ops-accent); }
+.status-value.success { color: var(--ops-success); }
 .status-value.stopped { color: #7a5a20; }
-.status-value.error { color: #a42a2a; }
+.status-value.error { color: var(--ops-error); }
 
 .status-percent,
 .amplifier-score {
@@ -1383,7 +1446,7 @@ onUnmounted(() => {
 }
 
 .progress-fill {
-  background: linear-gradient(90deg, #0f5a89 0%, #3fa7a0 100%);
+  background: linear-gradient(90deg, var(--ops-accent) 0%, #f0833a 100%);
 }
 
 .status-grid,
@@ -1415,9 +1478,56 @@ onUnmounted(() => {
   margin-top: 24px;
 }
 
+.continuity-strip,
 .stat-grid,
 .feed-panel {
   margin-top: 24px;
+}
+
+.run-rail .continuity-strip,
+.run-rail .stat-grid,
+.run-rail .dashboard-grid,
+.run-main .feed-panel,
+.run-main .error-banner {
+  margin-top: 0;
+}
+
+.run-rail .continuity-strip,
+.run-rail .stat-grid,
+.run-rail .dashboard-grid {
+  grid-template-columns: 1fr;
+}
+
+.continuity-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.continuity-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--ops-border);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--ops-shadow-tight);
+}
+
+.continuity-label {
+  font-family: var(--ops-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ops-muted);
+}
+
+.continuity-value {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .stat-value {
@@ -1428,7 +1538,7 @@ onUnmounted(() => {
 }
 
 .stat-card.accent {
-  background: linear-gradient(135deg, rgba(17, 17, 17, 0.94), rgba(15, 90, 137, 0.92));
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(201, 75, 34, 0.92));
   color: #fff;
 }
 
@@ -1474,8 +1584,8 @@ onUnmounted(() => {
 }
 
 .feed-card.amplifier {
-  background: linear-gradient(135deg, rgba(15, 90, 137, 0.08), rgba(255, 255, 255, 0.96));
-  border-color: rgba(15, 90, 137, 0.22);
+  background: linear-gradient(135deg, rgba(201, 75, 34, 0.08), rgba(255, 255, 255, 0.96));
+  border-color: rgba(201, 75, 34, 0.22);
 }
 
 .feed-copy {
@@ -1490,7 +1600,7 @@ onUnmounted(() => {
 
 .copy-block.translation { background: #f5f7fb; }
 .platform-badge { background: #f0eadc; color: #584b35; }
-.amp-badge { background: #d9edf7; color: #0f5a89; }
+.amp-badge { background: var(--ops-accent-soft); color: var(--ops-accent); }
 
 .feed-empty,
 .empty-panel {
@@ -1502,6 +1612,8 @@ onUnmounted(() => {
 
 @media (max-width: 1080px) {
   .hero-panel,
+  .run-layout,
+  .continuity-strip,
   .dashboard-grid,
   .stat-grid,
   .feed-copy {

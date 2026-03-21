@@ -1,47 +1,50 @@
 <template>
   <div class="ops-results-page">
-    <header class="results-header">
-      <div class="brand-lockup">
-        <button type="button" class="back-link" @click="goToRunView">
-          Back to live dashboard
-        </button>
-        <div class="brand-mark">OPS</div>
-        <div class="brand-copy">
-          <div class="brand-name">Organic Population Simulation</div>
-          <div class="brand-tagline">How South Asia actually responds</div>
+    <OpsProductHeader
+      active-view="results"
+      :simulation-id="simulationId"
+      :report-id="currentReportId"
+      section-label="OPS Flow · Results"
+    >
+      <template #actions>
+        <div class="header-actions">
+          <button type="button" class="ghost-btn" @click="goToRunView">
+            Back to live dashboard
+          </button>
+          <button type="button" class="ghost-btn" @click="goToExpertView">
+            Expert view
+          </button>
+          <button type="button" class="ghost-btn" :disabled="isRefreshing" @click="refreshResults">
+            {{ isRefreshing ? 'Refreshing...' : 'Refresh results' }}
+          </button>
+          <button type="button" class="ghost-btn" :disabled="!reportReady" @click="downloadPdfReport">
+            Download PDF report
+          </button>
+          <button type="button" class="ghost-btn" :disabled="!feedItems.length" @click="downloadCsv">
+            Download CSV
+          </button>
+          <button
+            type="button"
+            class="primary-btn"
+            :disabled="!calendlyUrl"
+            @click="openDebrief"
+          >
+            Request debrief call
+          </button>
         </div>
-      </div>
-
-      <div class="header-actions">
-        <button type="button" class="ghost-btn" :disabled="isRefreshing" @click="refreshResults">
-          {{ isRefreshing ? 'Refreshing...' : 'Refresh results' }}
-        </button>
-        <button type="button" class="ghost-btn" :disabled="!reportReady" @click="downloadPdfReport">
-          Download PDF report
-        </button>
-        <button type="button" class="ghost-btn" :disabled="!feedItems.length" @click="downloadCsv">
-          Download CSV
-        </button>
-        <button
-          type="button"
-          class="primary-btn"
-          :disabled="!calendlyUrl"
-          @click="openDebrief"
-        >
-          Request debrief call
-        </button>
-      </div>
-    </header>
+      </template>
+    </OpsProductHeader>
 
     <main class="results-shell">
       <section class="hero-panel">
         <div class="hero-copy">
-          <div class="hero-kicker">OPS Results</div>
+          <div class="hero-kicker">OPS Flow · Results</div>
           <h1>{{ reportOutlineTitle }}</h1>
           <p>{{ scenarioSummary }}</p>
           <div class="hero-chips">
             <span v-if="wizardMetadata.useCase" class="meta-chip">{{ wizardMetadata.useCase }}</span>
-            <span v-if="wizardMetadata.country" class="meta-chip">{{ wizardMetadata.country }}</span>
+            <span v-if="wizardMetadata.runType" class="meta-chip">{{ wizardMetadata.runType }}</span>
+            <span v-if="geographyLabel" class="meta-chip">{{ geographyLabel }}</span>
             <span v-if="wizardMetadata.segments" class="meta-chip">{{ wizardMetadata.segments }}</span>
             <span v-if="reportReady" class="meta-chip subtle">Completed {{ completedAtLabel }}</span>
             <span v-else class="meta-chip subtle">Generating report...</span>
@@ -86,164 +89,187 @@
         </div>
       </section>
 
-      <section v-if="errorMessage" class="error-banner">
-        <div class="error-title">Results warning</div>
-        <div class="error-copy">{{ errorMessage }}</div>
-      </section>
+      <section class="results-layout">
+        <div class="results-main">
+          <section v-if="errorMessage" class="error-banner">
+            <div class="error-title">Results warning</div>
+            <div class="error-copy">{{ errorMessage }}</div>
+          </section>
 
-      <section class="stat-grid">
-        <article class="stat-card">
-          <div class="stat-label">Total agents</div>
-          <div class="stat-value">{{ formatNumber(totalAgents) }}</div>
-          <div class="stat-note">Profiles available for this completed run</div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-label">Sharing rate</div>
-          <div class="stat-value">{{ sharingRateLabel }}</div>
-          <div class="stat-note">Share-active agents divided by total responding agents</div>
-        </article>
-        <article class="stat-card accent">
-          <div class="stat-label">Total cascade reach</div>
-          <div class="stat-value">{{ formatNumber(totalReachEstimate) }}</div>
-          <div class="stat-note">Estimated downstream reach from visible public activity</div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-label">Dominant emotion</div>
-          <div class="stat-value">{{ dominantEmotion }}</div>
-          <div class="stat-note">Most common derived emotional tone in public posts</div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-label">Top amplifiers</div>
-          <div class="stat-value">{{ topAmplifierNames }}</div>
-          <div class="stat-note">Highest weighted nodes by reach and share behavior</div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-label">Silent majority</div>
-          <div class="stat-value">{{ formatNumber(silentMajorityCount) }}</div>
-          <div class="stat-note">Profiles with no visible public action in the captured run data</div>
-        </article>
-      </section>
-
-      <section class="results-grid">
-        <article class="summary-card">
-          <div class="panel-heading">
-            <div>
-              <div class="panel-kicker">Analyst summary</div>
-              <h2>What the run says</h2>
-            </div>
-            <span class="panel-caption">Rendered from the report outline and markdown output</span>
-          </div>
-
-          <div v-if="reportReady" class="summary-body">
-            <p class="summary-lead">{{ reportSummary }}</p>
-
-            <div v-if="reportOutlineSections.length" class="outline-list">
-              <div v-for="(section, index) in reportOutlineSections" :key="section.title || index" class="outline-item">
-                <div class="outline-index">{{ String(index + 1).padStart(2, '0') }}</div>
-                <div>
-                  <div class="outline-title">{{ section.title }}</div>
-                  <div class="outline-desc">{{ section.description || 'Section generated in the final report.' }}</div>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="reportPreviewHtml" class="markdown-preview" v-html="reportPreviewHtml"></div>
-          </div>
-
-          <div v-else class="loading-panel">
-            <div class="loading-dot"></div>
-            <span>The report agent is still assembling the final narrative. This page will refresh automatically.</span>
-          </div>
-        </article>
-
-        <article class="heatmap-card">
-          <div class="panel-heading">
-            <div>
-              <div class="panel-kicker">Regional signal</div>
-              <h2>District heat map placeholder</h2>
-            </div>
-            <span class="panel-caption">Bangladesh placeholder until district-level metadata is explicit in the backend</span>
-          </div>
-
-          <div class="heatmap-shell">
-            <div class="map-shape">
-              <div
-                v-for="district in districtHeatmap"
-                :key="district.name"
-                class="district-node"
-                :class="district.tone"
-              >
-                <span class="district-name">{{ district.name }}</span>
-                <span class="district-value">{{ district.count }}</span>
-              </div>
-            </div>
-
-            <div class="heatmap-legend">
-              <div v-for="district in districtHeatmap" :key="`${district.name}-legend`" class="legend-row">
-                <span>{{ district.name }}</span>
-                <div class="legend-bar">
-                  <div class="legend-fill" :style="{ width: `${district.percent}%` }"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section class="feed-panel printable-report">
-        <div class="panel-heading">
-          <div>
-            <div class="panel-kicker">Top reactions</div>
-            <h2>Top 10 agent posts</h2>
-          </div>
-          <span class="panel-caption">Bangla text with English interpretation underneath</span>
-        </div>
-
-        <div v-if="!topPosts.length" class="feed-empty">
-          Top posts will appear after the report and action streams become available.
-        </div>
-
-        <div v-else class="feed-list">
-          <article v-for="item in topPosts" :key="item.id" class="feed-card" :class="{ amplifier: item.isAmplifier }">
-            <div class="feed-topline">
+          <section class="summary-card">
+            <div class="panel-heading">
               <div>
-                <div class="feed-name-row">
-                  <h3>{{ item.name }}</h3>
-                  <span v-if="item.isAmplifier" class="amp-badge">Amplifier node</span>
+                <div class="panel-kicker">Analyst summary</div>
+                <h2>What the run says</h2>
+              </div>
+              <span class="panel-caption">Rendered from the report outline and markdown output</span>
+            </div>
+
+            <div v-if="reportReady" class="summary-body">
+              <p class="summary-lead">{{ reportSummary }}</p>
+
+              <div v-if="reportOutlineSections.length" class="outline-list">
+                <div v-for="(section, index) in reportOutlineSections" :key="section.title || index" class="outline-item">
+                  <div class="outline-index">{{ String(index + 1).padStart(2, '0') }}</div>
+                  <div>
+                    <div class="outline-title">{{ section.title }}</div>
+                    <div class="outline-desc">{{ section.description || 'Section generated in the final report.' }}</div>
+                  </div>
                 </div>
-                <div class="feed-meta">
-                  <span>{{ item.ageLabel }}</span>
-                  <span>{{ item.location }}</span>
-                  <span>{{ item.occupation }}</span>
+              </div>
+
+              <div v-if="reportPreviewHtml" class="markdown-preview" v-html="reportPreviewHtml"></div>
+            </div>
+
+            <div v-else class="loading-panel">
+              <div class="loading-dot"></div>
+              <span>The report agent is still assembling the final narrative. This page will refresh automatically.</span>
+            </div>
+          </section>
+
+          <section class="feed-panel printable-report">
+            <div class="panel-heading">
+              <div>
+                <div class="panel-kicker">Top reactions</div>
+                <h2>Top 10 agent posts</h2>
+              </div>
+              <span class="panel-caption">Bangla text with English interpretation underneath</span>
+            </div>
+
+            <div v-if="!topPosts.length" class="feed-empty">
+              Top posts will appear after the report and action streams become available.
+            </div>
+
+            <div v-else class="feed-list">
+              <article v-for="item in topPosts" :key="item.id" class="feed-card" :class="{ amplifier: item.isAmplifier }">
+                <div class="feed-topline">
+                  <div>
+                    <div class="feed-name-row">
+                      <h3>{{ item.name }}</h3>
+                      <span v-if="item.isAmplifier" class="amp-badge">Amplifier node</span>
+                    </div>
+                    <div class="feed-meta">
+                      <span>{{ item.ageLabel }}</span>
+                      <span>{{ item.location }}</span>
+                      <span>{{ item.occupation }}</span>
+                    </div>
+                  </div>
+
+                  <div class="feed-badges">
+                    <span class="emotion-badge" :class="item.emotionTone">{{ item.emotion }}</span>
+                    <span class="platform-badge">{{ item.platformLabel }}</span>
+                    <span class="share-badge">{{ formatNumber(item.shareCount) }} shares</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="feed-badges">
-                <span class="emotion-badge" :class="item.emotionTone">{{ item.emotion }}</span>
-                <span class="platform-badge">{{ item.platformLabel }}</span>
-                <span class="share-badge">{{ formatNumber(item.shareCount) }} shares</span>
-              </div>
+                <div class="feed-copy">
+                  <div class="copy-block">
+                    <div class="copy-label">Bangla post</div>
+                    <p>{{ item.originalText }}</p>
+                  </div>
+
+                  <div class="copy-block translation">
+                    <div class="copy-label">English translation</div>
+                    <p>{{ item.translation }}</p>
+                  </div>
+                </div>
+
+                <div class="feed-footer">
+                  <span>Estimated reach {{ formatNumber(item.estimatedReach) }}</span>
+                  <span>Round {{ item.round }}</span>
+                  <span>{{ item.timeLabel }}</span>
+                </div>
+              </article>
             </div>
-
-            <div class="feed-copy">
-              <div class="copy-block">
-                <div class="copy-label">Bangla post</div>
-                <p>{{ item.originalText }}</p>
-              </div>
-
-              <div class="copy-block translation">
-                <div class="copy-label">English translation</div>
-                <p>{{ item.translation }}</p>
-              </div>
-            </div>
-
-            <div class="feed-footer">
-              <span>Estimated reach {{ formatNumber(item.estimatedReach) }}</span>
-              <span>Round {{ item.round }}</span>
-              <span>{{ item.timeLabel }}</span>
-            </div>
-          </article>
+          </section>
         </div>
+
+        <aside class="results-rail">
+          <section class="continuity-strip">
+            <article class="continuity-card">
+              <span class="continuity-label">Use case</span>
+              <span class="continuity-value">{{ wizardMetadata.useCase || 'Scenario run' }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Geography</span>
+              <span class="continuity-value">{{ populationLabel }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Outputs</span>
+              <span class="continuity-value">{{ requestedOutputsLabel }}</span>
+            </article>
+            <article class="continuity-card">
+              <span class="continuity-label">Flow stage</span>
+              <span class="continuity-value">{{ resultsStageLabel }}</span>
+            </article>
+          </section>
+
+          <section class="stat-grid">
+            <article class="stat-card">
+              <div class="stat-label">Total agents</div>
+              <div class="stat-value">{{ formatNumber(totalAgents) }}</div>
+              <div class="stat-note">Profiles available for this completed run</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">Sharing rate</div>
+              <div class="stat-value">{{ sharingRateLabel }}</div>
+              <div class="stat-note">Share-active agents divided by total responding agents</div>
+            </article>
+            <article class="stat-card accent">
+              <div class="stat-label">Total cascade reach</div>
+              <div class="stat-value">{{ formatNumber(totalReachEstimate) }}</div>
+              <div class="stat-note">Estimated downstream reach from visible public activity</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">Dominant emotion</div>
+              <div class="stat-value">{{ dominantEmotion }}</div>
+              <div class="stat-note">Most common derived emotional tone in public posts</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">Top amplifiers</div>
+              <div class="stat-value">{{ topAmplifierNames }}</div>
+              <div class="stat-note">Highest weighted nodes by reach and share behavior</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">Silent majority</div>
+              <div class="stat-value">{{ formatNumber(silentMajorityCount) }}</div>
+              <div class="stat-note">Profiles with no visible public action in the captured run data</div>
+            </article>
+          </section>
+
+          <section class="heatmap-card">
+            <div class="panel-heading">
+              <div>
+                <div class="panel-kicker">Regional signal</div>
+                <h2>District heat map placeholder</h2>
+              </div>
+              <span class="panel-caption">Bangladesh placeholder until district-level metadata is explicit in the backend</span>
+            </div>
+
+            <div class="heatmap-shell">
+              <div class="map-shape">
+                <div
+                  v-for="district in districtHeatmap"
+                  :key="district.name"
+                  class="district-node"
+                  :class="district.tone"
+                >
+                  <span class="district-name">{{ district.name }}</span>
+                  <span class="district-value">{{ district.count }}</span>
+                </div>
+              </div>
+
+              <div class="heatmap-legend">
+                <div v-for="district in districtHeatmap" :key="`${district.name}-legend`" class="legend-row">
+                  <span>{{ district.name }}</span>
+                  <div class="legend-bar">
+                    <div class="legend-fill" :style="{ width: `${district.percent}%` }"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
       </section>
     </main>
   </div>
@@ -264,6 +290,7 @@ import {
   getReportProgress,
   getReportSections,
 } from '../api/report'
+import OpsProductHeader from '../components/OpsProductHeader.vue'
 
 const props = defineProps({
   reportId: String,
@@ -331,7 +358,11 @@ function parseWizardMetadata(text) {
     const value = line.slice(separator + 1).trim()
     if (!value) continue
     if (label === 'use case') metadata.useCase = value
-    if (label === 'country') metadata.country = value
+    if (label === 'country' || label === 'origin country') metadata.originCountry = value
+    if (label === 'origin countries') metadata.originCountries = value
+    if (label === 'run type') metadata.runType = value
+    if (label === 'audience region') metadata.audienceRegion = value
+    if (label === 'corridor') metadata.corridor = value
     if (label === 'segments') metadata.segments = value
     if (label === 'target agents') metadata.targetAgents = value
     if (label === 'requested outputs') metadata.outputs = value
@@ -799,8 +830,34 @@ function goToRunView() {
   router.push('/')
 }
 
+function goToExpertView() {
+  if (currentReportId.value) {
+    router.push({ name: 'Interaction', params: { reportId: currentReportId.value } })
+    return
+  }
+  router.push('/')
+}
+
 const wizardMetadata = computed(() => parseWizardMetadata(projectData.value?.simulation_requirement || reportData.value?.simulation_requirement || ''))
 const scenarioSummary = computed(() => extractScenarioText(projectData.value?.simulation_requirement || reportData.value?.simulation_requirement || ''))
+const geographyLabel = computed(() => {
+  if (wizardMetadata.value.corridor) {
+    return wizardMetadata.value.corridor
+  }
+  if (wizardMetadata.value.audienceRegion && wizardMetadata.value.originCountry) {
+    return `${wizardMetadata.value.originCountry} diaspora in ${wizardMetadata.value.audienceRegion}`
+  }
+  if (wizardMetadata.value.originCountries) {
+    return wizardMetadata.value.originCountries
+  }
+  return wizardMetadata.value.originCountry || ''
+})
+const populationLabel = computed(() => {
+  const country = geographyLabel.value || 'South Asia'
+  const segments = wizardMetadata.value.segments || 'General population'
+  return `${country} / ${segments}`
+})
+const requestedOutputsLabel = computed(() => wizardMetadata.value.outputs || 'PDF report, CSV export')
 
 const reportReady = computed(() => String(reportData.value?.status || '').toLowerCase() === 'completed')
 const reportStatusLabel = computed(() => {
@@ -831,6 +888,7 @@ const reportPhaseLabel = computed(() => {
   if (reportReady.value) return 'Final report assembled'
   return reportProgress.value?.message || 'Report agent is synthesizing the run'
 })
+const resultsStageLabel = computed(() => (reportReady.value ? 'Completed insight report' : 'Generating insight report'))
 
 const reportOutlineTitle = computed(() => reportData.value?.outline?.title || projectData.value?.name || 'OPS Simulation Results')
 const reportSummary = computed(() => {
@@ -1041,25 +1099,8 @@ onUnmounted(() => {
 <style scoped>
 .ops-results-page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top right, rgba(10, 78, 122, 0.08), transparent 30%),
-    linear-gradient(180deg, #f7f5ee 0%, #ffffff 48%, #fbfaf6 100%);
-  color: #101010;
-  font-family: 'Space Grotesk', 'Noto Sans', system-ui, sans-serif;
-}
-
-.results-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 20px 32px;
-  backdrop-filter: blur(18px);
-  background: rgba(247, 245, 238, 0.9);
-  border-bottom: 1px solid rgba(16, 16, 16, 0.08);
+  color: var(--ops-ink);
+  font-family: var(--ops-font-display);
 }
 
 .brand-lockup,
@@ -1139,16 +1180,18 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .ghost-btn {
-  border: 1px solid rgba(16, 16, 16, 0.1);
-  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid var(--ops-border-strong);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ops-ink-soft);
 }
 
 .primary-btn {
-  border: 1px solid #111;
-  background: #111;
+  border: 1px solid var(--ops-accent);
+  background: var(--ops-accent);
   color: #fff;
 }
 
@@ -1165,6 +1208,7 @@ onUnmounted(() => {
 }
 
 .hero-panel,
+.results-layout,
 .stat-grid,
 .results-grid,
 .feed-copy,
@@ -1179,6 +1223,19 @@ onUnmounted(() => {
   gap: 24px;
 }
 
+.results-layout {
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 420px);
+  margin-top: 24px;
+  align-items: start;
+}
+
+.results-main,
+.results-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .hero-copy,
 .hero-status-card,
 .stat-card,
@@ -1186,10 +1243,10 @@ onUnmounted(() => {
 .heatmap-card,
 .feed-panel,
 .error-banner {
-  border: 1px solid rgba(16, 16, 16, 0.08);
+  border: 1px solid var(--ops-border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 22px 40px rgba(17, 17, 17, 0.05);
+  background: var(--ops-surface);
+  box-shadow: var(--ops-shadow);
 }
 
 .hero-copy,
@@ -1241,8 +1298,8 @@ onUnmounted(() => {
 
 .meta-chip.subtle,
 .share-badge {
-  background: #eef2f7;
-  color: #46566a;
+  background: rgba(17, 24, 39, 0.05);
+  color: var(--ops-ink-soft);
 }
 
 .hero-status-card,
@@ -1269,9 +1326,9 @@ onUnmounted(() => {
   font-weight: 800;
 }
 
-.status-value.live { color: #154c68; }
-.status-value.success { color: #1b6e4b; }
-.status-value.error { color: #a42a2a; }
+.status-value.live { color: var(--ops-accent); }
+.status-value.success { color: var(--ops-success); }
+.status-value.error { color: var(--ops-error); }
 
 .status-meta {
   max-width: 180px;
@@ -1299,7 +1356,7 @@ onUnmounted(() => {
 }
 
 .progress-fill {
-  background: linear-gradient(90deg, #0f5a89 0%, #3fa7a0 100%);
+  background: linear-gradient(90deg, var(--ops-accent) 0%, #f0833a 100%);
 }
 
 .status-grid {
@@ -1324,9 +1381,40 @@ onUnmounted(() => {
   font-family: 'JetBrains Mono', monospace;
 }
 
+.continuity-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .stat-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 24px;
+}
+
+.continuity-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--ops-border);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--ops-shadow-tight);
+}
+
+.continuity-label {
+  font-family: var(--ops-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ops-muted);
+}
+
+.continuity-value {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .stat-value {
@@ -1337,18 +1425,13 @@ onUnmounted(() => {
 }
 
 .stat-card.accent {
-  background: linear-gradient(135deg, rgba(17, 17, 17, 0.94), rgba(15, 90, 137, 0.92));
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(201, 75, 34, 0.92));
   color: #fff;
 }
 
 .stat-card.accent .stat-label,
 .stat-card.accent .stat-note {
   color: rgba(255, 255, 255, 0.8);
-}
-
-.results-grid {
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-  margin-top: 24px;
 }
 
 .outline-list,
@@ -1470,11 +1553,7 @@ onUnmounted(() => {
 }
 
 .legend-fill {
-  background: linear-gradient(90deg, #0f5a89 0%, #3fa7a0 100%);
-}
-
-.feed-panel {
-  margin-top: 24px;
+  background: linear-gradient(90deg, var(--ops-accent) 0%, #f0833a 100%);
 }
 
 .feed-card {
@@ -1484,8 +1563,8 @@ onUnmounted(() => {
 }
 
 .feed-card.amplifier {
-  background: linear-gradient(135deg, rgba(15, 90, 137, 0.08), rgba(255, 255, 255, 0.96));
-  border-color: rgba(15, 90, 137, 0.22);
+  background: linear-gradient(135deg, rgba(201, 75, 34, 0.08), rgba(255, 255, 255, 0.96));
+  border-color: rgba(201, 75, 34, 0.22);
 }
 
 .feed-name-row {
@@ -1512,7 +1591,7 @@ onUnmounted(() => {
 .emotion-badge.other { background: rgba(71, 95, 122, 0.12); color: #364a60; }
 
 .platform-badge { background: #f0eadc; color: #584b35; }
-.amp-badge { background: #d9edf7; color: #0f5a89; }
+.amp-badge { background: var(--ops-accent-soft); color: var(--ops-accent); }
 
 .feed-copy {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1530,10 +1609,23 @@ onUnmounted(() => {
 }
 
 .error-banner {
-  margin-top: 18px;
   padding: 18px 22px;
   border-color: rgba(164, 42, 42, 0.16);
   background: rgba(164, 42, 42, 0.05);
+}
+
+.results-main .summary-card,
+.results-main .feed-panel,
+.results-main .error-banner,
+.results-rail .continuity-strip,
+.results-rail .stat-grid,
+.results-rail .heatmap-card {
+  margin-top: 0;
+}
+
+.results-rail .continuity-strip,
+.results-rail .stat-grid {
+  grid-template-columns: 1fr;
 }
 
 @keyframes pulse {
@@ -1542,6 +1634,8 @@ onUnmounted(() => {
 
 @media (max-width: 1080px) {
   .hero-panel,
+  .results-layout,
+  .continuity-strip,
   .stat-grid,
   .results-grid,
   .feed-copy {
@@ -1572,7 +1666,7 @@ onUnmounted(() => {
 }
 
 @media print {
-  .results-header,
+  :deep(.ops-product-header),
   .error-banner,
   .feed-empty {
     display: none !important;
