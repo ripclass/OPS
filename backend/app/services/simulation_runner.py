@@ -18,8 +18,13 @@ from datetime import datetime
 from enum import Enum
 from queue import Queue
 
+from openai import OpenAI
+
 from ..config import Config
+from ..models.project import ProjectManager
 from ..utils.logger import get_logger
+from .oasis_profile_generator import OasisAgentProfile, OasisProfileGenerator
+from .ops_memory_store import save_agent_state
 from .zep_graph_memory_updater import ZepGraphMemoryManager
 from .simulation_ipc import SimulationIPCClient, CommandType, IPCResponse
 
@@ -225,6 +230,309 @@ class SimulationRunner:
     
     # Map memory update configuration
     _graph_memory_enabled: Dict[str, bool] = {}  # simulation_id -> enabled
+    _memory_summary_applied: Dict[str, bool] = {}
+
+    @classmethod
+    def _get_memory_summary_path(cls, simulation_id: str) -> str:
+        """Get the per-run temporal continuity summary file path."""
+        return os.path.join(cls.RUN_STATE_DIR, simulation_id, "ops_memory_summary.json")
+
+    @classmethod
+    def _get_profile_snapshot_path(cls, simulation_id: str) -> str:
+        """Get the local full-profile snapshot path."""
+        return os.path.join(cls.RUN_STATE_DIR, simulation_id, "ops_profiles.json")
+
+    @classmethod
+    def _load_profile_snapshot(cls, simulation_id: str) -> List[OasisAgentProfile]:
+        """Load the local OPS profile snapshot for a simulation."""
+        snapshot_path = cls._get_profile_snapshot_path(simulation_id)
+        if not os.path.exists(snapshot_path):
+            return []
+        try:
+            with open(snapshot_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if not isinstance(data, list):
+                return []
+            return [OasisAgentProfile.from_dict(item) for item in data]
+        except Exception as exc:
+            logger.warning(f"Failed to load OPS profile snapshot for {simulation_id}: {exc}")
+            return []
+
+    @classmethod
+    def _save_profile_snapshot(cls, simulation_id: str, profiles: List[OasisAgentProfile]):
+        """Persist the updated OPS profile snapshot and platform profile files."""
+        sim_dir = os.path.join(cls.RUN_STATE_DIR, simulation_id)
+        state_file = os.path.join(sim_dir, "state.json")
+        graph_id = None
+        enable_reddit = True
+        enable_twitter = True
+
+        if os.path.exists(state_file):
+            try:
+                with open(state_file, 'r', encoding='utf-8') as f:
+                    state_data = json.load(f)
+                graph_id = state_data.get("graph_id")
+                enable_reddit = state_data.get("enable_reddit", True)
+                enable_twitter = state_data.get("enable_twitter", True)
+            except Exception:
+                pass
+
+        generator = OasisProfileGenerator(graph_id=graph_id)
+        generator.save_profiles_snapshot(profiles, cls._get_profile_snapshot_path(simulation_id))
+        if enable_reddit:
+            generator.save_profiles(
+                profiles=profiles,
+                file_path=os.path.join(sim_dir, "reddit_profiles.json"),
+                platform="reddit",
+            )
+        if enable_twitter:
+            generator.save_profiles(
+                profiles=profiles,
+                file_path=os.path.join(sim_dir, "twitter_profiles.csv"),
+                platform="twitter",
+            )
+
+    @classmethod
+    def _load_scenario_text(cls, simulation_id: str) -> str:
+        """Load the scenario text tied to the simulation's project."""
+        state_file = os.path.join(cls.RUN_STATE_DIR, simulation_id, "state.json")
+        if not os.path.exists(state_file):
+            return ""
+        try:
+            with open(state_file, 'r', encoding='utf-8') as f:
+                state_data = json.load(f)
+            project_id = state_data.get("project_id")
+            if not project_id:
+                return ""
+            project = ProjectManager.get_project(project_id)
+            return project.simulation_requirement if project else ""
+        except Exception as exc:
+            logger.warning(f"Failed to load scenario text for simulation {simulation_id}: {exc}")
+            return ""
+
+    @classmethod
+    def _summarize_agent_activity_for_memory(
+        cls,
+        profile: OasisAgentProfile,
+        scenario: str,
+        actions: List[AgentAction],
+        interviews: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Generate one canonical post-run outcome for temporal continuity."""
+        visible_actions = []
+        for action in actions[:40]:
+            visible_actions.append({
+                "timestamp": action.timestamp,
+                "platform": action.platform,
+                "action_type": action.action_type,
+                "action_args": action.action_args,
+            })
+
+        interview_samples = []
+        for interview in interviews[:6]:
+            interview_samples.append({
+                "timestamp": interview.get("timestamp"),
+                "platform": interview.get("platform"),
+                "prompt": interview.get("prompt"),
+                "response": interview.get("response"),
+            })
+
+        payload = {
+            "profile": profile.to_dict(),
+            "scenario": scenario,
+            "actions": visible_actions,
+            "interviews": interview_samples,
+        }
+
+        try:
+            client = OpenAI(
+                api_key=Config.LLM_API_KEY,
+                base_url=Config.LLM_BASE_URL,
+            )
+            response = client.chat.completions.create(
+                model=Config.LLM_MODEL_NAME,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You summarize one OPS agent's completed simulation run.\n"
+                            "Return exactly one JSON object with these keys: "
+                            "emotion, action, shares_news, influences_count, post_content, state_signals, outcome_note.\n"
+                            "state_signals must contain exactly these boolean keys: "
+                            "government_targeted, government_relief_positive, fear_triggered, positive_outcome, public_exposure.\n"
+                            "Use the observed actions and interviews. Be conservative. JSON only."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps(payload, ensure_ascii=False, indent=2),
+                    },
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.0,
+            )
+            content = response.choices[0].message.content
+            parsed = json.loads(content)
+            state_signals = parsed.get("state_signals") or {}
+            return {
+                "emotion": str(parsed.get("emotion", "neutral") or "neutral").strip().lower(),
+                "action": str(parsed.get("action", "do_nothing") or "do_nothing").strip().lower(),
+                "shares_news": bool(parsed.get("shares_news", False)),
+                "influences_count": int(parsed.get("influences_count", 0) or 0),
+                "post_content": str(parsed.get("post_content", "") or "").strip(),
+                "state_signals": {
+                    "government_targeted": bool(state_signals.get("government_targeted", False)),
+                    "government_relief_positive": bool(state_signals.get("government_relief_positive", False)),
+                    "fear_triggered": bool(state_signals.get("fear_triggered", False)),
+                    "positive_outcome": bool(state_signals.get("positive_outcome", False)),
+                    "public_exposure": bool(state_signals.get("public_exposure", False)),
+                },
+                "outcome_note": str(parsed.get("outcome_note", "") or "").strip(),
+            }
+        except Exception as exc:
+            logger.warning(f"LLM post-run summarizer failed for agent {profile.user_id}: {exc}")
+            return cls._heuristic_memory_outcome(profile, scenario, actions, interviews)
+
+    @classmethod
+    def _heuristic_memory_outcome(
+        cls,
+        profile: OasisAgentProfile,
+        scenario: str,
+        actions: List[AgentAction],
+        interviews: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Heuristic fallback for temporal continuity when summarization fails."""
+        scenario_lower = scenario.lower()
+        share_actions = {"REPOST", "QUOTE_POST"}
+        post_actions = {"CREATE_POST", "CREATE_COMMENT"}
+        created_public = [a for a in actions if a.action_type in post_actions]
+        shared_public = [a for a in actions if a.action_type in share_actions]
+        shares_news = bool(shared_public) or any("share" in str(interview.get("response", "")).lower() for interview in interviews)
+
+        latest_public_text = ""
+        for action in actions:
+            latest_public_text = (
+                action.action_args.get("content")
+                or action.action_args.get("quote_content")
+                or action.action_args.get("post_content")
+                or action.action_args.get("comment_content")
+                or latest_public_text
+            )
+            if latest_public_text:
+                break
+        if not latest_public_text and interviews:
+            latest_public_text = str(interviews[0].get("response", "") or "").strip()
+
+        relief_related = any(keyword in scenario_lower for keyword in ("relief", "subsidy", "support"))
+        low_trust = (profile.current_trust_government if profile.current_trust_government is not None else profile.trust_government or 5) <= 3
+
+        if relief_related and not low_trust:
+            emotion = "hopeful"
+            action = "wait_and_budget"
+        elif shares_news and low_trust:
+            emotion = "angry"
+            action = "warn_neighbours"
+        elif created_public:
+            emotion = "worried"
+            action = "warn_family"
+        elif profile.cumulative_stress > 5:
+            emotion = "resigned"
+            action = "stay_quiet"
+        else:
+            emotion = "concerned"
+            action = "watch_closely"
+
+        influence_radius = profile.influence_radius or 0
+        influences_count = min(influence_radius, max(len(shared_public) * 8 + len(created_public) * 4, len(actions)))
+        primary_fear = str(profile.primary_fear or "").lower()
+        fear_triggered = any(token and token in scenario_lower for token in primary_fear.split()) or emotion in {"worried", "angry", "panic", "desperate", "concerned"}
+        positive_outcome = relief_related and emotion in {"hopeful", "calm"}
+
+        return {
+            "emotion": emotion,
+            "action": action,
+            "shares_news": shares_news,
+            "influences_count": max(0, influences_count),
+            "post_content": latest_public_text,
+            "state_signals": {
+                "government_targeted": any(keyword in scenario_lower for keyword in ("government", "govt", "policy", "minister", "subsidy", "relief")) and low_trust,
+                "government_relief_positive": relief_related and positive_outcome,
+                "fear_triggered": fear_triggered,
+                "positive_outcome": positive_outcome,
+                "public_exposure": bool(created_public or shared_public),
+            },
+            "outcome_note": "Generated from heuristic post-run OPS summarization.",
+        }
+
+    @classmethod
+    def _apply_temporal_memory_summary(cls, simulation_id: str):
+        """Summarize one completed simulation into persistent OPS temporal memory."""
+        summary_path = cls._get_memory_summary_path(simulation_id)
+        if cls._memory_summary_applied.get(simulation_id) or os.path.exists(summary_path):
+            return
+
+        profiles = cls._load_profile_snapshot(simulation_id)
+        if not profiles:
+            logger.info(f"No OPS profile snapshot found for completed simulation {simulation_id}; temporal continuity summary skipped")
+            return
+
+        scenario = cls._load_scenario_text(simulation_id)
+        all_actions = cls.get_all_actions(simulation_id)
+        history_entries = cls.get_interview_history(simulation_id, limit=500)
+
+        state_file = os.path.join(cls.RUN_STATE_DIR, simulation_id, "state.json")
+        project_id = None
+        if os.path.exists(state_file):
+            try:
+                with open(state_file, 'r', encoding='utf-8') as f:
+                    state_data = json.load(f)
+                project_id = state_data.get("project_id")
+            except Exception:
+                project_id = None
+
+        summary_rows = []
+        for profile in profiles:
+            profile_actions = [action for action in all_actions if action.agent_id == profile.user_id]
+            profile_interviews = [item for item in history_entries if item.get("agent_id") == profile.user_id]
+            canonical_result = cls._summarize_agent_activity_for_memory(
+                profile=profile,
+                scenario=scenario,
+                actions=profile_actions,
+                interviews=profile_interviews,
+            )
+            state_change = profile.apply_simulation_outcome(
+                simulation_id=simulation_id,
+                scenario=scenario,
+                result=canonical_result,
+            )
+            if project_id:
+                try:
+                    asyncio.run(save_agent_state(profile, project_id))
+                except Exception as exc:
+                    logger.warning(f"Failed to persist OPS temporal state for agent {profile.user_id}: {exc}")
+
+            summary_rows.append({
+                "agent_user_id": profile.user_id,
+                "agent_name": profile.name,
+                "result": canonical_result,
+                "state_change": state_change,
+            })
+
+        cls._save_profile_snapshot(simulation_id, profiles)
+        with open(summary_path, 'w', encoding='utf-8') as f:
+            json.dump(
+                {
+                    "simulation_id": simulation_id,
+                    "generated_at": datetime.now().isoformat(),
+                    "agents_count": len(summary_rows),
+                    "results": summary_rows,
+                },
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
+        cls._memory_summary_applied[simulation_id] = True
+        logger.info(f"Applied OPS temporal continuity summary for simulation {simulation_id} across {len(summary_rows)} agents")
     
     @classmethod
     def get_run_state(cls, simulation_id: str) -> Optional[SimulationRunState]:
@@ -365,6 +673,7 @@ class SimulationRunner:
             total_simulation_hours=total_hours,
             started_at=datetime.now().isoformat(),
         )
+        cls._memory_summary_applied.pop(simulation_id, None)
         
         cls._save_run_state(state)
         
@@ -523,6 +832,10 @@ class SimulationRunner:
                 state.runner_status = RunnerStatus.COMPLETED
                 state.completed_at = datetime.now().isoformat()
                 logger.info(f"Simulation completed:{simulation_id}")
+                try:
+                    cls._apply_temporal_memory_summary(simulation_id)
+                except Exception as exc:
+                    logger.error(f"Failed to apply OPS temporal continuity summary for {simulation_id}: {exc}")
             else:
                 state.runner_status = RunnerStatus.FAILED
                 # Read error messages from the main log file
@@ -633,6 +946,10 @@ class SimulationRunner:
                                         state.runner_status = RunnerStatus.COMPLETED
                                         state.completed_at = datetime.now().isoformat()
                                         logger.info(f"All platform simulations completed:{state.simulation_id}")
+                                        try:
+                                            cls._apply_temporal_memory_summary(state.simulation_id)
+                                        except Exception as exc:
+                                            logger.error(f"Failed to apply OPS temporal continuity summary for {state.simulation_id}: {exc}")
                                 
                                 # Update round information (from round_end event)
                                 elif event_type == "round_end":
@@ -1136,6 +1453,7 @@ class SimulationRunner:
             "twitter_simulation.db",  # Twitter Platform Database
             "reddit_simulation.db",   # Reddit platform database
             "env_status.json",        # environment status file
+            "ops_memory_summary.json",
         ]
         
         # List of directories to delete (including action logs)
@@ -1166,6 +1484,7 @@ class SimulationRunner:
         # Clean up running status in memory
         if simulation_id in cls._run_states:
             del cls._run_states[simulation_id]
+        cls._memory_summary_applied.pop(simulation_id, None)
         
         logger.info(f"Cleaning the simulation log is completed:{simulation_id}, delete files:{cleaned_files}")
         

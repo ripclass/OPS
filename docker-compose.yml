@@ -1,4 +1,4 @@
-name: ops
+﻿name: ops
 
 services:
   ops:
@@ -17,7 +17,7 @@ services:
       LLM_BOOST_BASE_URL: ${DOCKER_LLM_BOOST_BASE_URL:-http://host.docker.internal:11434/v1}
       LLM_BOOST_MODEL_NAME: ${DOCKER_LLM_BOOST_MODEL_NAME:-qwen2.5:7b}
     ports:
-      - "3000:3000"
+      - "3200:3000"
       - "5001:5001"
     restart: unless-stopped
     volumes:
@@ -26,3 +26,5 @@ services:
       - ./backend/run.py:/app/backend/run.py
       - ./frontend/src:/app/frontend/src
       - ./frontend/index.html:/app/frontend/index.html
+
+

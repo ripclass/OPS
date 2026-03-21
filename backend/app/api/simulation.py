@@ -1594,6 +1594,14 @@ def start_simulation():
                 }), 400
             
             logger.info(f"Enable map memory update: simulation_id={simulation_id}, graph_id={graph_id}")
+
+        # Refresh serialized profiles from persisted OPS memory before each run.
+        try:
+            refreshed_profiles = manager.refresh_profiles_from_memory(simulation_id)
+            if refreshed_profiles:
+                logger.info(f"Refreshed {refreshed_profiles} OPS profiles from persisted temporal state before run")
+        except Exception as e:
+            logger.warning(f"Failed to refresh profiles from persisted OPS memory before run: {e}")
         
         # Start simulation
         run_state = SimulationRunner.start_simulation(

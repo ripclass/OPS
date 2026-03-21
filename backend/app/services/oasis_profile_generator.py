@@ -58,6 +58,16 @@ class OasisAgentProfile:
     dialect: Optional[str] = None
     income_stability: Optional[str] = None
     rumour_amplifier: Optional[bool] = None
+    behavioral_dissonance: Optional[Dict[str, Any]] = None
+    platform_primary: Optional[str] = None
+    migration_worker_flag: Optional[bool] = None
+    remittance_dependency_flag: Optional[bool] = None
+    simulation_history: List[Dict[str, Any]] = field(default_factory=list)
+    baseline_anxiety: float = 5.0
+    current_trust_government: Optional[int] = None
+    current_shame_sensitivity: Optional[int] = None
+    cumulative_stress: float = 0.0
+    last_simulation_date: Optional[str] = None
     
     # Source entity information
     source_entity_uuid: Optional[str] = None
@@ -65,17 +75,65 @@ class OasisAgentProfile:
     
     created_at: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"))
 
+    def __post_init__(self):
+        """Normalize persistent state defaults after dataclass initialization."""
+        if self.current_trust_government is None and self.trust_government is not None:
+            self.current_trust_government = self._clamp_int(self.trust_government, 0, 10)
+        elif self.current_trust_government is not None:
+            self.current_trust_government = self._clamp_int(self.current_trust_government, 0, 10)
+
+        if self.current_shame_sensitivity is None and self.shame_sensitivity is not None:
+            self.current_shame_sensitivity = self._clamp_int(self.shame_sensitivity, 0, 10)
+        elif self.current_shame_sensitivity is not None:
+            self.current_shame_sensitivity = self._clamp_int(self.current_shame_sensitivity, 0, 10)
+
+        self.baseline_anxiety = self._clamp_float(self.baseline_anxiety, 0.0, 10.0)
+        self.cumulative_stress = max(0.0, float(self.cumulative_stress or 0.0))
+        if not isinstance(self.simulation_history, list):
+            self.simulation_history = []
+
+    @staticmethod
+    def _clamp_int(value: Optional[Any], minimum: int, maximum: int) -> Optional[int]:
+        """Clamp an integer score into a bounded range."""
+        if value is None or value == "":
+            return None
+        try:
+            number = int(float(value))
+        except (TypeError, ValueError):
+            return None
+        return max(minimum, min(maximum, number))
+
+    @staticmethod
+    def _clamp_float(value: Optional[Any], minimum: float, maximum: float) -> float:
+        """Clamp a float score into a bounded range."""
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            number = minimum
+        return max(minimum, min(maximum, number))
+
     def ops_fields(self) -> Dict[str, Any]:
         """OPS-specific persona fields."""
         return {
-            "trust_government": self.trust_government,
-            "shame_sensitivity": self.shame_sensitivity,
+            "trust_government": self.current_trust_government if self.current_trust_government is not None else self.trust_government,
+            "shame_sensitivity": self.current_shame_sensitivity if self.current_shame_sensitivity is not None else self.shame_sensitivity,
             "primary_fear": self.primary_fear,
             "influence_radius": self.influence_radius,
             "fb_intensity": self.fb_intensity,
             "dialect": self.dialect,
             "income_stability": self.income_stability,
             "rumour_amplifier": self.rumour_amplifier,
+        }
+
+    def memory_state_fields(self) -> Dict[str, Any]:
+        """Persistent temporal state carried across simulation runs."""
+        return {
+            "simulation_history": self.simulation_history,
+            "baseline_anxiety": self.baseline_anxiety,
+            "current_trust_government": self.current_trust_government,
+            "current_shame_sensitivity": self.current_shame_sensitivity,
+            "cumulative_stress": self.cumulative_stress,
+            "last_simulation_date": self.last_simulation_date,
         }
 
     def build_user_char(self) -> str:
@@ -97,6 +155,10 @@ class OasisAgentProfile:
         if ops_pairs:
             parts.append("OPS persona: " + ", ".join(ops_pairs))
 
+        memory_context = self.build_memory_context()
+        if self.simulation_history and memory_context:
+            parts.append("Agent history: " + memory_context)
+
         return " ".join(part for part in parts if part).replace('\n', ' ').replace('\r', ' ')
 
     def _apply_optional_fields(self, profile: Dict[str, Any]) -> Dict[str, Any]:
@@ -115,6 +177,10 @@ class OasisAgentProfile:
             profile["interested_topics"] = self.interested_topics
 
         for key, value in self.ops_fields().items():
+            if value is not None:
+                profile[key] = value
+
+        for key, value in self.memory_state_fields().items():
             if value is not None:
                 profile[key] = value
 
@@ -167,10 +233,200 @@ class OasisAgentProfile:
             "profession": self.profession,
             "interested_topics": self.interested_topics,
             **self.ops_fields(),
+            "behavioral_dissonance": self.behavioral_dissonance,
+            "platform_primary": self.platform_primary,
+            "migration_worker_flag": self.migration_worker_flag,
+            "remittance_dependency_flag": self.remittance_dependency_flag,
+            **self.memory_state_fields(),
             "source_entity_uuid": self.source_entity_uuid,
             "source_entity_type": self.source_entity_type,
             "created_at": self.created_at,
         }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "OasisAgentProfile":
+        """Rebuild a profile from a serialized dictionary."""
+        data = data or {}
+        username = data.get("user_name") or data.get("username") or data.get("userName")
+        return cls(
+            user_id=int(data.get("user_id", 0)),
+            user_name=username or "ops_agent_000",
+            name=data.get("name", username or "OPS Agent"),
+            bio=data.get("bio", ""),
+            persona=data.get("persona", ""),
+            karma=int(data.get("karma", 1000) or 1000),
+            friend_count=int(data.get("friend_count", 100) or 100),
+            follower_count=int(data.get("follower_count", 150) or 150),
+            statuses_count=int(data.get("statuses_count", 500) or 500),
+            age=cls._clamp_int(data.get("age"), 0, 120),
+            gender=data.get("gender"),
+            mbti=data.get("mbti"),
+            country=data.get("country"),
+            profession=data.get("profession"),
+            interested_topics=list(data.get("interested_topics") or []),
+            trust_government=cls._clamp_int(data.get("trust_government"), 0, 10),
+            shame_sensitivity=cls._clamp_int(data.get("shame_sensitivity"), 0, 10),
+            primary_fear=data.get("primary_fear"),
+            influence_radius=cls._clamp_int(data.get("influence_radius"), 0, 1_000_000),
+            fb_intensity=cls._clamp_int(data.get("fb_intensity"), 0, 10),
+            dialect=data.get("dialect"),
+            income_stability=data.get("income_stability"),
+            rumour_amplifier=data.get("rumour_amplifier"),
+            behavioral_dissonance=data.get("behavioral_dissonance"),
+            platform_primary=data.get("platform_primary"),
+            migration_worker_flag=data.get("migration_worker_flag"),
+            remittance_dependency_flag=data.get("remittance_dependency_flag"),
+            simulation_history=list(data.get("simulation_history") or []),
+            baseline_anxiety=float(data.get("baseline_anxiety", 5.0) or 5.0),
+            current_trust_government=cls._clamp_int(data.get("current_trust_government"), 0, 10),
+            current_shame_sensitivity=cls._clamp_int(data.get("current_shame_sensitivity"), 0, 10),
+            cumulative_stress=float(data.get("cumulative_stress", 0.0) or 0.0),
+            last_simulation_date=data.get("last_simulation_date"),
+            source_entity_uuid=data.get("source_entity_uuid"),
+            source_entity_type=data.get("source_entity_type"),
+            created_at=data.get("created_at") or datetime.now().strftime("%Y-%m-%d"),
+        )
+
+    def apply_simulation_outcome(
+        self,
+        simulation_id: str,
+        scenario: str,
+        result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Apply one canonical simulation outcome to the profile's persistent state."""
+        result = result or {}
+        state_signals = result.get("state_signals") or {}
+        emotion = str(result.get("emotion", "neutral") or "neutral").strip().lower()
+        action = str(result.get("action", "do_nothing") or "do_nothing").strip().lower()
+        shared_news = result.get("shared_news")
+        if shared_news is None:
+            shared_news = result.get("shares_news", False)
+        shared_news = bool(shared_news)
+        influences_count = self._clamp_int(result.get("influences_count"), 0, 1_000_000) or 0
+
+        trust_delta = 0
+        if (
+            emotion in {"angry", "betrayed"}
+            and (
+                state_signals.get("government_targeted")
+                or "government" in action
+                or "govt" in action
+            )
+        ):
+            trust_delta = -1
+        elif (
+            state_signals.get("government_relief_positive")
+            and (action == "wait_and_budget" or emotion in {"calm", "hopeful"})
+        ):
+            trust_delta = 1
+
+        anxiety_delta = 0.0
+        if state_signals.get("fear_triggered"):
+            anxiety_delta += 0.5
+        if state_signals.get("positive_outcome"):
+            anxiety_delta -= 0.3
+
+        shame_delta = 0
+        socially_risky = emotion in {"angry", "betrayed", "panic", "desperate", "anxious", "worried", "fearful"}
+        if state_signals.get("public_exposure") and socially_risky:
+            shame_delta = 1
+        elif state_signals.get("positive_outcome") and not state_signals.get("public_exposure") and emotion in {"calm", "hopeful"}:
+            shame_delta = -1
+
+        stress_delta = 0.0
+        if emotion in {"panic", "angry", "desperate"}:
+            stress_delta = 1.0
+        elif emotion in {"calm", "hopeful"}:
+            stress_delta = -0.5
+
+        current_trust = self.current_trust_government if self.current_trust_government is not None else self.trust_government
+        if current_trust is not None:
+            self.current_trust_government = self._clamp_int(current_trust + trust_delta, 0, 10)
+
+        current_shame = self.current_shame_sensitivity if self.current_shame_sensitivity is not None else self.shame_sensitivity
+        if current_shame is not None:
+            self.current_shame_sensitivity = self._clamp_int(current_shame + shame_delta, 0, 10)
+
+        self.baseline_anxiety = self._clamp_float(self.baseline_anxiety + anxiety_delta, 0.0, 10.0)
+        self.cumulative_stress = max(0.0, self.cumulative_stress + stress_delta)
+        self.last_simulation_date = datetime.now().strftime("%Y-%m-%d")
+
+        state_change = {
+            "trust_government_delta": trust_delta,
+            "anxiety_delta": round(anxiety_delta, 2),
+            "shame_sensitivity_delta": shame_delta,
+            "cumulative_stress_delta": round(stress_delta, 2),
+        }
+
+        history_entry = {
+            "simulation_id": simulation_id,
+            "date": self.last_simulation_date,
+            "scenario": scenario,
+            "emotion": emotion,
+            "action": action,
+            "shared_news": shared_news,
+            "influences_count": influences_count,
+            "post_content": result.get("post_content", ""),
+            "state_change": state_change,
+            "outcome_note": result.get("outcome_note", ""),
+        }
+        self.simulation_history.append(history_entry)
+        return state_change
+
+    def build_memory_context(self) -> str:
+        """Build a narrative memory context paragraph for future prompts."""
+        history_count = len(self.simulation_history)
+        latest = self.simulation_history[-1] if self.simulation_history else None
+
+        def stress_level(value: float) -> str:
+            if value < 2:
+                return "low"
+            if value < 5:
+                return "moderate"
+            if value < 8:
+                return "high"
+            return "critical"
+
+        def anxiety_level(value: float) -> str:
+            if value < 3.5:
+                return "low"
+            if value < 6.5:
+                return "moderate"
+            return "high"
+
+        trust_start = self.trust_government
+        trust_current = self.current_trust_government if self.current_trust_government is not None else trust_start
+        if trust_start is None or trust_current is None:
+            trust_trend = "remained stable"
+            trust_drop = 0
+        else:
+            trust_delta = trust_current - trust_start
+            trust_drop = trust_start - trust_current
+            if trust_delta > 0:
+                trust_trend = "risen"
+            elif trust_delta < 0:
+                trust_trend = "fallen"
+            else:
+                trust_trend = "remained stable"
+
+        parts = [f"{self.name} has experienced {history_count} previous scenarios."]
+        if latest:
+            parts.append(
+                f"Most recent: {latest.get('scenario', 'unknown scenario')} - felt {latest.get('emotion', 'unclear')}, "
+                f"took action {latest.get('action', 'unclear')}."
+            )
+        parts.append(f"Cumulative stress level: {stress_level(self.cumulative_stress)}.")
+        parts.append(f"Trust in government has {trust_trend} over time.")
+        parts.append(f"Current anxiety baseline: {anxiety_level(self.baseline_anxiety)}.")
+
+        if self.rumour_amplifier and self.cumulative_stress >= 5:
+            parts.append("Has been increasingly likely to share unverified information.")
+        if self.cumulative_stress > 5:
+            parts.append("Shows signs of fatigue and resignation.")
+        if trust_drop > 2:
+            parts.append("Deep institutional distrust has formed.")
+
+        return " ".join(parts)
 
 
 class OasisProfileGenerator:
@@ -830,6 +1086,575 @@ Important:
 - `age` must be the integer `30`, and `gender` must be `"other"`
 - The institution's voice must match its identity and role"""
     
+    def _build_ops_behavior_prompt(
+        self,
+        raw_posts: List[str],
+        raw_reactions: List[str],
+        raw_shares: List[str],
+        demographics: Dict[str, Any],
+        dialect_samples: List[str],
+        platform_context: Optional[str] = None,
+        additional_instructions: Optional[str] = None,
+        extra_field_instructions: Optional[List[str]] = None
+    ) -> str:
+        """Build a linear OPS behavior-first prompt from observed social-platform activity."""
+
+        def format_items(items: List[str], max_items: int, max_chars: int = 400) -> str:
+            if not items:
+                return "- None provided"
+            rendered = []
+            for idx, item in enumerate(items[:max_items], 1):
+                text = str(item).strip()
+                if not text:
+                    continue
+                text = " ".join(text.split())
+                if len(text) > max_chars:
+                    text = text[:max_chars].rstrip() + "..."
+                rendered.append(f"{idx}. {text}")
+            return "\n".join(rendered) if rendered else "- None provided"
+
+        sections = [
+            "Analyze this social-media user's revealed behavior and generate an OPS persona.",
+            "Core instruction:",
+            "- Analyze revealed behavior, not declared identity.",
+            "- Use observed posts, reactions, shares, and writing style as the primary evidence.",
+            "- Treat demographics as supporting metadata only.",
+            "- If posts say X but reactions show Y, trust the reactions.",
+            "- Prefer repeated patterns over isolated statements.",
+            "- Stay culturally aware of Bangla/Bengali and wider South Asian behavior, including code-switching, Romanized Bangla, indirect criticism, honorifics, local idioms, and region-specific writing habits.",
+            "",
+            "You must infer the persona from evidence, not from aspiration, self-branding, or formal self-description.",
+            "",
+            "Produce one valid JSON object in the same persona format used by OASIS profile generation, with these fields:",
+            "1. bio: concise social media bio in English, grounded in observed behavior",
+            "2. persona: detailed plain-text persona in English, about 1200-2000 words, grounded in revealed behavior and recurring patterns",
+            "3. age: integer",
+            "4. gender: English string, usually \"male\", \"female\", or \"other\" if the evidence is ambiguous",
+            "5. mbti: MBTI type inferred cautiously from behavior",
+            "6. country: country name in English",
+            "7. profession: occupation or social role inferred from evidence and demographics",
+            "8. interested_topics: array of recurring topics",
+            "9. trust_government: integer from 0 to 10 inferred from reactions to government announcements, public policy, police, courts, ministers, welfare updates, and civic institutions",
+            "10. shame_sensitivity: integer from 0 to 10 inferred from public self-censorship, indirect phrasing, avoidance patterns, reputation concerns, and how openly sensitive issues are discussed",
+            "11. primary_fear: recurring core anxiety inferred from repeated posts, shares, and reactions",
+            "12. influence_radius: integer inferred from engagement patterns, social reach clues, and how often this person appears to move others to react or share",
+            "13. fb_intensity: integer from 0 to 10 inferred from posting frequency, share frequency, and overall public activity",
+            "14. dialect: actual dialect or colloquial writing style inferred from wording, spelling, code-switching, and dialect samples",
+            "15. income_stability: short description inferred from financial anxiety signals, work rhythm, spending stress, and income mentions",
+            "16. rumour_amplifier: boolean true/false inferred from whether this person shares emotionally charged but weakly verified claims",
+            "",
+            "Inference rules:",
+            "- Infer trust_government from behavior around official announcements, not from any direct self-label.",
+            "- Infer shame_sensitivity from what the person avoids saying publicly, how often they soften criticism, and whether they signal fear of embarrassment, gossip, or social judgment.",
+            "- Infer primary_fear from recurring anxiety themes such as prices, status loss, education, health, work, family security, or political exposure.",
+            "- Infer influence_radius from observed engagement clues; if evidence is weak, keep it conservative.",
+            "- Infer fb_intensity from actual posting and sharing behavior, not from claimed social-media use.",
+            "- Infer rumour_amplifier from share behavior on unverified, sensational, or forwarded content.",
+            "- Infer income_stability from posts about wages, monthly salary, debt, remittance, job continuity, or day-to-day expense pressure.",
+            "- Infer dialect from actual writing style; do not normalize away local expression.",
+        ]
+
+        if extra_field_instructions:
+            sections.extend([
+                "",
+                "Additional JSON fields required for this analysis:",
+                *extra_field_instructions,
+            ])
+
+        if platform_context:
+            sections.extend([
+                "",
+                "Platform context:",
+                platform_context,
+            ])
+
+        if additional_instructions:
+            sections.extend([
+                "",
+                "Additional analysis instructions:",
+                additional_instructions,
+            ])
+
+        sections.extend([
+            "",
+            "Quality rules:",
+            "- Return JSON only.",
+            "- Do not use markdown fences.",
+            "- Do not use unescaped newlines inside JSON string values.",
+            "- Keep the persona realistic, conservative, and behavior-first.",
+            "- If evidence is mixed, explain the contradiction inside the persona text and resolve it behaviorally.",
+            "- If evidence is sparse, choose moderate values instead of inventing dramatic details.",
+            "",
+            "Observed demographics:",
+            json.dumps(demographics or {}, ensure_ascii=False, indent=2),
+            "",
+            "Observed public posts:",
+            format_items(raw_posts, max_items=120),
+            "",
+            "Observed reactions:",
+            format_items(raw_reactions, max_items=120),
+            "",
+            "Observed shares:",
+            format_items(raw_shares, max_items=120),
+            "",
+            "Observed dialect samples:",
+            format_items(dialect_samples, max_items=40, max_chars=240),
+        ])
+
+        return "\n".join(sections)
+
+    def _generate_ops_persona_from_behavior(
+        self,
+        raw_posts: List[str],
+        raw_reactions: List[str],
+        raw_shares: List[str],
+        demographics: Dict[str, Any],
+        dialect_samples: List[str],
+        platform_context: Optional[str] = None,
+        additional_instructions: Optional[str] = None,
+        extra_field_instructions: Optional[List[str]] = None,
+        source_entity_type: str = "facebook_behavior_profile"
+    ) -> OasisAgentProfile:
+        """Generate an OPS persona directly from observed behavior across one or more social platforms."""
+
+        demographics = demographics or {}
+        name = (
+            demographics.get("name")
+            or demographics.get("display_name")
+            or demographics.get("full_name")
+            or "OPS Behavioral Subject"
+        )
+        username = demographics.get("username") or self._generate_username(name)
+
+        def coerce_int(value: Any, default: Optional[int] = None, minimum: Optional[int] = None, maximum: Optional[int] = None) -> Optional[int]:
+            if value is None or value == "":
+                return default
+            try:
+                number = int(float(value))
+            except (TypeError, ValueError):
+                return default
+            if minimum is not None:
+                number = max(minimum, number)
+            if maximum is not None:
+                number = min(maximum, number)
+            return number
+
+        def coerce_bool(value: Any, default: Optional[bool] = None) -> Optional[bool]:
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                value_lower = value.strip().lower()
+                if value_lower in {"true", "yes", "1"}:
+                    return True
+                if value_lower in {"false", "no", "0"}:
+                    return False
+            return default
+
+        def coerce_topics(value: Any) -> List[str]:
+            if isinstance(value, list):
+                return [str(item).strip() for item in value if str(item).strip()]
+            if isinstance(value, str) and value.strip():
+                return [part.strip() for part in value.split(",") if part.strip()]
+            return []
+
+        identifier = demographics.get("user_id") or demographics.get("facebook_user_id") or demographics.get("facebook_id")
+        if identifier is None:
+            seed = demographics.get("profile_url") or name or (raw_posts[0] if raw_posts else "ops_behavior")
+            identifier = sum((idx + 1) * ord(ch) for idx, ch in enumerate(str(seed))) % 1_000_000_000
+        user_id = coerce_int(identifier, default=0, minimum=0) or 0
+
+        prompt = self._build_ops_behavior_prompt(
+            raw_posts=raw_posts,
+            raw_reactions=raw_reactions,
+            raw_shares=raw_shares,
+            demographics=demographics,
+            dialect_samples=dialect_samples,
+            platform_context=platform_context,
+            additional_instructions=additional_instructions,
+            extra_field_instructions=extra_field_instructions,
+        )
+
+        system_prompt = (
+            "You are an OPS behavioral persona analyst for Organic Population Simulation. "
+            "Your task is to reconstruct an authentic social-media persona from revealed behavior, not self-description. "
+            "Analyze behaviorally: posts, reactions, shares, engagement clues, platform-specific social stakes, and writing style. "
+            "If posts say X but reactions show Y, trust the reactions. "
+            "Be culturally aware of Bangla/Bengali and wider South Asian online behavior without stereotyping. "
+            "Return one valid JSON object only, with no markdown and no unescaped newlines in string values."
+        )
+
+        max_attempts = 3
+        last_error = None
+        result: Dict[str, Any] = {}
+
+        for attempt in range(max_attempts):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"},
+                    temperature=max(0.15, 0.35 - (attempt * 0.1))
+                )
+
+                content = response.choices[0].message.content
+                finish_reason = response.choices[0].finish_reason
+                if finish_reason == "length":
+                    logger.warning(f"OPS behavior persona output was truncated (attempt {attempt + 1}); attempting repair...")
+                    content = self._fix_truncated_json(content)
+
+                try:
+                    result = json.loads(content)
+                except json.JSONDecodeError as je:
+                    logger.warning(f"OPS behavior persona JSON parsing failed (attempt {attempt + 1}): {str(je)[:80]}")
+                    result = self._try_fix_json(content, name, "person", " ".join(raw_posts[:3]))
+                    if result.get("_fixed"):
+                        del result["_fixed"]
+
+                if result:
+                    break
+
+            except Exception as e:
+                logger.warning(f"OPS behavior persona LLM call failed (attempt {attempt + 1}): {str(e)[:80]}")
+                last_error = e
+                time.sleep(1 * (attempt + 1))
+
+        if not result:
+            logger.warning(f"OPS behavior persona generation failed after {max_attempts} attempts: {last_error}. Using conservative fallback profile.")
+            location = demographics.get("location") or demographics.get("district") or demographics.get("city") or "South Asia"
+            profession = demographics.get("occupation") or demographics.get("profession") or "Unknown"
+            result = {
+                "bio": f"Social media user from {location} with recurring public interest in social and household concerns.",
+                "persona": (
+                    f"{name} is a social-media user whose public behavior shows ongoing engagement with everyday social concerns, "
+                    f"selective reactions, and visible sensitivity to community pressure. The available evidence suggests a role connected to {profession}. "
+                    f"The persona should be read conservatively because it is reconstructed from observed online behavior rather than self-reported biography."
+                ),
+                "age": coerce_int(demographics.get("age"), default=30, minimum=18, maximum=90),
+                "gender": demographics.get("gender", "other"),
+                "mbti": "ISFJ",
+                "country": demographics.get("country") or "Bangladesh",
+                "profession": profession,
+                "interested_topics": ["Social Issues", "Household Concerns"],
+                "trust_government": 5,
+                "shame_sensitivity": 6,
+                "primary_fear": "household security",
+                "influence_radius": max(10, min(100, len(raw_reactions) + len(raw_shares))),
+                "fb_intensity": max(1, min(10, (len(raw_posts) + len(raw_shares)) // 10 or 1)),
+                "dialect": "mixed social media Bengali",
+                "income_stability": "unclear",
+                "rumour_amplifier": False,
+                "behavioral_dissonance": None,
+                "platform_primary": None,
+                "migration_worker_flag": None,
+                "remittance_dependency_flag": None,
+            }
+
+        behavioral_dissonance = result.get("behavioral_dissonance")
+        if behavioral_dissonance and not isinstance(behavioral_dissonance, dict):
+            behavioral_dissonance = {"summary": str(behavioral_dissonance).strip()}
+        persona_text = result.get("persona", f"{name} is represented through observed social-media behavior.")
+        if isinstance(behavioral_dissonance, dict):
+            summary = behavioral_dissonance.get("summary") or behavioral_dissonance.get("description")
+            if summary and "Behavioral_dissonance:" not in persona_text:
+                persona_text = persona_text.rstrip() + f" Behavioral_dissonance: {summary}"
+
+        country = (
+            demographics.get("country")
+            or demographics.get("location_country")
+            or result.get("country")
+        )
+        profession = (
+            demographics.get("occupation")
+            or demographics.get("profession")
+            or result.get("profession")
+        )
+        source_uuid = demographics.get("facebook_id") or demographics.get("facebook_user_id") or demographics.get("profile_url")
+
+        return OasisAgentProfile(
+            user_id=user_id,
+            user_name=username,
+            name=name,
+            bio=result.get("bio", f"Observed social-media user: {name}"),
+            persona=persona_text,
+            karma=coerce_int(demographics.get("karma"), default=1000, minimum=0) or 1000,
+            friend_count=coerce_int(demographics.get("friend_count"), default=100, minimum=0) or 100,
+            follower_count=coerce_int(demographics.get("follower_count"), default=150, minimum=0) or 150,
+            statuses_count=coerce_int(demographics.get("statuses_count"), default=len(raw_posts), minimum=0) or len(raw_posts),
+            age=coerce_int(result.get("age", demographics.get("age")), default=None, minimum=13, maximum=100),
+            gender=str(result.get("gender", demographics.get("gender", "other"))).strip().lower() if (result.get("gender") or demographics.get("gender")) else None,
+            mbti=result.get("mbti"),
+            country=country,
+            profession=profession,
+            interested_topics=coerce_topics(result.get("interested_topics")),
+            trust_government=coerce_int(result.get("trust_government"), default=None, minimum=0, maximum=10),
+            shame_sensitivity=coerce_int(result.get("shame_sensitivity"), default=None, minimum=0, maximum=10),
+            primary_fear=result.get("primary_fear"),
+            influence_radius=coerce_int(result.get("influence_radius"), default=None, minimum=0),
+            fb_intensity=coerce_int(result.get("fb_intensity"), default=None, minimum=0, maximum=10),
+            dialect=result.get("dialect"),
+            income_stability=result.get("income_stability"),
+            rumour_amplifier=coerce_bool(result.get("rumour_amplifier"), default=None),
+            behavioral_dissonance=behavioral_dissonance,
+            platform_primary=result.get("platform_primary"),
+            migration_worker_flag=coerce_bool(result.get("migration_worker_flag"), default=None),
+            remittance_dependency_flag=coerce_bool(result.get("remittance_dependency_flag"), default=None),
+            source_entity_uuid=str(source_uuid) if source_uuid is not None else None,
+            source_entity_type=source_entity_type,
+        )
+    
+    def _normalize_platform_data(self, platform: str, platform_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize platform-specific behavior into the standard OPS behavior format."""
+
+        platform_data = platform_data or {}
+        platform_key = (platform or "facebook").strip().lower()
+        aliases = {
+            "x": "twitter",
+            "twitter/x": "twitter",
+            "x/twitter": "twitter",
+        }
+        platform_key = aliases.get(platform_key, platform_key)
+
+        def listify(value: Any) -> List[str]:
+            if value is None:
+                return []
+            if isinstance(value, list):
+                return [str(item).strip() for item in value if str(item).strip()]
+            if isinstance(value, str):
+                stripped = value.strip()
+                return [stripped] if stripped else []
+            return [str(value).strip()] if str(value).strip() else []
+
+        def build_context(weight: float, details: List[str]) -> str:
+            detail_lines = [f"- {detail}" for detail in details if detail]
+            return "\n".join([
+                f"Platform: {platform_key}",
+                f"Platform weight: {weight}",
+                *detail_lines,
+            ])
+
+        dialect_samples = listify(platform_data.get("dialect_samples") or platform_data.get("writing_samples") or platform_data.get("sample_text"))
+
+        if platform_key == "facebook":
+            posts = listify(platform_data.get("posts"))
+            reactions = listify(platform_data.get("reactions") or platform_data.get("raw_reactions"))
+            shares = listify(platform_data.get("shares") or platform_data.get("raw_shares"))
+            group_memberships = listify(platform_data.get("group_memberships"))
+            dialect_samples.extend(group_memberships)
+            weight = 1.0
+            context = build_context(weight, [
+                "Facebook combines family, community, group, and political signaling.",
+                "A Facebook share often has lower reputational cost than a formal professional post.",
+                f"Observed group memberships: {', '.join(group_memberships) if group_memberships else 'none provided'}",
+            ])
+        elif platform_key == "instagram":
+            posts = listify(platform_data.get("captions"))
+            reactions = listify(platform_data.get("comments_received"))
+            shares = listify(platform_data.get("story_reshares"))
+            hashtags = [f"#{tag.lstrip('#')}" for tag in listify(platform_data.get("hashtags_used"))]
+            dialect_samples.extend(hashtags)
+            weight = 0.7
+            context = build_context(weight, [
+                "Instagram behavior is image-adjacent and often more performative or aesthetic.",
+                "Story reshares are lighter signals than long-form posts on Facebook or LinkedIn.",
+                f"Observed hashtags: {', '.join(hashtags) if hashtags else 'none provided'}",
+            ])
+        elif platform_key == "linkedin":
+            posts = listify(platform_data.get("posts")) + listify(platform_data.get("articles"))
+            reactions = listify(platform_data.get("endorsements")) + listify(platform_data.get("comments") or platform_data.get("comments_received"))
+            shares = listify(platform_data.get("reposts"))
+            weight = 1.4
+            context = build_context(weight, [
+                "LinkedIn posts carry higher professional and reputational stakes than casual social content.",
+                "Professional self-presentation may be more polished or aspirational here.",
+                f"Connections count: {platform_data.get('connections_count', 'unknown')}",
+                f"Job history: {json.dumps(platform_data.get('job_history', []), ensure_ascii=False)}",
+            ])
+        elif platform_key == "twitter":
+            posts = listify(platform_data.get("tweets"))
+            reactions = listify(platform_data.get("likes_given"))
+            shares = listify(platform_data.get("retweets")) + listify(platform_data.get("quote_tweets"))
+            weight = 1.1
+            context = build_context(weight, [
+                "Twitter/X behavior is more reactive, fast, and publicly adversarial than Facebook.",
+                "Quote tweets and retweets are stronger public alignment signals than passive likes.",
+            ])
+        elif platform_key == "youtube":
+            posts = listify(platform_data.get("comments"))
+            reactions = listify(platform_data.get("subscriptions"))
+            shares = []
+            dialect_samples.extend(listify(platform_data.get("watch_patterns")))
+            weight = 0.5
+            context = build_context(weight, [
+                "YouTube comments and subscriptions are lower-effort but useful for interest mapping.",
+                f"Watch patterns: {json.dumps(platform_data.get('watch_patterns', []), ensure_ascii=False)}",
+            ])
+        elif platform_key == "whatsapp":
+            posts = []
+            reactions = []
+            forwards = listify(platform_data.get("message_forwards"))
+            forward_frequency = str(platform_data.get("forward_frequency") or platform_data.get("broadcast_frequency") or "low").strip().lower()
+            forward_count_map = {"low": 5, "medium": 20, "high": 50}
+            derived_count = forward_count_map.get(forward_frequency, 5)
+            if forwards:
+                shares = forwards
+            else:
+                shares = [f"forwarded message #{idx}" for idx in range(1, derived_count + 1)]
+            dialect_samples.extend(listify(platform_data.get("sample_messages")))
+            if platform_data.get("group_admin_status") is not None:
+                dialect_samples.append(f"group_admin_status={platform_data.get('group_admin_status')}")
+            weight = 1.3
+            context = build_context(weight, [
+                "WhatsApp is private, trust-heavy, and often more candid than public platforms.",
+                "Forwarding behavior can have high influence inside close networks.",
+                f"Group admin status: {platform_data.get('group_admin_status', 'unknown')}",
+                f"Forward frequency: {forward_frequency}",
+            ])
+        else:
+            raise ValueError(f"Unsupported platform: {platform}")
+
+        if not dialect_samples:
+            dialect_samples.extend(posts[:10])
+            dialect_samples.extend(shares[:10])
+
+        return {
+            "platform": platform_key,
+            "posts": posts,
+            "reactions": reactions,
+            "shares": shares,
+            "dialect_samples": dialect_samples,
+            "platform_weight": weight,
+            "platform_context": context,
+        }
+
+    def generate_ops_profile_from_platform_data(
+        self,
+        platform: str,
+        platform_data: Dict[str, Any],
+        demographics: Optional[Dict[str, Any]] = None
+    ) -> OasisAgentProfile:
+        """Generate an OPS persona from a single platform's normalized behavioral data."""
+
+        normalized = self._normalize_platform_data(platform, platform_data)
+        profile = self._generate_ops_persona_from_behavior(
+            raw_posts=normalized["posts"],
+            raw_reactions=normalized["reactions"],
+            raw_shares=normalized["shares"],
+            demographics=demographics or platform_data.get("demographics") or {},
+            dialect_samples=normalized["dialect_samples"],
+            platform_context=normalized["platform_context"],
+            additional_instructions=(
+                f"This is a single-platform analysis for {normalized['platform']}. "
+                f"Use the platform weight {normalized['platform_weight']} when judging how socially costly or revealing a behavior is."
+            ),
+            source_entity_type=f"{normalized['platform']}_behavior_profile",
+        )
+        if not profile.platform_primary:
+            profile.platform_primary = normalized["platform"]
+        return profile
+
+    def generate_ops_composite_profile(
+        self,
+        platform_data_by_name: Dict[str, Dict[str, Any]],
+        demographics: Dict[str, Any]
+    ) -> OasisAgentProfile:
+        """Generate one richer OPS persona by merging behavior from multiple platforms for the same person."""
+
+        platform_data_by_name = platform_data_by_name or {}
+        demographics = demographics or {}
+        if not platform_data_by_name:
+            raise ValueError("platform_data_by_name must include at least one platform payload")
+
+        normalized_payloads = {}
+        merged_posts: List[str] = []
+        merged_reactions: List[str] = []
+        merged_shares: List[str] = []
+        merged_dialect_samples: List[str] = []
+        platform_sections: List[str] = []
+
+        def weighted_merge(items: List[str], platform_name: str, weight: float) -> List[str]:
+            multiplier = max(1, int(round(weight * 2)))
+            weighted_items: List[str] = []
+            for item in items:
+                labeled = f"[{platform_name}|weight={weight}] {item}"
+                weighted_items.extend([labeled] * multiplier)
+            return weighted_items
+
+        def format_section_items(items: List[str], limit: int = 20) -> str:
+            if not items:
+                return "- None provided"
+            return "\n".join(f"- {item}" for item in items[:limit])
+
+        for platform_name, platform_payload in platform_data_by_name.items():
+            normalized = self._normalize_platform_data(platform_name, platform_payload)
+            normalized_payloads[normalized["platform"]] = normalized
+
+            merged_posts.extend(weighted_merge(normalized["posts"], normalized["platform"], normalized["platform_weight"]))
+            merged_reactions.extend(weighted_merge(normalized["reactions"], normalized["platform"], normalized["platform_weight"]))
+            merged_shares.extend(weighted_merge(normalized["shares"], normalized["platform"], normalized["platform_weight"]))
+            merged_dialect_samples.extend([f"[{normalized['platform']}] {sample}" for sample in normalized["dialect_samples"]])
+
+            platform_sections.append(
+                "\n".join([
+                    f"Platform: {normalized['platform']}",
+                    f"Weight: {normalized['platform_weight']}",
+                    normalized["platform_context"],
+                    "Posts:",
+                    format_section_items(normalized["posts"]),
+                    "Reactions:",
+                    format_section_items(normalized["reactions"]),
+                    "Shares:",
+                    format_section_items(normalized["shares"]),
+                    "Dialect samples:",
+                    format_section_items(normalized["dialect_samples"], limit=12),
+                ])
+            )
+
+        composite_instructions = "\n".join([
+            "This is a cross-platform analysis of the same person.",
+            "Detect behavioral_dissonance where the person signals different values, loyalties, or social identities across platforms.",
+            "If someone presents progressive, polished, or professionally neutral values on LinkedIn but shares conservative, sectarian, religious, or family-enforced content on Facebook or WhatsApp, surface that contradiction explicitly.",
+            "People outside their home social network often reveal more. Romanized Bangla mixed with English is common among diaspora. Gulf worker groups can have distinctive political and religious patterns. Second-generation diaspora can show identity-conflict signals.",
+            "Infer migration_worker_flag when the evidence suggests South Asian labor migration, especially origin in South Asia with current location abroad, Gulf work references, remittance duty, dormitory or work-camp life, or family support obligations.",
+            "Infer remittance_dependency_flag from repeated family-finance pressure, remittance mentions, salary transfer behavior, or economic anxiety tied to dependents back home.",
+            "Decide platform_primary as the platform that most likely reveals the person's authentic self rather than their most polished self.",
+            "behavioral_dissonance must be grounded in evidence, not ideology or stereotype.",
+        ])
+
+        extra_fields = [
+            "- behavioral_dissonance: object with keys `summary` (string), `contradictions` (array of strings), and `dissonance_score` (integer from 0 to 10)",
+            "- platform_primary: string naming which platform most strongly reveals the authentic self",
+            "- migration_worker_flag: boolean true/false inferred from origin/current location patterns and labor-migration signals",
+            "- remittance_dependency_flag: boolean true/false inferred from remittance obligation and financial-support patterns",
+        ]
+
+        fallback_primary = max(normalized_payloads.values(), key=lambda payload: payload["platform_weight"])["platform"]
+
+        profile = self._generate_ops_persona_from_behavior(
+            raw_posts=merged_posts,
+            raw_reactions=merged_reactions,
+            raw_shares=merged_shares,
+            demographics=demographics,
+            dialect_samples=merged_dialect_samples,
+            platform_context="\n\n".join(platform_sections),
+            additional_instructions=composite_instructions,
+            extra_field_instructions=extra_fields,
+            source_entity_type="multi_platform_behavior_profile",
+        )
+
+        if not profile.platform_primary:
+            profile.platform_primary = fallback_primary
+        if profile.behavioral_dissonance is None:
+            profile.behavioral_dissonance = {
+                "summary": "No major cross-platform contradiction could be established from the available evidence.",
+                "contradictions": [],
+                "dissonance_score": 0,
+            }
+
+        return profile
+
     def _generate_profile_rule_based(
         self,
         entity_name: str,
@@ -943,6 +1768,16 @@ Important:
                 "rumour_amplifier": random.choice([True, False]),
             }
     
+    def generate_ops_profile_from_facebook_data(self, facebook_data: Dict[str, Any], platform: str = "facebook") -> OasisAgentProfile:
+        """Backward-compatible entry point that now supports any single supported platform."""
+
+        facebook_data = facebook_data or {}
+        return self.generate_ops_profile_from_platform_data(
+            platform=platform,
+            platform_data=facebook_data,
+            demographics=facebook_data.get("demographics") or {},
+        )
+
     def set_graph_id(self, graph_id: str):
         """Set the graph ID used for Zep retrieval."""
         self.graph_id = graph_id
@@ -1165,6 +2000,16 @@ Important:
             self._save_twitter_csv(profiles, file_path)
         else:
             self._save_reddit_json(profiles, file_path)
+
+    def save_profiles_snapshot(
+        self,
+        profiles: List[OasisAgentProfile],
+        file_path: str
+    ):
+        """Save the full OPS profile snapshot used for temporal continuity."""
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump([profile.to_dict() for profile in profiles], f, ensure_ascii=False, indent=2)
+        logger.info(f"Saved {len(profiles)} OPS profile snapshots to {file_path}")
     
     def _save_twitter_csv(self, profiles: List[OasisAgentProfile], file_path: str):
         """
@@ -1274,7 +2119,8 @@ Important:
                 "country": profile.country if profile.country else "Unknown",
             }
             item.update(profile.ops_fields())
-            
+            item.update(profile.memory_state_fields())
+
             # Optional fields
             if profile.profession:
                 item["profession"] = profile.profession

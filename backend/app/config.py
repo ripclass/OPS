@@ -35,6 +35,11 @@ class Config:
     # Zep configuration
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
     ZEP_ENABLED = bool(ZEP_API_KEY)
+
+    # Supabase OPS temporal-memory configuration
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+    OPS_MEMORY_STORE_ENABLED = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
     
     # File upload configuration
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB

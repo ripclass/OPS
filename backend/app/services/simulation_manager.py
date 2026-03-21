@@ -7,6 +7,7 @@ Uses preset scripts plus LLM-generated configuration parameters.
 import os
 import json
 import shutil
+import asyncio
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -16,6 +17,7 @@ from ..config import Config
 from ..utils.logger import get_logger
 from .zep_entity_reader import ZepEntityReader, FilteredEntities
 from .oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
+from .ops_memory_store import load_agent_states
 from .simulation_config_generator import SimulationConfigGenerator, SimulationParameters
 
 logger = get_logger('ops.simulation')
@@ -140,6 +142,94 @@ class SimulationManager:
         sim_dir = os.path.join(self.SIMULATION_DATA_DIR, simulation_id)
         os.makedirs(sim_dir, exist_ok=True)
         return sim_dir
+
+    def _get_profiles_snapshot_path(self, simulation_id: str) -> str:
+        """Get the local full-profile snapshot used for temporal continuity."""
+        return os.path.join(self._get_simulation_dir(simulation_id), "ops_profiles.json")
+
+    @staticmethod
+    def _apply_persisted_state_to_profile(profile: OasisAgentProfile, state_data: Dict[str, Any]):
+        """Apply persisted temporal state from Supabase to a live profile."""
+        if not state_data:
+            return
+        profile.simulation_history = list(state_data.get("simulation_history") or [])
+        profile.baseline_anxiety = float(state_data.get("baseline_anxiety", profile.baseline_anxiety) or profile.baseline_anxiety)
+        if state_data.get("current_trust_government") is not None:
+            profile.current_trust_government = int(state_data["current_trust_government"])
+        if state_data.get("current_shame_sensitivity") is not None:
+            profile.current_shame_sensitivity = int(state_data["current_shame_sensitivity"])
+        profile.cumulative_stress = float(state_data.get("cumulative_stress", profile.cumulative_stress) or profile.cumulative_stress)
+        profile.last_simulation_date = state_data.get("last_simulation_date") or profile.last_simulation_date
+
+    def _hydrate_profiles_from_memory(
+        self,
+        profiles: List[OasisAgentProfile],
+        project_id: str
+    ) -> List[OasisAgentProfile]:
+        """Load persisted temporal continuity state and apply it to generated profiles."""
+        if not profiles:
+            return profiles
+
+        try:
+            state_map = asyncio.run(load_agent_states([profile.user_id for profile in profiles], project_id))
+        except Exception as exc:
+            logger.warning(f"Failed to load persisted OPS memory states for project {project_id}: {exc}")
+            return profiles
+
+        loaded_count = 0
+        for profile in profiles:
+            state_data = state_map.get(profile.user_id)
+            if not state_data:
+                continue
+            self._apply_persisted_state_to_profile(profile, state_data)
+            loaded_count += 1
+
+        if loaded_count:
+            logger.info(f"Loaded persisted OPS memory state for {loaded_count} agent profiles in project {project_id}")
+        return profiles
+
+    def _load_profiles_snapshot(self, simulation_id: str) -> List[OasisAgentProfile]:
+        """Load the full local OPS profile snapshot if it exists."""
+        snapshot_path = self._get_profiles_snapshot_path(simulation_id)
+        if not os.path.exists(snapshot_path):
+            return []
+
+        with open(snapshot_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            return []
+        return [OasisAgentProfile.from_dict(item) for item in data]
+
+    def refresh_profiles_from_memory(self, simulation_id: str) -> int:
+        """Refresh serialized platform profile files from the latest persisted temporal state."""
+        state = self._load_simulation_state(simulation_id)
+        if not state:
+            raise ValueError(f"Simulation does not exist: {simulation_id}")
+
+        profiles = self._load_profiles_snapshot(simulation_id)
+        if not profiles:
+            logger.info(f"No OPS profile snapshot found for simulation {simulation_id}; skipping memory refresh")
+            return 0
+
+        profiles = self._hydrate_profiles_from_memory(profiles, state.project_id)
+        sim_dir = self._get_simulation_dir(simulation_id)
+        generator = OasisProfileGenerator(graph_id=state.graph_id)
+
+        if state.enable_reddit:
+            generator.save_profiles(
+                profiles=profiles,
+                file_path=os.path.join(sim_dir, "reddit_profiles.json"),
+                platform="reddit",
+            )
+        if state.enable_twitter:
+            generator.save_profiles(
+                profiles=profiles,
+                file_path=os.path.join(sim_dir, "twitter_profiles.csv"),
+                platform="twitter",
+            )
+        generator.save_profiles_snapshot(profiles, self._get_profiles_snapshot_path(simulation_id))
+        return len(profiles)
     
     def _save_simulation_state(self, state: SimulationState):
         """Save the simulation state to disk."""
@@ -344,6 +434,7 @@ class SimulationManager:
                 realtime_output_path=realtime_output_path,  # Real-time save path
                 output_platform=realtime_platform  # Output format
             )
+            profiles = self._hydrate_profiles_from_memory(profiles, state.project_id)
             
             state.profiles_count = len(profiles)
             
@@ -371,6 +462,11 @@ class SimulationManager:
                     file_path=os.path.join(sim_dir, "twitter_profiles.csv"),
                     platform="twitter"
                 )
+
+            generator.save_profiles_snapshot(
+                profiles=profiles,
+                file_path=self._get_profiles_snapshot_path(simulation_id)
+            )
             
             if progress_callback:
                 progress_callback(
