@@ -43,6 +43,22 @@ export const getReport = (reportId) => {
 }
 
 /**
+ * Get live report progress
+ * @param {string} reportId
+ */
+export const getReportProgress = (reportId) => {
+  return service.get(`/api/report/${reportId}/progress`)
+}
+
+/**
+ * Get generated report sections
+ * @param {string} reportId
+ */
+export const getReportSections = (reportId) => {
+  return service.get(`/api/report/${reportId}/sections`)
+}
+
+/**
  * Communicate with Report Agent
  * @param {Object} data - { simulation_id, message, chat_history? }
  */
