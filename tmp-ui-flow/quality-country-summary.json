@@ -1,0 +1,55 @@
+[
+  {
+    "country": "Bangladesh",
+    "scenario": "Rice prices increase 40% before Eid in Dhaka. How do rural households, urban working families, and students respond over the next 72 hours?",
+    "project_id": "proj_72ca39eb6f04",
+    "graph_task_id": "8fa0f5ba-7207-461b-ba13-3d10980177c0",
+    "graph_id": "ops_a7cf6c39ae184717",
+    "simulation_id": "sim_76103944220f",
+    "prepare_task_id": "a1577135-06ca-47dd-bbdc-e2ae56916570",
+    "report_task_id": "54c8867e-0991-4e71-8367-ff6dca918dd0",
+    "report_id": "report_f14fc508255b",
+    "profiles_count": 4,
+    "profile_countries": [
+      "Bangladesh"
+    ],
+    "profile_professions": [
+      "University student at Dhaka University",
+      "Garment Worker",
+      "Rice Farmer",
+      "Farmer"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  },
+  {
+    "country": "India",
+    "scenario": "Cooking gas cylinder prices increase 25% before Diwali in Kolkata. How do urban working households, middle-class families, and students respond over the next 72 hours?",
+    "project_id": "proj_4c7795a6c895",
+    "graph_task_id": "16286fcc-d43c-4ce4-bd06-43bad85ca86c",
+    "graph_id": "ops_58ea8a2aded44d91",
+    "simulation_id": "sim_ce314533a35c",
+    "prepare_task_id": "0d105097-0571-496b-a115-6a20963156e5",
+    "report_task_id": null,
+    "report_id": null,
+    "profiles_count": 0,
+    "profile_countries": [],
+    "profile_professions": [],
+    "run_status": null,
+    "current_round": null,
+    "total_actions_count": null,
+    "report_status": null,
+    "report_chat_ok": false,
+    "interview_ok": false,
+    "interview_error": null,
+    "success": false,
+    "error": "404 Client Error: NOT FOUND for url: http://localhost:5001/api/simulation/prepare/status"
+  }
+]

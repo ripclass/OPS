@@ -12,6 +12,7 @@ It uses a step-by-step generation strategy to avoid failures caused by generatin
 
 import json
 import math
+import re
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
@@ -694,6 +695,8 @@ Generate the event configuration as JSON:
 
 **Important**: `poster_type` must be chosen from the available entity types listed above so the initial posts can be assigned to suitable agents.
 For example: official statements should come from `Official` or `University`, news should come from `MediaOutlet`, and student perspectives should come from `Student`.
+When OPS-specific public archetypes are available, prefer the most specific one instead of generic `Person`.
+Examples: `RuralHousehold`, `UrbanWorkingFamily`, `MiddleClassFamily`, `MigrationWorker`, `CorporateProfessional`, `WomenHouseholdVoice`, `ElderlyCitizen`.
 
 Return JSON only (no Markdown):
 {{
@@ -740,11 +743,14 @@ Return JSON only (no Markdown):
         """
         if not event_config.initial_posts:
             return event_config
+
+        def canonicalize_type(value: Any) -> str:
+            return re.sub(r"[^a-z0-9]+", "", str(value or "").lower())
         
         # Build an index of agents by entity type
         agents_by_type: Dict[str, List[AgentActivityConfig]] = {}
         for agent in agent_configs:
-            etype = agent.entity_type.lower()
+            etype = canonicalize_type(agent.entity_type)
             if etype not in agents_by_type:
                 agents_by_type[etype] = []
             agents_by_type[etype].append(agent)
@@ -754,11 +760,18 @@ Return JSON only (no Markdown):
             "official": ["official", "university", "governmentagency", "government"],
             "university": ["university", "official"],
             "mediaoutlet": ["mediaoutlet", "media"],
-            "student": ["student", "person"],
+            "student": ["student", "studentvoice", "youth", "undergraduate", "college", "campusvoice", "person"],
             "professor": ["professor", "expert", "teacher"],
             "alumni": ["alumni", "person"],
             "organization": ["organization", "ngo", "company", "group"],
             "person": ["person", "student", "alumni"],
+            "ruralhousehold": ["ruralhousehold", "ruralfamily", "rural", "villagehousehold", "person"],
+            "urbanworkingfamily": ["urbanworkingfamily", "urbanworkinghousehold", "urbanworker", "workingclass", "workingfamily", "urbanworking", "person"],
+            "middleclassfamily": ["middleclassfamily", "middleclasshousehold", "middleclass", "salariedfamily", "person"],
+            "corporateprofessional": ["corporateprofessional", "corporate", "professional", "officeworker", "linkedinprofessional", "person"],
+            "migrationworker": ["migrationworker", "migrantworker", "overseasworker", "diasporaworker", "remittancehousehold", "person"],
+            "womenhouseholdvoice": ["womenhouseholdvoice", "womenvoice", "householdwoman", "homemaker", "person"],
+            "elderlycitizen": ["elderlycitizen", "elderly", "seniorcitizen", "retired", "person"],
         }
         
         # Track which agent index has been used for each type to avoid repeated reuse
@@ -766,33 +779,61 @@ Return JSON only (no Markdown):
         
         updated_posts = []
         for post in event_config.initial_posts:
-            poster_type = post.get("poster_type", "").lower()
+            poster_type = str(post.get("poster_type", "") or "").lower()
+            poster_type_key = canonicalize_type(poster_type)
             content = post.get("content", "")
             
             # Try to find a matching agent
             matched_agent_id = None
+            matched_key = None
             
             # 1. Direct match
-            if poster_type in agents_by_type:
-                agents = agents_by_type[poster_type]
-                idx = used_indices.get(poster_type, 0) % len(agents)
+            if poster_type_key in agents_by_type:
+                agents = agents_by_type[poster_type_key]
+                idx = used_indices.get(poster_type_key, 0) % len(agents)
                 matched_agent_id = agents[idx].agent_id
-                used_indices[poster_type] = idx + 1
+                matched_key = poster_type_key
+                used_indices[poster_type_key] = idx + 1
             else:
                 # 2. Alias-based match
                 for alias_key, aliases in type_aliases.items():
-                    if poster_type in aliases or alias_key == poster_type:
-                        for alias in aliases:
+                    normalized_aliases = [canonicalize_type(alias) for alias in aliases]
+                    normalized_alias_key = canonicalize_type(alias_key)
+                    if poster_type_key in normalized_aliases or normalized_alias_key == poster_type_key:
+                        for alias in [normalized_alias_key, *normalized_aliases]:
                             if alias in agents_by_type:
                                 agents = agents_by_type[alias]
                                 idx = used_indices.get(alias, 0) % len(agents)
                                 matched_agent_id = agents[idx].agent_id
+                                matched_key = alias
                                 used_indices[alias] = idx + 1
                                 break
                     if matched_agent_id is not None:
                         break
+
+                # 3. Token/substring similarity for near matches like "urban working household"
+                if matched_agent_id is None and poster_type_key:
+                    best_key = None
+                    best_score = 0
+                    poster_tokens = [token for token in re.findall(r"[a-z]+", poster_type) if len(token) >= 4]
+                    for candidate_key, agents in agents_by_type.items():
+                        score = 0
+                        if poster_type_key and poster_type_key in candidate_key:
+                            score += 3
+                        for token in poster_tokens:
+                            if token in candidate_key:
+                                score += 1
+                        if score > best_score and agents:
+                            best_key = candidate_key
+                            best_score = score
+                    if best_key and best_score > 0:
+                        agents = agents_by_type[best_key]
+                        idx = used_indices.get(best_key, 0) % len(agents)
+                        matched_agent_id = agents[idx].agent_id
+                        matched_key = best_key
+                        used_indices[best_key] = idx + 1
             
-            # 3. If still unmatched, use the most influential agent
+            # 4. If still unmatched, use the most influential agent
             if matched_agent_id is None:
                 logger.warning(f"No matching agent was found for type '{poster_type}'. Using the most influential agent instead.")
                 if agent_configs:
@@ -808,7 +849,10 @@ Return JSON only (no Markdown):
                 "poster_agent_id": matched_agent_id
             })
             
-            logger.info(f"Initial post assignment: poster_type='{poster_type}' -> agent_id={matched_agent_id}")
+            logger.info(
+                f"Initial post assignment: poster_type='{poster_type}' "
+                f"(canonical='{poster_type_key}', matched='{matched_key or 'fallback'}') -> agent_id={matched_agent_id}"
+            )
         
         event_config.initial_posts = updated_posts
         return event_config
@@ -848,6 +892,14 @@ Generate an activity configuration for each entity. Note:
 - **Official institutions** (`University` / `GovernmentAgency`): low activity level (0.1-0.3), active during working hours (09:00-17:00), slow response (60-240 minutes), high influence (2.5-3.0)
 - **Media** (`MediaOutlet`): medium activity level (0.4-0.6), active all day (08:00-23:00), fast response (5-30 minutes), high influence (2.0-2.5)
 - **Individuals** (`Student` / `Person` / `Alumni`): high activity level (0.6-0.9), mainly active in the evening (18:00-23:00), fast response (1-15 minutes), lower influence (0.8-1.2)
+- **OPS public archetypes**:
+  - `RuralHousehold`: moderate posting, high comment intensity, strong local influence chains
+  - `UrbanWorkingFamily`: medium-high posting, fast response to price or wage shocks
+  - `MiddleClassFamily`: medium posting, more cautious tone, moderate influence
+  - `CorporateProfessional`: lower posting, more polished tone, higher professional influence
+  - `MigrationWorker`: irregular posting windows, remittance-driven reaction timing, medium influence in family networks
+  - `WomenHouseholdVoice`: moderate posting, strong community observation, higher reputation sensitivity
+  - `ElderlyCitizen`: low posting, slow response, durable but narrower influence
 - **Public figures / experts**: medium activity level (0.4-0.6), medium-to-high influence (1.5-2.0)
 
 Return JSON only (no Markdown):

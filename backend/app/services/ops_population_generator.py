@@ -226,6 +226,17 @@ MIXED_SOUTH_ASIA_WEIGHTS = {
     "Diaspora": 0.03,
 }
 
+OPS_SEGMENT_ENTITY_TYPES = {
+    "rural": "RuralHousehold",
+    "urban_working": "UrbanWorkingFamily",
+    "middle_class": "MiddleClassFamily",
+    "corporate": "CorporateProfessional",
+    "migration_workers": "MigrationWorker",
+    "students": "Student",
+    "women": "WomenHouseholdVoice",
+    "elderly": "ElderlyCitizen",
+}
+
 
 def _slugify(value: str) -> str:
     value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
@@ -520,9 +531,13 @@ class OPSPopulationGenerator:
         """Build synthetic population entities so config generation matches OPS profile scale."""
         entities: List[EntityNode] = []
         for profile in profiles:
-            entity_type = self._segment_to_entity_type(profile.source_entity_type)
+            segment = profile.source_entity_type or "person"
+            entity_labels = self._segment_to_entity_labels(segment)
+            entity_type = next((label for label in entity_labels if label not in {"Entity", "Person", "Node"}), "Person")
             summary = (
-                f"{profile.name} is a {profile.profession or 'person'} from {profile.country or 'South Asia'}"
+                f"{profile.name} is a {profile.profession or 'person'} from {profile.location or profile.country or 'South Asia'}"
+                f" speaking as a {entity_type} archetype in the simulation."
+                f" Segment={segment},"
                 f" with trust_government={profile.current_trust_government if profile.current_trust_government is not None else profile.trust_government},"
                 f" shame_sensitivity={profile.current_shame_sensitivity if profile.current_shame_sensitivity is not None else profile.shame_sensitivity},"
                 f" primary_fear={profile.primary_fear or 'unclear'}, dialect={profile.dialect or 'unspecified'},"
@@ -532,10 +547,11 @@ class OPSPopulationGenerator:
                 EntityNode(
                     uuid=profile.source_entity_uuid or f"ops_profile_{profile.user_id}",
                     name=profile.name,
-                    labels=["Entity", entity_type],
+                    labels=entity_labels,
                     summary=summary,
                     attributes={
-                        "segment": profile.source_entity_type or "Person",
+                        "segment": segment,
+                        "voice_archetype": entity_type,
                         "profession": profile.profession,
                         "country": profile.country,
                         "location": getattr(profile, "location", None),
@@ -936,9 +952,19 @@ Return valid JSON only."""
         return key if key in region_map else "mixed"
 
     def _segment_to_entity_type(self, segment: Optional[str]) -> str:
-        if segment == "students":
-            return "Student"
-        return "Person"
+        normalized = SEGMENT_ALIASES.get(str(segment or "").strip().lower(), str(segment or "").strip().lower())
+        return OPS_SEGMENT_ENTITY_TYPES.get(normalized, "Person")
+
+    def _segment_to_entity_labels(self, segment: Optional[str]) -> List[str]:
+        primary_type = self._segment_to_entity_type(segment)
+        labels = ["Entity", primary_type]
+        if primary_type != "Person":
+            labels.append("Person")
+        deduped: List[str] = []
+        for label in labels:
+            if label not in deduped:
+                deduped.append(label)
+        return deduped
 
     def _generate_username(self, name: str, agent_index: int) -> str:
         return f"{_slugify(name)}_{agent_index:03d}"

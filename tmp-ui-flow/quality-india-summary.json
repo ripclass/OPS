@@ -1,0 +1,30 @@
+{
+  "country": "India",
+  "scenario": "Cooking gas cylinder prices increase 25% before Diwali in Kolkata. How do urban working households, middle-class families, and students respond over the next 72 hours?",
+  "project_id": "proj_ec0a6746be2f",
+  "graph_task_id": "90a40feb-8926-4a6e-8fbd-4e08ca5ba0b0",
+  "graph_id": "ops_9d410eed5cf64bff",
+  "simulation_id": "sim_ca3b76aa99f8",
+  "prepare_task_id": "4e5b978f-59bf-4c54-8437-388ec54afbf7",
+  "report_task_id": "ce07d6f1-85af-4d22-a525-e5b67635280a",
+  "report_id": "report_765fdb84c445",
+  "profiles_count": 4,
+  "profile_countries": [
+    "India"
+  ],
+  "profile_professions": [
+    "Marketing Executive",
+    "Software Engineer",
+    "Engineering student",
+    "Software Developer"
+  ],
+  "run_status": "completed",
+  "current_round": 4,
+  "total_actions_count": 6,
+  "report_status": "completed",
+  "report_chat_ok": true,
+  "interview_ok": true,
+  "interview_error": null,
+  "success": true,
+  "error": null
+}

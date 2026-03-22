@@ -1,0 +1,30 @@
+{
+  "country": "Bangladesh",
+  "scenario": "Rice prices increase 40% before Eid in Dhaka. How do rural households, urban working families, and students respond over the next 72 hours?",
+  "project_id": "proj_07eb9ce30c83",
+  "graph_task_id": "79540bc9-f53f-4605-af47-89aa57a35bf8",
+  "graph_id": "ops_864d46a34bdc4899",
+  "simulation_id": "sim_b3566c9ffe8a",
+  "prepare_task_id": "62345753-ba53-41c1-8f26-01099a6eb8f9",
+  "report_task_id": "235006a5-668f-482a-a0c9-ffaf90ee256e",
+  "report_id": "report_8639e08676fb",
+  "profiles_count": 4,
+  "profile_countries": [
+    "Bangladesh"
+  ],
+  "profile_professions": [
+    "Farmer, Rice Cultivator",
+    "Garment Worker",
+    "Farmer",
+    "Bachelor's Student at Dhaka University"
+  ],
+  "run_status": "completed",
+  "current_round": 4,
+  "total_actions_count": 6,
+  "report_status": "completed",
+  "report_chat_ok": true,
+  "interview_ok": true,
+  "interview_error": null,
+  "success": true,
+  "error": null
+}

@@ -13,6 +13,7 @@ import os
 import json
 import time
 import re
+from collections import Counter
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -923,6 +924,7 @@ class ReportAgent:
         self.report_logger: Optional[ReportLogger] = None
         # Console logger (initialized in generate_report)
         self.console_logger: Optional[ReportConsoleLogger] = None
+        self._ops_runtime_snapshot_text: str = ""
         
         logger.info(f"ReportAgent initialization completed: graph_id={graph_id}, simulation_id={simulation_id}")
     
@@ -958,7 +960,188 @@ class ReportAgent:
         """Use lightweight tools for OPS preview reports."""
         if section_index <= 1:
             return ["quick_search", "panorama_search"]
-        return ["panorama_search", "quick_search"]
+        return ["interview_agents", "panorama_search"]
+
+    def _load_ops_profiles_for_report(self) -> List[Dict[str, Any]]:
+        """Load the local OPS profile snapshot for report grounding."""
+        snapshot_path = os.path.join(
+            Config.UPLOAD_FOLDER,
+            "simulations",
+            self.simulation_id,
+            "ops_profiles.json",
+        )
+        if not os.path.exists(snapshot_path):
+            return []
+        try:
+            with open(snapshot_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data if isinstance(data, list) else []
+        except Exception as exc:
+            logger.warning(f"Failed to load OPS profile snapshot for report {self.simulation_id}: {exc}")
+            return []
+
+    def _extract_action_text(self, action: Any) -> str:
+        """Extract the most human-readable content from a recorded agent action."""
+        action_args = getattr(action, "action_args", {}) or {}
+        for key in [
+            "content",
+            "quote_content",
+            "post_content",
+            "comment_content",
+            "tweet_text",
+            "body",
+            "title",
+        ]:
+            value = action_args.get(key)
+            if value and str(value).strip():
+                return str(value).strip()
+        if getattr(action, "result", None):
+            return str(action.result).strip()
+        return ""
+
+    def _build_ops_runtime_snapshot(self) -> str:
+        """Build a compact evidence pack from the actual OPS run."""
+        if not self.fast_report_mode:
+            return ""
+        if self._ops_runtime_snapshot_text:
+            return self._ops_runtime_snapshot_text
+
+        try:
+            from .simulation_manager import SimulationManager
+            from .simulation_runner import SimulationRunner
+
+            manager = SimulationManager()
+            profiles = self._load_ops_profiles_for_report()
+            if not profiles:
+                try:
+                    profiles = manager.get_profiles(self.simulation_id, platform="reddit")
+                except Exception:
+                    profiles = []
+
+            config = manager.get_simulation_config(self.simulation_id) or {}
+            actions = SimulationRunner.get_actions(self.simulation_id, limit=80)
+            agent_stats = SimulationRunner.get_agent_stats(self.simulation_id)[:6]
+
+            profile_index: Dict[int, Dict[str, Any]] = {}
+            for profile in profiles:
+                try:
+                    profile_index[int(profile.get("user_id"))] = profile
+                except (TypeError, ValueError):
+                    continue
+
+            lines: List[str] = ["[OPS runtime evidence]"]
+
+            if self.ops_metadata:
+                lines.append(
+                    "Run design: "
+                    + ", ".join(
+                        f"{key}={value}" for key, value in self.ops_metadata.items() if value
+                    )
+                )
+
+            event_config = config.get("event_config") or {}
+            hot_topics = event_config.get("hot_topics") or []
+            if hot_topics:
+                lines.append("Hot topics: " + ", ".join(str(topic) for topic in hot_topics[:8]))
+
+            narrative_direction = str(event_config.get("narrative_direction") or "").strip()
+            if narrative_direction:
+                if len(narrative_direction) > 380:
+                    narrative_direction = narrative_direction[:377].rstrip() + "..."
+                lines.append("Narrative direction: " + narrative_direction)
+
+            initial_posts = event_config.get("initial_posts") or []
+            if initial_posts:
+                lines.append("Initial seed posts:")
+                for post in initial_posts[:4]:
+                    agent_id = post.get("poster_agent_id")
+                    profile = profile_index.get(agent_id) if agent_id is not None else None
+                    voice = (
+                        f"{profile.get('name')} ({profile.get('profession') or profile.get('source_entity_type')}, "
+                        f"{profile.get('location') or profile.get('country')})"
+                        if profile
+                        else post.get("poster_type", "Unknown")
+                    )
+                    content = str(post.get("content") or "").strip().replace("\n", " ")
+                    if len(content) > 180:
+                        content = content[:177].rstrip() + "..."
+                    lines.append(f"- {voice}: {content}")
+
+            if profiles:
+                segment_counts = Counter(
+                    str(profile.get("source_entity_type") or "unspecified") for profile in profiles
+                )
+                lines.append(
+                    "Population mix: "
+                    + ", ".join(
+                        f"{segment}={count}" for segment, count in segment_counts.most_common(8)
+                    )
+                )
+
+                sampled_profiles: List[Dict[str, Any]] = []
+                seen_segments = set()
+                for profile in profiles:
+                    segment = str(profile.get("source_entity_type") or "unspecified")
+                    if segment in seen_segments and len(sampled_profiles) >= 4:
+                        continue
+                    sampled_profiles.append(profile)
+                    seen_segments.add(segment)
+                    if len(sampled_profiles) >= 6:
+                        break
+
+                lines.append("Representative simulated people:")
+                for profile in sampled_profiles:
+                    trust = profile.get("current_trust_government", profile.get("trust_government"))
+                    anxiety = profile.get("baseline_anxiety")
+                    person_line = (
+                        f"- {profile.get('name')} | {profile.get('profession') or 'unknown role'} | "
+                        f"{profile.get('location') or profile.get('country') or 'unknown place'} | "
+                        f"segment={profile.get('source_entity_type') or 'unknown'} | "
+                        f"dialect={profile.get('dialect') or 'unspecified'} | "
+                        f"fear={profile.get('primary_fear') or 'unclear'} | "
+                        f"trust={trust if trust is not None else 'n/a'} | "
+                        f"anxiety={anxiety if anxiety is not None else 'n/a'}"
+                    )
+                    lines.append(person_line)
+
+            if agent_stats:
+                lines.append("Most active voices:")
+                for stat in agent_stats[:5]:
+                    profile = profile_index.get(stat.get("agent_id"))
+                    descriptor = profile.get("profession") if profile else None
+                    lines.append(
+                        f"- {stat.get('agent_name')} | actions={stat.get('total_actions')} | "
+                        f"posts={stat.get('action_types', {}).get('CREATE_POST', 0)} | "
+                        f"comments={stat.get('action_types', {}).get('CREATE_COMMENT', 0)}"
+                        + (f" | role={descriptor}" if descriptor else "")
+                    )
+
+            notable_actions = []
+            for action in actions:
+                text = self._extract_action_text(action)
+                if not text:
+                    continue
+                if len(text) > 180:
+                    text = text[:177].rstrip() + "..."
+                notable_actions.append(
+                    f"- round {action.round_num} | {action.platform} | {action.agent_name} | "
+                    f"{action.action_type}: {text}"
+                )
+                if len(notable_actions) >= 8:
+                    break
+            if notable_actions:
+                lines.append("Observed public reactions:")
+                lines.extend(notable_actions)
+
+            snapshot_text = "\n".join(lines).strip()
+            if len(snapshot_text) > 4500:
+                snapshot_text = snapshot_text[:4497].rstrip() + "..."
+            self._ops_runtime_snapshot_text = snapshot_text
+            return snapshot_text
+        except Exception as exc:
+            logger.warning(f"Failed to build OPS runtime evidence pack for report {self.simulation_id}: {exc}")
+            self._ops_runtime_snapshot_text = ""
+            return ""
 
     def _build_ops_fast_outline(self) -> ReportOutline:
         """Build a deterministic short outline for OPS runs."""
@@ -979,23 +1162,23 @@ class ReportAgent:
 
         if run_type.lower() == "diaspora":
             sections = [
-                ReportSection(title="Immediate Diaspora Reaction"),
-                ReportSection(title="Network Spillover and Pressure Risks"),
+                ReportSection(title="Immediate Diaspora Reaction Across Sender Networks"),
+                ReportSection(title="Pressure Points, Spillover Risks, and Likely Next Moves"),
             ]
         elif run_type.lower() == "corridor-based":
             sections = [
                 ReportSection(title="Corridor Reaction and Remittance Pressure"),
-                ReportSection(title="Spillover Risks and Likely Next Moves"),
+                ReportSection(title="Behavioral Drivers, Spillover Risks, and Likely Next Moves"),
             ]
         elif run_type.lower() == "regional multi-country":
             sections = [
                 ReportSection(title="Country-Level Reaction Patterns"),
-                ReportSection(title="Regional Spillover and Escalation Risks"),
+                ReportSection(title="Segment Differences, Regional Spillover, and Escalation Risks"),
             ]
         else:
             sections = [
-                ReportSection(title="Immediate Public Reaction"),
-                ReportSection(title="Amplification Risks and Likely Next Moves"),
+                ReportSection(title="Immediate Reaction Across Selected Segments"),
+                ReportSection(title="Behavioral Drivers, Amplification Risks, and Likely Next Moves"),
             ]
 
         return ReportOutline(title=title, summary=summary, sections=sections)
@@ -1154,7 +1337,8 @@ class ReportAgent:
 
         Supported formats (by priority):
         1. <tool_call>{"name": "tool_name", "parameters": {...}}</tool_call>
-        2. Naked JSON (the response as a whole or a single line is a tool calling JSON)
+        2. JSON in fenced code blocks
+        3. Naked JSON (the response as a whole or a single line is a tool calling JSON)
         """
         tool_calls = []
 
@@ -1170,7 +1354,20 @@ class ReportAgent:
         if tool_calls:
             return tool_calls
 
-        # Format 2: Keep it secret - LLM directly outputs bare JSON (without <tool_call> tag)
+        # Format 2: fenced JSON blocks
+        fenced_json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
+        for match in re.finditer(fenced_json_pattern, response, re.DOTALL | re.IGNORECASE):
+            try:
+                call_data = json.loads(match.group(1))
+                if self._is_valid_tool_call(call_data):
+                    tool_calls.append(call_data)
+            except json.JSONDecodeError:
+                pass
+
+        if tool_calls:
+            return tool_calls
+
+        # Format 3: Keep it secret - LLM directly outputs bare JSON (without <tool_call> tag)
         # Only try when format 1 is not matched to avoid mismatching JSON in the body
         stripped = response.strip()
         if stripped.startswith('{') and stripped.endswith('}'):
@@ -1212,7 +1409,79 @@ class ReportAgent:
 
         # Remove any tool-call XML that may have leaked into the final answer body.
         candidate = re.sub(r'<tool_call>.*?</tool_call>', '', candidate, flags=re.DOTALL).strip()
-        return candidate
+        return self._sanitize_section_output(candidate)
+
+    def _sanitize_section_output(self, text: str) -> str:
+        """Remove tool-call scaffolding and obvious reasoning residue from final chapter text."""
+        cleaned = str(text or "").strip()
+        if not cleaned:
+            return ""
+
+        final_markers = [
+            "**Final Answer**",
+            "Final Answer:",
+            "## Final Answer",
+            "### Final Answer",
+        ]
+        for marker in final_markers:
+            if marker in cleaned:
+                cleaned = cleaned.split(marker)[-1].strip()
+
+        tail_markers = [
+            "To gather more detailed information",
+            "To gather more detailed simulation data and insights",
+            "To get more detailed insights directly",
+            "After analyzing the results from the",
+            "After conducting interviews with",
+            "I will call the `",
+            "I will call the ",
+            "We will call the `",
+            "We will call the ",
+        ]
+        cut_positions = [
+            cleaned.find(marker)
+            for marker in tail_markers
+            if marker in cleaned
+        ]
+        if cut_positions:
+            cleaned = cleaned[:min(cut_positions)].rstrip()
+
+        cleaned = re.sub(r'<tool_call>.*?</tool_call>', '', cleaned, flags=re.DOTALL)
+        cleaned = re.sub(r'```(?:json)?\s*\{.*?\}\s*```', '', cleaned, flags=re.DOTALL | re.IGNORECASE)
+        cleaned = re.sub(
+            r'\((?:[A-Z][A-Za-z ]+|Panorama Search|Quick Search|InsightForge|Interview(?:s)?(?: with [A-Za-z ]+)?)\,\s*\d{4}\)',
+            '',
+            cleaned,
+        )
+
+        lines = []
+        for raw_line in cleaned.splitlines():
+            line = raw_line.strip()
+            lowered = line.lower()
+            if not line:
+                lines.append("")
+                continue
+            if lowered.startswith("**tool call:"):
+                continue
+            if lowered.startswith("**tool output:"):
+                continue
+            if lowered.startswith("tool call:"):
+                continue
+            if lowered.startswith("tool output:"):
+                continue
+            if lowered.startswith("based on the simulation data, we will now output"):
+                continue
+            if lowered.startswith("after calling the"):
+                continue
+            if lowered.startswith("to gather more detailed insights"):
+                continue
+            if lowered == "---":
+                continue
+            lines.append(raw_line)
+
+        cleaned = "\n".join(lines)
+        cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+        return cleaned.strip()
 
     def _is_valid_tool_call(self, data: dict) -> bool:
         """Verify whether the parsed JSON is a legal tool call"""
@@ -1367,11 +1636,12 @@ class ReportAgent:
             self.report_logger.log_section_start(section.title, section_index)
         
         max_iterations = 3 if self.fast_report_mode else 5
-        min_tool_calls = 1 if self.fast_report_mode else 3
+        min_tool_calls = 0 if self.fast_report_mode else 3
         max_tool_calls = 2 if self.fast_report_mode else self.MAX_TOOL_CALLS_PER_SECTION
-        max_tokens = 1536 if self.fast_report_mode else 4096
+        max_tokens = 1792 if self.fast_report_mode else 4096
         temperature = 0.35 if self.fast_report_mode else 0.5
         allowed_tools = self._get_fast_section_tool_names(section_index) if self.fast_report_mode else list(self.tools.keys())
+        runtime_snapshot = self._build_ops_runtime_snapshot() if self.fast_report_mode else ""
 
         system_prompt = SECTION_SYSTEM_PROMPT_TEMPLATE.format(
             report_title=outline.title,
@@ -1380,13 +1650,22 @@ class ReportAgent:
             section_title=section.title,
             tools_description=self._get_tools_description(tool_names=allowed_tools),
         )
-        system_prompt = system_prompt.replace(
-            "Call tools at least 3 times per chapter and at most 5 times",
-            f"Call tools at least {min_tool_calls} times per chapter and at most {max_tool_calls} times",
-        ).replace(
-            "[Available Search Tools] (call tools 3-5 times per chapter)",
-            f"[Available Search Tools] (call tools {min_tool_calls}-{max_tool_calls} times per chapter)",
-        )
+        if min_tool_calls == 0:
+            system_prompt = system_prompt.replace(
+                "Call tools at least 3 times per chapter and at most 5 times",
+                f"Call tools only when they materially improve grounding, and at most {max_tool_calls} times per chapter",
+            ).replace(
+                "[Available Search Tools] (call tools 3-5 times per chapter)",
+                f"[Available Search Tools] (optional, call tools up to {max_tool_calls} times per chapter)",
+            )
+        else:
+            system_prompt = system_prompt.replace(
+                "Call tools at least 3 times per chapter and at most 5 times",
+                f"Call tools at least {min_tool_calls} times per chapter and at most {max_tool_calls} times",
+            ).replace(
+                "[Available Search Tools] (call tools 3-5 times per chapter)",
+                f"[Available Search Tools] (call tools {min_tool_calls}-{max_tool_calls} times per chapter)",
+            )
         if self.fast_report_mode:
             system_prompt += (
                 "\n\n[OPS fast report mode]\n"
@@ -1394,6 +1673,15 @@ class ReportAgent:
                 "- Prefer direct findings over long exposition.\n"
                 "- Target roughly 4-6 short paragraphs or equivalent bullets.\n"
                 "- Use only the listed lightweight tools for this chapter.\n"
+                "- Ground every claim in the OPS runtime evidence block, named simulated people, or tool output.\n"
+                "- Do not invent relief announcements, official responses, or institutional actions unless they appear in the scenario, runtime evidence, or tool results.\n"
+                "- Prefer concrete segments, professions, locations, and dialect cues over generic mass-public phrasing.\n"
+                "- Do not introduce placeholder actors like 'local community page' or unnamed institutions unless they are present in the evidence.\n"
+                "- If evidence is thin or mixed, say so explicitly instead of smoothing it over.\n"
+                "- If `interview_agents` is available for this chapter, use it when lived voice or first-person perspective would strengthen the analysis.\n"
+                "- Never narrate your own workflow in the chapter text. Do not write phrases like 'I will call', 'we call upon the tool', 'after analyzing the results', or 'after conducting interviews'.\n"
+                "- Do not switch into generic policy-advice mode. Focus on the likely behavior, speech, sharing, and coordination patterns of the simulated public.\n"
+                "- Do not use fabricated academic-style citations or source-year references such as '(Name, 2023)' or '(Panorama Search, 2023)'.\n"
             )
 
         # Build user prompt - pass in a maximum of 4000 words for each completed chapter
@@ -1412,6 +1700,17 @@ class ReportAgent:
             previous_content=previous_content,
             section_title=section.title,
         )
+        if runtime_snapshot:
+            user_prompt += (
+                "\n\n[OPS runtime evidence - primary grounding]\n"
+                f"{runtime_snapshot}\n\n"
+                "Use this evidence as the default factual basis for the chapter. Tools may extend it, but do not contradict or outrun it without saying why."
+            )
+        if self.fast_report_mode and "Likely Next Moves" in section.title:
+            user_prompt += (
+                "\n\n[Section-specific instruction]\n"
+                "End with the most plausible next public moves inside the simulation, not a generic policy recommendation list."
+            )
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -1428,6 +1727,8 @@ class ReportAgent:
 
         # Report context for sub-issue generation in InsightForge
         report_context = f"Chapter title:{section.title}\nSimulation requirements:{self.simulation_requirement}"
+        if runtime_snapshot:
+            report_context += "\nOPS runtime evidence:\n" + runtime_snapshot[:2200]
         
         for iteration in range(max_iterations):
             if progress_callback:
@@ -1651,7 +1952,7 @@ class ReportAgent:
             # The tool call is sufficient, LLM outputs the content without the "Final Answer:" prefix
             # Use this content directly as the final answer, no more idling
             logger.info(f"chapter{section.title} The 'Final Answer:' prefix is â€‹â€‹not detected, and the LLM output is directly adopted as the final content (tool call:{tool_calls_count}Second-rate)")
-            final_answer = response.strip()
+            final_answer = self._sanitize_section_output(response)
 
             if self.report_logger:
                 self.report_logger.log_section_content(
