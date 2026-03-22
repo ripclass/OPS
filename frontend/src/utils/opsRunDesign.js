@@ -10,6 +10,17 @@ const DEFAULT_OPS_CONFIG = Object.freeze({
   demoModeBypass: true,
 })
 
+const SEGMENT_PARAM_MAP = Object.freeze({
+  Rural: 'rural',
+  'Urban working class': 'urban_working',
+  'Middle class': 'middle_class',
+  Corporate: 'corporate',
+  'Migration workers': 'migration_workers',
+  Students: 'students',
+  Women: 'women',
+  Elderly: 'elderly',
+})
+
 export function createDefaultOpsConfig(overrides = {}) {
   return {
     ...DEFAULT_OPS_CONFIG,
@@ -162,5 +173,25 @@ export function validateOpsConfig(config = {}) {
     valid: errors.length === 0,
     errors,
     normalized,
+  }
+}
+
+export function buildOpsPopulationParams(config = {}) {
+  const normalized = normalizeOpsConfig(config)
+  const nAgents = Number.parseInt(normalized.targetAgents, 10)
+
+  return {
+    run_type: normalized.runType,
+    origin_country: normalized.originCountry,
+    origin_countries: normalized.originCountries,
+    audience_region: normalized.audienceRegion,
+    corridor: normalized.corridor,
+    segments: normalized.segments
+      .map((segment) => SEGMENT_PARAM_MAP[segment] || segment)
+      .filter(Boolean),
+    n_agents: Number.isFinite(nAgents) ? nAgents : 100,
+    requested_outputs: normalized.requestedOutputs,
+    region: 'mixed',
+    demo_mode_bypass: normalized.demoModeBypass !== false,
   }
 }

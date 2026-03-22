@@ -17,6 +17,7 @@ from ..config import Config
 from ..utils.logger import get_logger
 from .zep_entity_reader import ZepEntityReader, FilteredEntities
 from .oasis_profile_generator import OasisProfileGenerator, OasisAgentProfile
+from .ops_population_generator import OPSPopulationGenerator, normalize_ops_population_params
 from .ops_memory_store import load_agent_states
 from .simulation_config_generator import SimulationConfigGenerator, SimulationParameters
 
@@ -59,6 +60,7 @@ class SimulationState:
     entities_count: int = 0
     profiles_count: int = 0
     entity_types: List[str] = field(default_factory=list)
+    ops_population_params: Optional[Dict[str, Any]] = None
     
     # Configuration generation info
     config_generated: bool = False
@@ -88,6 +90,7 @@ class SimulationState:
             "entities_count": self.entities_count,
             "profiles_count": self.profiles_count,
             "entity_types": self.entity_types,
+            "ops_population_params": self.ops_population_params,
             "config_generated": self.config_generated,
             "config_reasoning": self.config_reasoning,
             "current_round": self.current_round,
@@ -108,6 +111,7 @@ class SimulationState:
             "entities_count": self.entities_count,
             "profiles_count": self.profiles_count,
             "entity_types": self.entity_types,
+            "ops_population_params": self.ops_population_params,
             "config_generated": self.config_generated,
             "error": self.error,
         }
@@ -267,6 +271,7 @@ class SimulationManager:
             entities_count=data.get("entities_count", 0),
             profiles_count=data.get("profiles_count", 0),
             entity_types=data.get("entity_types", []),
+            ops_population_params=data.get("ops_population_params"),
             config_generated=data.get("config_generated", False),
             config_reasoning=data.get("config_reasoning", ""),
             current_round=data.get("current_round", 0),
@@ -286,6 +291,7 @@ class SimulationManager:
         graph_id: str,
         enable_twitter: bool = True,
         enable_reddit: bool = True,
+        ops_population_params: Optional[Dict[str, Any]] = None,
     ) -> SimulationState:
         """
         Create a new simulation.
@@ -308,6 +314,7 @@ class SimulationManager:
             graph_id=graph_id,
             enable_twitter=enable_twitter,
             enable_reddit=enable_reddit,
+            ops_population_params=normalize_ops_population_params(ops_population_params),
             status=SimulationStatus.CREATED,
         )
         
@@ -372,14 +379,20 @@ class SimulationManager:
                 defined_entity_types=defined_entity_types,
                 enrich_with_edges=True
             )
-            
-            state.entities_count = filtered.filtered_count
-            state.entity_types = list(filtered.entity_types)
+
+            ops_population_params = normalize_ops_population_params(state.ops_population_params)
+            if ops_population_params:
+                state.ops_population_params = ops_population_params
+                state.entities_count = ops_population_params["n_agents"]
+                state.entity_types = list(ops_population_params["segments"])
+            else:
+                state.entities_count = filtered.filtered_count
+                state.entity_types = list(filtered.entity_types)
             
             if progress_callback:
                 progress_callback(
                     "reading", 100, 
-                    f"Done, found {filtered.filtered_count} entities",
+                    f"Done, found {filtered.filtered_count} graph entities",
                     current=filtered.filtered_count,
                     total=filtered.filtered_count
                 )
@@ -391,7 +404,7 @@ class SimulationManager:
                 return state
             
             # ========== Stage 2: Generate agent profiles ==========
-            total_entities = len(filtered.entities)
+            total_entities = state.entities_count if ops_population_params else len(filtered.entities)
             
             if progress_callback:
                 progress_callback(
@@ -415,6 +428,8 @@ class SimulationManager:
                         item_name=msg
                     )
             
+            simulation_entities = filtered.entities
+
             # Set the file path for real-time saves, preferring the Reddit JSON format
             realtime_output_path = None
             realtime_platform = "reddit"
@@ -424,16 +439,45 @@ class SimulationManager:
             elif state.enable_twitter:
                 realtime_output_path = os.path.join(sim_dir, "twitter_profiles.csv")
                 realtime_platform = "twitter"
-            
-            profiles = generator.generate_profiles_from_entities(
-                entities=filtered.entities,
-                use_llm=use_llm_for_profiles,
-                progress_callback=profile_progress,
-                graph_id=state.graph_id,  # Pass `graph_id` for Zep retrieval
-                parallel_count=parallel_profile_count,  # Parallel generation count
-                realtime_output_path=realtime_output_path,  # Real-time save path
-                output_platform=realtime_platform  # Output format
-            )
+
+            if ops_population_params:
+                if progress_callback:
+                    progress_callback(
+                        "generating_profiles",
+                        5,
+                        f"Generating {ops_population_params['n_agents']} OPS-native population profiles...",
+                        current=0,
+                        total=total_entities,
+                        item_name="OPS population generation",
+                    )
+
+                ops_generator = OPSPopulationGenerator()
+                profiles = ops_generator.generate_population(
+                    params=ops_population_params,
+                    scenario_context=simulation_requirement,
+                    use_llm=use_llm_for_profiles,
+                )
+                simulation_entities = ops_generator.build_population_entities(profiles)
+
+                if progress_callback:
+                    progress_callback(
+                        "generating_profiles",
+                        90,
+                        f"Generated {len(profiles)} OPS-native population profiles",
+                        current=len(profiles),
+                        total=total_entities,
+                        item_name="OPS population generation",
+                    )
+            else:
+                profiles = generator.generate_profiles_from_entities(
+                    entities=filtered.entities,
+                    use_llm=use_llm_for_profiles,
+                    progress_callback=profile_progress,
+                    graph_id=state.graph_id,  # Pass `graph_id` for Zep retrieval
+                    parallel_count=parallel_profile_count,  # Parallel generation count
+                    realtime_output_path=realtime_output_path,  # Real-time save path
+                    output_platform=realtime_platform  # Output format
+                )
             profiles = self._hydrate_profiles_from_memory(profiles, state.project_id)
             
             state.profiles_count = len(profiles)
@@ -501,7 +545,8 @@ class SimulationManager:
                 graph_id=state.graph_id,
                 simulation_requirement=simulation_requirement,
                 document_text=document_text,
-                entities=filtered.entities,
+                entities=simulation_entities,
+                context_entities=filtered.entities,
                 enable_twitter=state.enable_twitter,
                 enable_reddit=state.enable_reddit
             )

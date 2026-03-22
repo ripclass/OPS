@@ -882,6 +882,36 @@ class ReportAgent:
         self.graph_id = graph_id
         self.simulation_id = simulation_id
         self.simulation_requirement = simulation_requirement
+        self.ops_metadata = self._parse_ops_metadata(simulation_requirement)
+        self.ops_population_params: Dict[str, Any] = {}
+        try:
+            from .simulation_manager import SimulationManager
+
+            state = SimulationManager().get_simulation(simulation_id)
+            if state and getattr(state, "ops_population_params", None):
+                self.ops_population_params = dict(state.ops_population_params or {})
+        except Exception as exc:
+            logger.warning(f"Failed to read OPS population params for report {simulation_id}: {exc}")
+
+        if self.ops_population_params and not self.ops_metadata:
+            origin_country = self.ops_population_params.get("origin_country")
+            origin_countries = self.ops_population_params.get("origin_countries") or []
+            audience_region = self.ops_population_params.get("audience_region")
+            corridor = self.ops_population_params.get("corridor")
+            self.ops_metadata = {
+                "run type": str(self.ops_population_params.get("run_type") or "Domestic"),
+                "origin country": str(origin_country or (origin_countries[0] if origin_countries else "South Asia")),
+                "segments": ", ".join(self.ops_population_params.get("segments") or []),
+                "target agents": str(self.ops_population_params.get("n_agents") or ""),
+                "requested outputs": ", ".join(self.ops_population_params.get("requested_outputs") or []),
+            }
+            if audience_region:
+                self.ops_metadata["audience region"] = str(audience_region)
+            if corridor:
+                self.ops_metadata["corridor"] = str(corridor)
+
+        self.is_ops_report = bool(self.ops_metadata or self.ops_population_params)
+        self.fast_report_mode = self.is_ops_report
         
         self.llm = llm_client or LLMClient()
         self.zep_tools = zep_tools or ZepToolsService()
@@ -895,6 +925,80 @@ class ReportAgent:
         self.console_logger: Optional[ReportConsoleLogger] = None
         
         logger.info(f"ReportAgent initialization completed: graph_id={graph_id}, simulation_id={simulation_id}")
+    
+    def _parse_ops_metadata(self, text: str) -> Dict[str, str]:
+        """Parse the OPS metadata block embedded in the simulation requirement."""
+        if not text or "[OPS Wizard Metadata]" not in text:
+            return {}
+
+        metadata: Dict[str, str] = {}
+        pattern = re.compile(
+            r"\[OPS Wizard Metadata\](.*?)\[/OPS Wizard Metadata\]",
+            re.DOTALL | re.IGNORECASE,
+        )
+        match = pattern.search(text)
+        if not match:
+            return {}
+
+        for raw_line in match.group(1).splitlines():
+            line = raw_line.strip()
+            if not line or ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            metadata[key.strip().lower()] = value.strip()
+        return metadata
+
+    def _extract_primary_scenario_text(self) -> str:
+        """Return the human scenario text without OPS metadata."""
+        if "Scenario:" in self.simulation_requirement:
+            return self.simulation_requirement.split("Scenario:", 1)[1].strip()
+        return self.simulation_requirement.strip()
+
+    def _get_fast_section_tool_names(self, section_index: int) -> List[str]:
+        """Use lightweight tools for OPS preview reports."""
+        if section_index <= 1:
+            return ["quick_search", "panorama_search"]
+        return ["panorama_search", "quick_search"]
+
+    def _build_ops_fast_outline(self) -> ReportOutline:
+        """Build a deterministic short outline for OPS runs."""
+        scenario = self._extract_primary_scenario_text() or "South Asia scenario outlook"
+        origin_country = self.ops_metadata.get("origin country", "South Asia")
+        run_type = self.ops_metadata.get("run type", "Domestic")
+        segments = self.ops_metadata.get("segments", "selected segments")
+
+        compact_title = scenario.rstrip(" ?.")
+        if len(compact_title) > 72:
+            compact_title = compact_title[:72].rstrip() + "..."
+        title = f"OPS Forecast Report: {compact_title}"
+
+        summary = (
+            f"This report forecasts how {segments.lower()} in {origin_country} may respond to the "
+            f"scenario over the next rounds of the simulation."
+        )
+
+        if run_type.lower() == "diaspora":
+            sections = [
+                ReportSection(title="Immediate Diaspora Reaction"),
+                ReportSection(title="Network Spillover and Pressure Risks"),
+            ]
+        elif run_type.lower() == "corridor-based":
+            sections = [
+                ReportSection(title="Corridor Reaction and Remittance Pressure"),
+                ReportSection(title="Spillover Risks and Likely Next Moves"),
+            ]
+        elif run_type.lower() == "regional multi-country":
+            sections = [
+                ReportSection(title="Country-Level Reaction Patterns"),
+                ReportSection(title="Regional Spillover and Escalation Risks"),
+            ]
+        else:
+            sections = [
+                ReportSection(title="Immediate Public Reaction"),
+                ReportSection(title="Amplification Risks and Likely Next Moves"),
+            ]
+
+        return ReportOutline(title=title, summary=summary, sections=sections)
     
     def _define_tools(self) -> Dict[str, Dict[str, Any]]:
         """Define available tools"""
@@ -1123,10 +1227,12 @@ class ReportAgent:
             return True
         return False
     
-    def _get_tools_description(self) -> str:
+    def _get_tools_description(self, tool_names: Optional[List[str]] = None) -> str:
         """Generate tool description text"""
         desc_parts = ["Available tools:"]
-        for name, tool in self.tools.items():
+        selected_names = tool_names or list(self.tools.keys())
+        for name in selected_names:
+            tool = self.tools[name]
             params_desc = ", ".join([f"{k}: {v}" for k, v in tool["parameters"].items()])
             desc_parts.append(f"- {name}: {tool['description']}")
             if params_desc:
@@ -1149,6 +1255,15 @@ class ReportAgent:
             ReportOutline: report outline
         """
         logger.info("Start planning your report outline...")
+
+        if self.fast_report_mode:
+            if progress_callback:
+                progress_callback("planning", 20, "Building OPS report outline...")
+            outline = self._build_ops_fast_outline()
+            if progress_callback:
+                progress_callback("planning", 100, "OPS report outline prepared")
+            logger.info(f"OPS fast outline prepared:{len(outline.sections)} chapters")
+            return outline
         
         if progress_callback:
             progress_callback("planning", 0, "Analyzing simulation requirements...")
@@ -1251,20 +1366,43 @@ class ReportAgent:
         if self.report_logger:
             self.report_logger.log_section_start(section.title, section_index)
         
+        max_iterations = 3 if self.fast_report_mode else 5
+        min_tool_calls = 1 if self.fast_report_mode else 3
+        max_tool_calls = 2 if self.fast_report_mode else self.MAX_TOOL_CALLS_PER_SECTION
+        max_tokens = 1536 if self.fast_report_mode else 4096
+        temperature = 0.35 if self.fast_report_mode else 0.5
+        allowed_tools = self._get_fast_section_tool_names(section_index) if self.fast_report_mode else list(self.tools.keys())
+
         system_prompt = SECTION_SYSTEM_PROMPT_TEMPLATE.format(
             report_title=outline.title,
             report_summary=outline.summary,
             simulation_requirement=self.simulation_requirement,
             section_title=section.title,
-            tools_description=self._get_tools_description(),
+            tools_description=self._get_tools_description(tool_names=allowed_tools),
         )
+        system_prompt = system_prompt.replace(
+            "Call tools at least 3 times per chapter and at most 5 times",
+            f"Call tools at least {min_tool_calls} times per chapter and at most {max_tool_calls} times",
+        ).replace(
+            "[Available Search Tools] (call tools 3-5 times per chapter)",
+            f"[Available Search Tools] (call tools {min_tool_calls}-{max_tool_calls} times per chapter)",
+        )
+        if self.fast_report_mode:
+            system_prompt += (
+                "\n\n[OPS fast report mode]\n"
+                "- Keep the chapter concise and operational.\n"
+                "- Prefer direct findings over long exposition.\n"
+                "- Target roughly 4-6 short paragraphs or equivalent bullets.\n"
+                "- Use only the listed lightweight tools for this chapter.\n"
+            )
 
         # Build user prompt - pass in a maximum of 4000 words for each completed chapter
         if previous_sections:
             previous_parts = []
-            for sec in previous_sections:
-                # Maximum 4,000 words per chapter
-                truncated = sec[:4000] + "..." if len(sec) > 4000 else sec
+            source_sections = previous_sections[-1:] if self.fast_report_mode else previous_sections
+            max_previous_chars = 2000 if self.fast_report_mode else 4000
+            for sec in source_sections:
+                truncated = sec[:max_previous_chars] + "..." if len(sec) > max_previous_chars else sec
                 previous_parts.append(truncated)
             previous_content = "\n\n---\n\n".join(previous_parts)
         else:
@@ -1282,10 +1420,8 @@ class ReportAgent:
         
         # ReACT loop
         tool_calls_count = 0
-        max_iterations = 5  # Maximum number of iteration rounds
-        min_tool_calls = 3  # Minimum number of tool calls
         used_tools = set()  # Record the tool name that has been called
-        all_tools = {"insight_forge", "panorama_search", "quick_search", "interview_agents"}
+        all_tools = set(allowed_tools)
         best_final_answer = ""
         last_non_empty_response = ""
         consecutive_final_only_responses = 0
@@ -1298,14 +1434,14 @@ class ReportAgent:
                 progress_callback(
                     "generating", 
                     int((iteration / max_iterations) * 100),
-                    f"In-depth search and writing in progress ({tool_calls_count}/{self.MAX_TOOL_CALLS_PER_SECTION})"
+                    f"In-depth search and writing in progress ({tool_calls_count}/{max_tool_calls})"
                 )
             
             # Call LLM
             response = self.llm.chat(
                 messages=messages,
-                temperature=0.5,
-                max_tokens=4096
+                temperature=temperature,
+                max_tokens=max_tokens
             )
 
             # Check if LLM return is None (API exception or empty content)
@@ -1421,19 +1557,29 @@ class ReportAgent:
             # â”€â”€ Case 2: LLM attempts to call the tool â”€â”€
             if has_tool_calls:
                 # The tool quota has been exhausted â†’ clearly inform and require output Final Answer
-                if tool_calls_count >= self.MAX_TOOL_CALLS_PER_SECTION:
+                if tool_calls_count >= max_tool_calls:
                     messages.append({"role": "assistant", "content": response})
                     messages.append({
                         "role": "user",
                         "content": REACT_TOOL_LIMIT_MSG.format(
                             tool_calls_count=tool_calls_count,
-                            max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
+                            max_tool_calls=max_tool_calls,
                         ),
                     })
                     continue
 
                 # Only execute the first tool call
                 call = tool_calls[0]
+                if call["name"] not in allowed_tools:
+                    messages.append({"role": "assistant", "content": response})
+                    messages.append({
+                        "role": "user",
+                        "content": (
+                            f"Use only these tools for this chapter: {', '.join(allowed_tools)}. "
+                            "Choose one of them and continue."
+                        ),
+                    })
+                    continue
                 if len(tool_calls) > 1:
                     logger.info(f"LLM attempts to call{len(tool_calls)} tools, only the first one is executed:{call['name']}")
 
@@ -1467,7 +1613,7 @@ class ReportAgent:
                 # Build unused tooltip
                 unused_tools = all_tools - used_tools
                 unused_hint = ""
-                if unused_tools and tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION:
+                if unused_tools and tool_calls_count < max_tool_calls:
                     unused_hint = REACT_UNUSED_TOOLS_HINT.format(unused_list="ã€".join(unused_tools))
 
                 messages.append({"role": "assistant", "content": response})
@@ -1477,7 +1623,7 @@ class ReportAgent:
                         tool_name=call["name"],
                         result=result,
                         tool_calls_count=tool_calls_count,
-                        max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
+                        max_tool_calls=max_tool_calls,
                         used_tools_str=", ".join(used_tools),
                         unused_hint=unused_hint,
                     ),
@@ -1535,8 +1681,8 @@ class ReportAgent:
             
             response = self.llm.chat(
                 messages=messages,
-                temperature=0.5,
-                max_tokens=4096
+                temperature=temperature,
+                max_tokens=max_tokens
             )
 
             # Check if LLM returns None when forced closing

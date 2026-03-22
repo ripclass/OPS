@@ -247,6 +247,7 @@ class SimulationConfigGenerator:
         simulation_requirement: str,
         document_text: str,
         entities: List[EntityNode],
+        context_entities: Optional[List[EntityNode]] = None,
         enable_twitter: bool = True,
         enable_reddit: bool = True,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
@@ -260,7 +261,8 @@ class SimulationConfigGenerator:
             graph_id: Graph ID
             simulation_requirement: Simulation requirement description
             document_text: Original document content
-            entities: Filtered list of entities
+            entities: Agent entities used to size and configure the simulated population
+            context_entities: Optional graph entities used to build scenario context
             enable_twitter: Whether to enable Twitter
             enable_reddit: Whether to enable Reddit
             progress_callback: Progress callback function `(current_step, total_steps, message)`
@@ -268,7 +270,11 @@ class SimulationConfigGenerator:
         Returns:
             SimulationParameters: Full simulation parameters
         """
-        logger.info(f"Starting intelligent simulation config generation: simulation_id={simulation_id}, entity_count={len(entities)}")
+        context_entities = context_entities or entities
+        logger.info(
+            f"Starting intelligent simulation config generation: simulation_id={simulation_id}, "
+            f"agent_entity_count={len(entities)}, context_entity_count={len(context_entities)}"
+        )
         
         # Compute the total number of steps
         num_batches = math.ceil(len(entities) / self.AGENTS_PER_BATCH)
@@ -286,7 +292,7 @@ class SimulationConfigGenerator:
         context = self._build_context(
             simulation_requirement=simulation_requirement,
             document_text=document_text,
-            entities=entities
+            entities=context_entities
         )
         
         reasoning_parts = []

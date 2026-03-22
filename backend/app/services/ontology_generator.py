@@ -4,6 +4,7 @@ API 1: analyze the text content and generate entity and relationship type defini
 """
 
 import json
+import re
 from typing import Dict, Any, List, Optional
 from ..utils.llm_client import LLMClient
 
@@ -257,6 +258,30 @@ Based on the content above, design entity types and relationship types suitable 
     
     def _validate_and_process(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and post-process the result."""
+
+        def sanitize_entity_type_name(value: str, fallback: str) -> str:
+            cleaned = re.sub(r'[^A-Za-z0-9]+', ' ', str(value or '')).strip()
+            if not cleaned:
+                return fallback
+            parts = cleaned.split()
+            candidate = ''.join(part[:1].upper() + part[1:] for part in parts if part)
+            return candidate or fallback
+
+        def sanitize_edge_type_name(value: str, fallback: str) -> str:
+            cleaned = re.sub(r'[^A-Za-z0-9]+', '_', str(value or '')).strip('_')
+            candidate = cleaned.upper()
+            return candidate or fallback
+
+        def sanitize_attribute_name(value: str, fallback: str) -> str:
+            cleaned = re.sub(r'[^a-zA-Z0-9]+', '_', str(value or '')).strip('_').lower()
+            return cleaned or fallback
+
+        def ensure_examples(examples: Any) -> List[str]:
+            if isinstance(examples, list):
+                return [str(item).strip() for item in examples if str(item).strip()][:5]
+            if isinstance(examples, str) and examples.strip():
+                return [examples.strip()]
+            return []
         
         # Ensure required fields exist
         if "entity_types" not in result:
@@ -266,28 +291,79 @@ Based on the content above, design entity types and relationship types suitable 
         if "analysis_summary" not in result:
             result["analysis_summary"] = ""
         
-        # Validate entity types
-        for entity in result["entity_types"]:
-            if "attributes" not in entity:
-                entity["attributes"] = []
-            if "examples" not in entity:
-                entity["examples"] = []
-            # Ensure descriptions do not exceed 100 characters
-            if len(entity.get("description", "")) > 100:
-                entity["description"] = entity["description"][:97] + "..."
-        
-        # Validate edge types
-        for edge in result["edge_types"]:
-            if "source_targets" not in edge:
-                edge["source_targets"] = []
-            if "attributes" not in edge:
-                edge["attributes"] = []
-            if len(edge.get("description", "")) > 100:
-                edge["description"] = edge["description"][:97] + "..."
-        
         # Zep API limits: at most 10 custom entity types and 10 custom edge types
         MAX_ENTITY_TYPES = 10
         MAX_EDGE_TYPES = 10
+        RESERVED_ATTR_NAMES = {"name", "uuid", "group_id", "created_at", "summary"}
+
+        generic_specific_types = [
+            {
+                "name": "Student",
+                "description": "Student participants who react and speak online.",
+                "attributes": [
+                    {"name": "education_level", "type": "text", "description": "Current education stage"},
+                    {"name": "institution_name", "type": "text", "description": "School or college name"},
+                ],
+                "examples": ["college student", "university student"],
+            },
+            {
+                "name": "Worker",
+                "description": "Working-class individuals affected by household costs.",
+                "attributes": [
+                    {"name": "occupation", "type": "text", "description": "Primary occupation"},
+                    {"name": "work_area", "type": "text", "description": "Sector or work area"},
+                ],
+                "examples": ["factory worker", "driver"],
+            },
+            {
+                "name": "Household",
+                "description": "Household-level actors discussing cost pressure and daily needs.",
+                "attributes": [
+                    {"name": "income_bracket", "type": "text", "description": "Approximate income bracket"},
+                ],
+                "examples": ["low-income household", "salaried family"],
+            },
+            {
+                "name": "Merchant",
+                "description": "Retailers or traders influencing prices and public sentiment.",
+                "attributes": [
+                    {"name": "market_type", "type": "text", "description": "Type of market or shop"},
+                ],
+                "examples": ["rice wholesaler", "corner shop owner"],
+            },
+            {
+                "name": "MediaOutlet",
+                "description": "Media organizations that report and amplify public discussion.",
+                "attributes": [
+                    {"name": "channel_type", "type": "text", "description": "Type of media channel"},
+                ],
+                "examples": ["news portal", "local newspaper"],
+            },
+            {
+                "name": "GovernmentAgency",
+                "description": "Government bodies issuing statements and policy responses.",
+                "attributes": [
+                    {"name": "agency_scope", "type": "text", "description": "Policy or administrative scope"},
+                ],
+                "examples": ["ministry", "municipal office"],
+            },
+            {
+                "name": "CommunityGroup",
+                "description": "Formal or informal groups representing local community voices.",
+                "attributes": [
+                    {"name": "group_focus", "type": "text", "description": "Primary community focus"},
+                ],
+                "examples": ["neighborhood committee", "student group"],
+            },
+            {
+                "name": "SocialMediaPlatform",
+                "description": "Platforms where discussion and amplification happen.",
+                "attributes": [
+                    {"name": "platform_name", "type": "text", "description": "Platform name"},
+                ],
+                "examples": ["Facebook", "YouTube"],
+            },
+        ]
         
         # Fallback type definitions
         person_fallback = {
@@ -309,9 +385,69 @@ Based on the content above, design entity types and relationship types suitable 
             ],
             "examples": ["small business", "community group"]
         }
-        
+
+        normalized_entities = []
+        for idx, raw_entity in enumerate(result["entity_types"]):
+            if not isinstance(raw_entity, dict):
+                continue
+
+            entity_name = sanitize_entity_type_name(
+                raw_entity.get("name") or raw_entity.get("type") or raw_entity.get("label"),
+                f"EntityType{idx + 1}"
+            )
+            description = str(
+                raw_entity.get("description")
+                or f"A {entity_name} actor participating in public-opinion simulation."
+            ).strip()
+            if len(description) > 100:
+                description = description[:97] + "..."
+
+            normalized_attributes = []
+            raw_attributes = raw_entity.get("attributes", [])
+            if isinstance(raw_attributes, list):
+                for attr_idx, raw_attr in enumerate(raw_attributes[:3]):
+                    if not isinstance(raw_attr, dict):
+                        continue
+                    attr_name = sanitize_attribute_name(
+                        raw_attr.get("name") or raw_attr.get("field") or raw_attr.get("key"),
+                        f"attribute_{attr_idx + 1}"
+                    )
+                    if attr_name in RESERVED_ATTR_NAMES:
+                        attr_name = f"{attr_name}_field"
+                    normalized_attributes.append({
+                        "name": attr_name,
+                        "type": str(raw_attr.get("type") or "text"),
+                        "description": str(raw_attr.get("description") or attr_name.replace("_", " ")).strip(),
+                    })
+
+            normalized_entities.append({
+                "name": entity_name,
+                "description": description,
+                "attributes": normalized_attributes,
+                "examples": ensure_examples(raw_entity.get("examples")),
+            })
+
+        deduped_entities = []
+        seen_entity_names = set()
+        for entity in normalized_entities:
+            if entity["name"] in seen_entity_names:
+                continue
+            seen_entity_names.add(entity["name"])
+            deduped_entities.append(entity)
+
+        specific_entities = [e for e in deduped_entities if e["name"] not in {"Person", "Organization"}]
+        for generic_type in generic_specific_types:
+            if len(specific_entities) >= 8:
+                break
+            if generic_type["name"] in seen_entity_names:
+                continue
+            specific_entities.append(generic_type)
+            seen_entity_names.add(generic_type["name"])
+
+        result["entity_types"] = specific_entities[:8]
+
         # Check whether fallback types already exist
-        entity_names = {e["name"] for e in result["entity_types"]}
+        entity_names = {e["name"] for e in deduped_entities}
         has_person = "Person" in entity_names
         has_organization = "Organization" in entity_names
         
@@ -322,19 +458,108 @@ Based on the content above, design entity types and relationship types suitable 
         if not has_organization:
             fallbacks_to_add.append(organization_fallback)
         
-        if fallbacks_to_add:
-            current_count = len(result["entity_types"])
-            needed_slots = len(fallbacks_to_add)
-            
-            # If adding them would exceed 10, remove some existing types first
-            if current_count + needed_slots > MAX_ENTITY_TYPES:
-                # Compute how many need to be removed
-                to_remove = current_count + needed_slots - MAX_ENTITY_TYPES
-                # Remove from the end, preserving earlier and likely more important specific types
-                result["entity_types"] = result["entity_types"][:-to_remove]
-            
-            # Add the fallback types
-            result["entity_types"].extend(fallbacks_to_add)
+        if has_person:
+            person_entity = next(e for e in deduped_entities if e["name"] == "Person")
+            result["entity_types"].append(person_entity)
+        else:
+            result["entity_types"].append(person_fallback)
+
+        if has_organization:
+            org_entity = next(e for e in deduped_entities if e["name"] == "Organization")
+            result["entity_types"].append(org_entity)
+        else:
+            result["entity_types"].append(organization_fallback)
+
+        normalized_edges = []
+        entity_name_set = {e["name"] for e in result["entity_types"]}
+        person_type = "Person"
+        organization_type = "Organization"
+        media_type = "MediaOutlet" if "MediaOutlet" in entity_name_set else organization_type
+        household_type = "Household" if "Household" in entity_name_set else person_type
+
+        for idx, raw_edge in enumerate(result["edge_types"]):
+            if not isinstance(raw_edge, dict):
+                continue
+            edge_name = sanitize_edge_type_name(
+                raw_edge.get("name") or raw_edge.get("type") or raw_edge.get("label"),
+                f"RELATES_TO_{idx + 1}"
+            )
+            description = str(
+                raw_edge.get("description")
+                or f"{edge_name.replace('_', ' ').title()} relationship in the simulation graph."
+            ).strip()
+            if len(description) > 100:
+                description = description[:97] + "..."
+
+            source_targets = []
+            raw_source_targets = raw_edge.get("source_targets", [])
+            if isinstance(raw_source_targets, list):
+                for pair in raw_source_targets[:4]:
+                    if not isinstance(pair, dict):
+                        continue
+                    source_name = sanitize_entity_type_name(pair.get("source"), person_type)
+                    target_name = sanitize_entity_type_name(pair.get("target"), organization_type)
+                    if source_name not in entity_name_set:
+                        source_name = person_type
+                    if target_name not in entity_name_set:
+                        target_name = organization_type
+                    source_targets.append({"source": source_name, "target": target_name})
+
+            normalized_edges.append({
+                "name": edge_name,
+                "description": description,
+                "source_targets": source_targets,
+                "attributes": [],
+            })
+
+        if not normalized_edges:
+            normalized_edges = [
+                {
+                    "name": "AFFECTS",
+                    "description": "One actor materially affects another actor or group.",
+                    "source_targets": [{"source": organization_type, "target": household_type}],
+                    "attributes": [],
+                },
+                {
+                    "name": "RESPONDS_TO",
+                    "description": "One actor responds publicly to another actor or event.",
+                    "source_targets": [{"source": person_type, "target": organization_type}],
+                    "attributes": [],
+                },
+                {
+                    "name": "REPORTS_ON",
+                    "description": "A media actor reports on a person, group, or organization.",
+                    "source_targets": [{"source": media_type, "target": organization_type}],
+                    "attributes": [],
+                },
+                {
+                    "name": "DISCUSSES",
+                    "description": "Actors discuss issues or each other in public channels.",
+                    "source_targets": [{"source": person_type, "target": person_type}],
+                    "attributes": [],
+                },
+                {
+                    "name": "INFLUENCES",
+                    "description": "One actor influences the behavior or opinion of another.",
+                    "source_targets": [{"source": person_type, "target": household_type}],
+                    "attributes": [],
+                },
+                {
+                    "name": "SUPPORTS",
+                    "description": "One actor supports another actor, group, or stance.",
+                    "source_targets": [{"source": person_type, "target": organization_type}],
+                    "attributes": [],
+                },
+            ]
+
+        deduped_edges = []
+        seen_edge_names = set()
+        for edge in normalized_edges:
+            if edge["name"] in seen_edge_names:
+                continue
+            seen_edge_names.add(edge["name"])
+            deduped_edges.append(edge)
+        result["edge_types"] = deduped_edges[:MAX_EDGE_TYPES]
         
         # Final defensive limit enforcement
         if len(result["entity_types"]) > MAX_ENTITY_TYPES:

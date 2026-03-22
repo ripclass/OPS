@@ -11,6 +11,7 @@ from . import simulation_bp
 from ..config import Config
 from ..services.zep_entity_reader import ZepEntityReader
 from ..services.oasis_profile_generator import OasisProfileGenerator
+from ..services.ops_population_generator import OPSPopulationGenerator, normalize_ops_population_params
 from ..services.simulation_manager import SimulationManager, SimulationStatus
 from ..services.simulation_runner import SimulationRunner, RunnerStatus
 from ..utils.logger import get_logger
@@ -220,6 +221,7 @@ def create_simulation():
             graph_id=graph_id,
             enable_twitter=data.get('enable_twitter', True),
             enable_reddit=data.get('enable_reddit', True),
+            ops_population_params=normalize_ops_population_params(data.get('ops_population_params')),
         )
         
         return jsonify({
@@ -458,6 +460,16 @@ def prepare_simulation():
             project.simulation_requirement = simulation_requirement_override
             ProjectManager.save_project(project)
 
+        raw_ops_population_params = data.get('ops_population_params')
+        ops_population_params = normalize_ops_population_params(raw_ops_population_params) if raw_ops_population_params else None
+        if raw_ops_population_params and not ops_population_params:
+            return jsonify({
+                "success": False,
+                "error": "Invalid ops_population_params payload"
+            }), 400
+        if ops_population_params:
+            state.ops_population_params = ops_population_params
+
         # Get simulation requirements
         simulation_requirement = project.simulation_requirement or ""
         if not simulation_requirement:
@@ -476,18 +488,26 @@ def prepare_simulation():
         # ========== Get the number of entities synchronously (before starting the background task) ==========
         # In this way, the front end can immediately obtain the expected total number of Agents after calling prepare.
         try:
-            logger.info(f"Get the number of entities simultaneously: graph_id={state.graph_id}")
-            reader = ZepEntityReader()
-            # Quickly read entities (no side information required, only count the quantity)
-            filtered_preview = reader.filter_defined_entities(
-                graph_id=state.graph_id,
-                defined_entity_types=entity_types_list,
+            if ops_population_params:
+                state.entities_count = ops_population_params["n_agents"]
+                state.entity_types = list(ops_population_params["segments"])
+                logger.info(
+                    f"Using OPS population preview: expected_agents={state.entities_count}, "
+                    f"segments={state.entity_types}"
+                )
+            else:
+                logger.info(f"Get the number of entities simultaneously: graph_id={state.graph_id}")
+                reader = ZepEntityReader()
+                # Quickly read entities (no side information required, only count the quantity)
+                filtered_preview = reader.filter_defined_entities(
+                    graph_id=state.graph_id,
+                    defined_entity_types=entity_types_list,
                 enrich_with_edges=False  # Don’t get side information, speed up
-            )
-            # Save the number of entities to the state (for the front end to obtain immediately)
-            state.entities_count = filtered_preview.filtered_count
-            state.entity_types = list(filtered_preview.entity_types)
-            logger.info(f"Expected number of entities:{filtered_preview.filtered_count}, type:{filtered_preview.entity_types}")
+                )
+                # Save the number of entities to the state (for the front end to obtain immediately)
+                state.entities_count = filtered_preview.filtered_count
+                state.entity_types = list(filtered_preview.entity_types)
+                logger.info(f"Expected number of entities:{filtered_preview.filtered_count}, type:{filtered_preview.entity_types}")
         except Exception as e:
             logger.warning(f"Failed to obtain the number of entities synchronously (will be retried in a background task):{e}")
             # Failure will not affect subsequent processes, and background tasks will be reacquired.
@@ -1392,34 +1412,51 @@ def generate_profiles():
         data = request.get_json() or {}
         
         graph_id = data.get('graph_id')
-        if not graph_id:
-            return jsonify({
-                "success": False,
-                "error": "Please provide graph_id"
-            }), 400
-        
         entity_types = data.get('entity_types')
         use_llm = data.get('use_llm', True)
         platform = data.get('platform', 'reddit')
-        
-        reader = ZepEntityReader()
-        filtered = reader.filter_defined_entities(
-            graph_id=graph_id,
-            defined_entity_types=entity_types,
-            enrich_with_edges=True
+        scenario_context = (
+            data.get('scenario_context')
+            or data.get('simulation_requirement')
+            or data.get('requirement')
+            or ''
         )
-        
-        if filtered.filtered_count == 0:
-            return jsonify({
-                "success": False,
-                "error": "No matching entities found"
-            }), 400
-        
-        generator = OasisProfileGenerator()
-        profiles = generator.generate_profiles_from_entities(
-            entities=filtered.entities,
-            use_llm=use_llm
-        )
+        ops_population_params = normalize_ops_population_params(data.get('ops_population_params'))
+
+        if ops_population_params:
+            generator = OPSPopulationGenerator()
+            profiles = generator.generate_population(
+                params=ops_population_params,
+                scenario_context=scenario_context,
+                use_llm=use_llm,
+            )
+            response_entity_types = ops_population_params["segments"]
+        else:
+            if not graph_id:
+                return jsonify({
+                    "success": False,
+                    "error": "Please provide graph_id or valid ops_population_params"
+                }), 400
+
+            reader = ZepEntityReader()
+            filtered = reader.filter_defined_entities(
+                graph_id=graph_id,
+                defined_entity_types=entity_types,
+                enrich_with_edges=True
+            )
+
+            if filtered.filtered_count == 0:
+                return jsonify({
+                    "success": False,
+                    "error": "No matching entities found"
+                }), 400
+
+            generator = OasisProfileGenerator()
+            profiles = generator.generate_profiles_from_entities(
+                entities=filtered.entities,
+                use_llm=use_llm
+            )
+            response_entity_types = list(filtered.entity_types)
         
         if platform == "reddit":
             profiles_data = [p.to_reddit_format() for p in profiles]
@@ -1432,7 +1469,7 @@ def generate_profiles():
             "success": True,
             "data": {
                 "platform": platform,
-                "entity_types": list(filtered.entity_types),
+                "entity_types": response_entity_types,
                 "count": len(profiles_data),
                 "profiles": profiles_data
             }

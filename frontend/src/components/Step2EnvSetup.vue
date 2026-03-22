@@ -877,6 +877,7 @@ import {
   normalizeOpsConfig,
   parseOpsSimulationRequirement,
   buildOpsSimulationRequirement,
+  buildOpsPopulationParams,
   getOpsGeographySummary,
   validateOpsConfig
 } from '../utils/opsRunDesign'
@@ -1165,6 +1166,7 @@ const startPrepareSimulation = async ({ forceRegenerate = false, simulationRequi
     if (simulationRequirementOverride) {
       payload.simulation_requirement_override = simulationRequirementOverride
     }
+    payload.ops_population_params = buildOpsPopulationParams(opsConfig.value)
 
     const res = await prepareSimulation(payload)
 
@@ -1182,9 +1184,9 @@ const startPrepareSimulation = async ({ forceRegenerate = false, simulationRequi
       // Use the expected entity count returned by the prepare endpoint.
       if (res.data.expected_entities_count) {
         expectedTotal.value = res.data.expected_entities_count
-        addLog(`Read ${res.data.expected_entities_count} entities from the Zep graph`)
+        addLog(`Configured ${res.data.expected_entities_count} expected agents`)
         if (res.data.entity_types && res.data.entity_types.length > 0) {
-          addLog(`  - Entity types: ${res.data.entity_types.join(', ')}`)
+          addLog(`  - Population groups: ${res.data.entity_types.join(', ')}`)
         }
       }
 

@@ -48,6 +48,7 @@ class OasisAgentProfile:
     gender: Optional[str] = None
     mbti: Optional[str] = None
     country: Optional[str] = None
+    location: Optional[str] = None
     profession: Optional[str] = None
     interested_topics: List[str] = field(default_factory=list)
     trust_government: Optional[int] = None
@@ -177,6 +178,8 @@ class OasisAgentProfile:
             profile["mbti"] = self.mbti
         if self.country:
             profile["country"] = self.country
+        if self.location:
+            profile["location"] = self.location
         if self.profession:
             profile["profession"] = self.profession
         if self.interested_topics:
@@ -236,6 +239,7 @@ class OasisAgentProfile:
             "gender": self.gender,
             "mbti": self.mbti,
             "country": self.country,
+            "location": self.location,
             "profession": self.profession,
             "interested_topics": self.interested_topics,
             **self.ops_fields(),
@@ -268,6 +272,7 @@ class OasisAgentProfile:
             gender=data.get("gender"),
             mbti=data.get("mbti"),
             country=data.get("country"),
+            location=data.get("location"),
             profession=data.get("profession"),
             interested_topics=list(data.get("interested_topics") or []),
             trust_government=cls._clamp_int(data.get("trust_government"), 0, 10),

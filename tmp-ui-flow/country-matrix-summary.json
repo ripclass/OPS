@@ -1,0 +1,152 @@
+[
+  {
+    "country": "Bangladesh",
+    "scenario": "Rice prices increase 40% before Eid in Dhaka. How do rural households, urban working families, and students respond over the next 72 hours?",
+    "project_id": "proj_c8f0e4cab33e",
+    "graph_task_id": "8a76ef5f-599b-45d0-8d2c-ab59deb1e383",
+    "graph_id": "ops_25ee7773cfa64176",
+    "simulation_id": "sim_4041667747c7",
+    "prepare_task_id": "aeb6f384-f8ae-4dd7-9d8e-223c4bbb2d92",
+    "report_task_id": "218f479b-7aba-4c83-8d8e-8cfd17284078",
+    "report_id": "report_9137a5a29e5a",
+    "profiles_count": 4,
+    "profile_countries": [
+      "Bangladesh"
+    ],
+    "profile_professions": [
+      "Farmer, Rice Cultivator",
+      "Garment Worker",
+      "Farmer",
+      "University Student"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  },
+  {
+    "country": "India",
+    "scenario": "Cooking gas cylinder prices increase 25% before Diwali in Kolkata. How do urban working households, middle-class families, and students respond over the next 72 hours?",
+    "project_id": "proj_e4dd9d8e3745",
+    "graph_task_id": "40ab57cb-f69c-464b-a090-3799081c15bc",
+    "graph_id": "ops_6776d39da3ec48d9",
+    "simulation_id": "sim_baf226f90d28",
+    "prepare_task_id": "4927aa25-5f1c-4d50-8b37-afa8be9cb1f9",
+    "report_task_id": "3515f48f-bcbc-4918-952a-bd74ffb319bc",
+    "report_id": "report_f8ac2b798071",
+    "profiles_count": 4,
+    "profile_countries": [
+      "India"
+    ],
+    "profile_professions": [
+      "Civil Engineer",
+      "Office Assistant at a local NGO",
+      "Marketing Executive",
+      "University Student"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  },
+  {
+    "country": "Pakistan",
+    "scenario": "Electricity tariffs increase 30% before Eid in Karachi. How do working households, students, and salaried middle-class families respond over the next 72 hours?",
+    "project_id": "proj_d7cf138dc802",
+    "graph_task_id": "efc9354f-65dc-48bc-8408-514db9ac2e4d",
+    "graph_id": "ops_ae7accb185f84411",
+    "simulation_id": "sim_dbd2ca1d2647",
+    "prepare_task_id": "a028c455-3a43-4fa2-bc53-ec8eb72ecb51",
+    "report_task_id": "70468d46-4dd8-42b5-b9d7-e3f39d2d158d",
+    "report_id": "report_faddf78787d4",
+    "profiles_count": 4,
+    "profile_countries": [
+      "Pakistan"
+    ],
+    "profile_professions": [
+      "University Student at Karachi University",
+      "Civil Engineer",
+      "Software Engineer",
+      "Software Engineer"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  },
+  {
+    "country": "Nepal",
+    "scenario": "Rice and cooking oil prices rise sharply before Dashain in Kathmandu. How do rural households, urban workers, and students respond over the next 72 hours?",
+    "project_id": "proj_fdb4605189a2",
+    "graph_task_id": "022bd817-c9ea-4370-aeb8-d962e200830f",
+    "graph_id": "ops_c8acf4fe41f7449b",
+    "simulation_id": "sim_91919c060e97",
+    "prepare_task_id": "e26028d6-821e-479c-8f3d-191ca2c651e4",
+    "report_task_id": "df31b541-8d5c-4f9d-8bf4-d2cb94b4169b",
+    "report_id": "report_7ffa4c806d94",
+    "profiles_count": 4,
+    "profile_countries": [
+      "Nepal"
+    ],
+    "profile_professions": [
+      "Farmer",
+      "Delivery Driver",
+      "Farmer",
+      "farmer"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  },
+  {
+    "country": "Sri Lanka",
+    "scenario": "Fuel and rice prices rise before Sinhala New Year in Colombo. How do urban working households, middle-class families, and elderly citizens respond over the next 72 hours?",
+    "project_id": "proj_297fa962a196",
+    "graph_task_id": "96d8d09f-8223-40d1-8966-d2867f35b319",
+    "graph_id": "ops_23675497d18d48cb",
+    "simulation_id": "sim_6d22fba92200",
+    "prepare_task_id": "ca18ba90-8935-43c0-b684-5799cdf337c6",
+    "report_task_id": "31a5f331-4e25-451c-ac0e-0cd391d2f464",
+    "report_id": "report_056638db5024",
+    "profiles_count": 4,
+    "profile_countries": [
+      "Sri Lanka"
+    ],
+    "profile_professions": [
+      "Marketing Manager",
+      "Civil Engineer",
+      "Financial Analyst",
+      "Sub-Inspector of Police"
+    ],
+    "run_status": "completed",
+    "current_round": 4,
+    "total_actions_count": 6,
+    "report_status": "completed",
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "interview_error": null,
+    "success": true,
+    "error": null
+  }
+]
