@@ -697,6 +697,8 @@ Generate the event configuration as JSON:
 For example: official statements should come from `Official` or `University`, news should come from `MediaOutlet`, and student perspectives should come from `Student`.
 When OPS-specific public archetypes are available, prefer the most specific one instead of generic `Person`.
 Examples: `RuralHousehold`, `UrbanWorkingFamily`, `MiddleClassFamily`, `MigrationWorker`, `CorporateProfessional`, `WomenHouseholdVoice`, `ElderlyCitizen`.
+If institutional voices are available such as `GovernmentAgency`, `MediaOutlet`, `Organization`, or `Expert`, include at least one institutional seed voice and at least one public household/student voice in the initial posts.
+The seed posts should feel like the first visible voices in the network: one institution framing the issue, then one or more public segments reacting.
 
 Return JSON only (no Markdown):
 {{
@@ -746,6 +748,21 @@ Return JSON only (no Markdown):
 
         def canonicalize_type(value: Any) -> str:
             return re.sub(r"[^a-z0-9]+", "", str(value or "").lower())
+
+        def is_institutional_type(value: str) -> bool:
+            normalized = canonicalize_type(value)
+            return normalized in {
+                "governmentagency",
+                "government",
+                "official",
+                "mediaoutlet",
+                "media",
+                "organization",
+                "ngo",
+                "company",
+                "expert",
+                "professor",
+            }
         
         # Build an index of agents by entity type
         agents_by_type: Dict[str, List[AgentActivityConfig]] = {}
@@ -853,9 +870,60 @@ Return JSON only (no Markdown):
                 f"Initial post assignment: poster_type='{poster_type}' "
                 f"(canonical='{poster_type_key}', matched='{matched_key or 'fallback'}') -> agent_id={matched_agent_id}"
             )
-        
+
+        institutional_agents = [agent for agent in agent_configs if is_institutional_type(agent.entity_type)]
+        public_agents = [agent for agent in agent_configs if not is_institutional_type(agent.entity_type)]
+        has_institutional_post = any(is_institutional_type(post.get("poster_type", "")) for post in updated_posts)
+        has_public_post = any(not is_institutional_type(post.get("poster_type", "")) for post in updated_posts)
+
+        if institutional_agents and not has_institutional_post:
+            seed_agent = max(institutional_agents, key=lambda agent: agent.influence_weight)
+            updated_posts.insert(0, {
+                "content": self._build_seed_post_content(seed_agent, self.simulation_requirement),
+                "poster_type": seed_agent.entity_type,
+                "poster_agent_id": seed_agent.agent_id,
+            })
+            logger.info(f"Injected fallback institutional seed voice from {seed_agent.entity_name} ({seed_agent.entity_type})")
+
+        if public_agents and not has_public_post:
+            seed_agent = max(public_agents, key=lambda agent: agent.activity_level)
+            updated_posts.append({
+                "content": self._build_seed_post_content(seed_agent, self.simulation_requirement),
+                "poster_type": seed_agent.entity_type,
+                "poster_agent_id": seed_agent.agent_id,
+            })
+            logger.info(f"Injected fallback public seed voice from {seed_agent.entity_name} ({seed_agent.entity_type})")
+
         event_config.initial_posts = updated_posts
         return event_config
+
+    def _build_seed_post_content(self, agent: AgentActivityConfig, simulation_requirement: str) -> str:
+        """Build a concise fallback round-zero seed post when the LLM misses voice balance."""
+        requirement = " ".join(str(simulation_requirement or "").split())
+        if len(requirement) > 180:
+            requirement = requirement[:177].rstrip() + "..."
+
+        entity_type = (agent.entity_type or "").lower()
+        if entity_type in {"governmentagency", "government", "official"}:
+            return (
+                f"{agent.entity_name} says authorities are monitoring the situation: {requirement} "
+                "People are urged to stay calm while more details are assessed."
+            )
+        if entity_type in {"mediaoutlet", "media"}:
+            return (
+                f"Breaking from {agent.entity_name}: {requirement} Public reaction is rising and more household voices are starting to respond."
+            )
+        if entity_type in {"organization", "ngo", "company"}:
+            return (
+                f"{agent.entity_name} warns that {requirement} could put visible pressure on everyday households and community support networks."
+            )
+        if entity_type in {"expert", "professor"}:
+            return (
+                f"{agent.entity_name} says {requirement} is likely to hit vulnerable households first and shift public conversation toward cost, trust, and fairness."
+            )
+        return (
+            f"{agent.entity_name} reacts to the situation: {requirement} This is already changing how people talk about daily costs and family pressure."
+        )
     
     def _generate_agent_configs_batch(
         self,
@@ -962,19 +1030,19 @@ Return JSON only (no Markdown):
     def _generate_agent_config_by_rule(self, entity: EntityNode) -> Dict[str, Any]:
         """Generate a single agent configuration using rules based on a realistic local daily schedule."""
         entity_type = (entity.get_entity_type() or "Unknown").lower()
-        
-        if entity_type in ["university", "governmentagency", "ngo"]:
+
+        if entity_type in ["university", "governmentagency", "ngo", "organization"]:
             # Official institutions: active during working hours, low frequency, high influence
             return {
-                "activity_level": 0.2,
-                "posts_per_hour": 0.1,
-                "comments_per_hour": 0.05,
+                "activity_level": 0.25 if entity_type == "organization" else 0.2,
+                "posts_per_hour": 0.2 if entity_type == "organization" else 0.1,
+                "comments_per_hour": 0.08 if entity_type == "organization" else 0.05,
                 "active_hours": list(range(9, 18)),  # 9:00-17:59
-                "response_delay_min": 60,
-                "response_delay_max": 240,
+                "response_delay_min": 30 if entity_type == "organization" else 60,
+                "response_delay_max": 120 if entity_type == "organization" else 240,
                 "sentiment_bias": 0.0,
-                "stance": "neutral",
-                "influence_weight": 3.0
+                "stance": "observer" if entity_type == "organization" else "neutral",
+                "influence_weight": 2.0 if entity_type == "organization" else 3.0
             }
         elif entity_type in ["mediaoutlet"]:
             # Media: active all day, medium frequency, high influence
@@ -1027,6 +1095,90 @@ Return JSON only (no Markdown):
                 "sentiment_bias": 0.0,
                 "stance": "neutral",
                 "influence_weight": 1.0
+            }
+        elif entity_type in ["ruralhousehold"]:
+            return {
+                "activity_level": 0.55,
+                "posts_per_hour": 0.25,
+                "comments_per_hour": 0.9,
+                "active_hours": [6, 7, 8, 12, 13, 19, 20, 21],
+                "response_delay_min": 8,
+                "response_delay_max": 45,
+                "sentiment_bias": -0.1,
+                "stance": "observer",
+                "influence_weight": 1.0
+            }
+        elif entity_type in ["urbanworkingfamily", "urbanworkinghousehold"]:
+            return {
+                "activity_level": 0.72,
+                "posts_per_hour": 0.55,
+                "comments_per_hour": 1.3,
+                "active_hours": [7, 8, 12, 13, 18, 19, 20, 21, 22],
+                "response_delay_min": 3,
+                "response_delay_max": 20,
+                "sentiment_bias": -0.15,
+                "stance": "neutral",
+                "influence_weight": 1.2
+            }
+        elif entity_type in ["middleclassfamily", "middleclasshousehold"]:
+            return {
+                "activity_level": 0.58,
+                "posts_per_hour": 0.35,
+                "comments_per_hour": 0.9,
+                "active_hours": [8, 9, 13, 19, 20, 21, 22],
+                "response_delay_min": 5,
+                "response_delay_max": 35,
+                "sentiment_bias": -0.05,
+                "stance": "neutral",
+                "influence_weight": 1.3
+            }
+        elif entity_type in ["corporateprofessional"]:
+            return {
+                "activity_level": 0.4,
+                "posts_per_hour": 0.22,
+                "comments_per_hour": 0.45,
+                "active_hours": [8, 9, 12, 13, 18, 20, 21],
+                "response_delay_min": 10,
+                "response_delay_max": 50,
+                "sentiment_bias": 0.0,
+                "stance": "observer",
+                "influence_weight": 1.6
+            }
+        elif entity_type in ["migrationworker"]:
+            return {
+                "activity_level": 0.52,
+                "posts_per_hour": 0.28,
+                "comments_per_hour": 0.8,
+                "active_hours": [5, 6, 7, 12, 13, 21, 22, 23],
+                "response_delay_min": 15,
+                "response_delay_max": 90,
+                "sentiment_bias": -0.1,
+                "stance": "neutral",
+                "influence_weight": 1.1
+            }
+        elif entity_type in ["womenhouseholdvoice"]:
+            return {
+                "activity_level": 0.5,
+                "posts_per_hour": 0.24,
+                "comments_per_hour": 0.9,
+                "active_hours": [7, 8, 12, 13, 19, 20, 21],
+                "response_delay_min": 6,
+                "response_delay_max": 40,
+                "sentiment_bias": -0.05,
+                "stance": "neutral",
+                "influence_weight": 1.1
+            }
+        elif entity_type in ["elderlycitizen"]:
+            return {
+                "activity_level": 0.28,
+                "posts_per_hour": 0.1,
+                "comments_per_hour": 0.35,
+                "active_hours": [8, 9, 10, 18, 19, 20],
+                "response_delay_min": 20,
+                "response_delay_max": 120,
+                "sentiment_bias": 0.0,
+                "stance": "observer",
+                "influence_weight": 0.9
             }
         else:
             # Ordinary people: evening peak

@@ -8,6 +8,7 @@
 # ============= Core framework =============
 flask>=3.0.0
 flask-cors>=6.0.0
+gunicorn>=23.0.0
 
 # ============= LLM-related =============
 # OpenAI SDK (use the OpenAI-compatible format throughout)

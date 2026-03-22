@@ -207,6 +207,59 @@ COUNTRY_SETTINGS: Dict[str, Dict[str, Any]] = {
     },
 }
 
+COUNTRY_SEGMENT_PRIORS: Dict[str, Dict[str, str]] = {
+    "Bangladesh": {
+        "rural": "Bias toward food-price sensitivity, local reputation pressure, and farm or day-wage uncertainty.",
+        "urban_working": "Bias toward garment, transport, service, or informal work with sharp household budget stress.",
+        "middle_class": "Bias toward teachers, clerks, NGO workers, and salaried households balancing dignity and cost pressure.",
+        "corporate": "Bias toward polished English-mixed posting, lower shame sensitivity, and stronger career caution.",
+        "migration_workers": "Bias toward Gulf-linked remittance duty, family absence, and migration-status anxiety.",
+        "students": "Bias toward high Facebook intensity, peer amplification, and family-budget fear before exams or festivals.",
+        "women": "Bias toward household management, safety, social scrutiny, and family reputation pressure.",
+        "elderly": "Bias toward lower posting, memory of past price shocks, and stronger dependence on family networks.",
+    },
+    "India": {
+        "rural": "Bias toward fuel, crop, and household-cost concerns filtered through local caste and family structures.",
+        "urban_working": "Bias toward rent, commute, utility, and festival-cost pressure in dense urban life.",
+        "middle_class": "Bias toward status maintenance, education spending, EMI stress, and careful public respectability.",
+        "corporate": "Bias toward professional self-presentation, LinkedIn-style caution, and polished English-heavy tone.",
+        "migration_workers": "Bias toward internal migration strain, hostel or shared-room life, and wage volatility.",
+        "students": "Bias toward meme fluency, high share intensity, and peer-driven issue framing.",
+        "women": "Bias toward household inflation, safety, caregiving, and visible social judgment.",
+        "elderly": "Bias toward cautious speech, pension or medicine concerns, and slower but durable opinion change.",
+    },
+    "Pakistan": {
+        "rural": "Bias toward inflation shock, utility pressure, and stronger honor-linked public restraint.",
+        "urban_working": "Bias toward electricity, fuel, food costs, and low trust in official stability narratives.",
+        "middle_class": "Bias toward salaried stress, school fees, and institutional distrust expressed in Urdu-English mix.",
+        "corporate": "Bias toward polished but politically careful communication, especially on visible platforms.",
+        "migration_workers": "Bias toward Gulf remittance obligations, family dependence, and employment insecurity.",
+        "students": "Bias toward fast online reaction, moral framing, and rumor exposure through peer networks.",
+        "women": "Bias toward household dignity, safety, and reputational stakes around public visibility.",
+        "elderly": "Bias toward conservative speech patterns, memory of prior crises, and lower platform intensity.",
+    },
+    "Nepal": {
+        "rural": "Bias toward agriculture, remittance dependence, and family hierarchy shaping public restraint.",
+        "urban_working": "Bias toward Kathmandu or secondary-city wage pressure, fuel costs, and migration aspiration.",
+        "middle_class": "Bias toward education, government-job aspiration, and household respectability concerns.",
+        "corporate": "Bias toward English-mixed professional tone and aspiration-driven online self-presentation.",
+        "migration_workers": "Bias toward Gulf or Malaysia labor ties, remittance duty, and distance from home networks.",
+        "students": "Bias toward urban youth anxiety, migration ambition, and digital mimicry of regional trends.",
+        "women": "Bias toward household burden, visible propriety, and economic vulnerability.",
+        "elderly": "Bias toward low posting intensity, stronger family dependence, and memory of hardship.",
+    },
+    "Sri Lanka": {
+        "rural": "Bias toward food, fuel, and transport cost stress with strong memory of recent economic instability.",
+        "urban_working": "Bias toward city living costs, wage pressure, and practical coping discussion.",
+        "middle_class": "Bias toward status loss anxiety, school or finance pressure, and political trust volatility.",
+        "corporate": "Bias toward formal, polished public tone with more controlled reputational signaling.",
+        "migration_workers": "Bias toward Gulf labor routes, remittance obligations, and distance from family.",
+        "students": "Bias toward issue sharing, frustration with cost-of-living pressure, and peer-network escalation.",
+        "women": "Bias toward household provisioning, safety, and visible social judgment.",
+        "elderly": "Bias toward low activity, historical memory, and high sensitivity to prolonged instability.",
+    },
+}
+
 DIASPORA_REGION_SETTINGS = {
     "gulf": "Gulf migrant and family-remittance networks across Saudi Arabia, UAE, Qatar, Kuwait, Oman, and Bahrain.",
     "uk": "United Kingdom diaspora communities with intergenerational identity tension and political discussion tied back home.",
@@ -235,6 +288,93 @@ OPS_SEGMENT_ENTITY_TYPES = {
     "students": "Student",
     "women": "WomenHouseholdVoice",
     "elderly": "ElderlyCitizen",
+}
+
+INSTITUTIONAL_SEED_TYPES = {
+    "governmentagency": "GovernmentAgency",
+    "mediaoutlet": "MediaOutlet",
+    "organization": "Organization",
+    "expert": "Expert",
+}
+
+COUNTRY_INSTITUTIONAL_PRIORS: Dict[str, Dict[str, Any]] = {
+    "Bangladesh": {
+        "GovernmentAgency": ["Trading Corporation of Bangladesh", "National Consumer Rights Watch Desk", "Dhaka Food Supply Cell"],
+        "MediaOutlet": ["Dhaka Market Watch", "Bangla City Bulletin", "Daily Cost of Living Desk"],
+        "Organization": ["Neighborhood Relief Forum", "Urban Household Support Network", "Farmers' Solidarity Circle"],
+        "Expert": ["Dr. Nusrat Karim", "Shafiqul Alam", "Prof. Tahmid Hasan"],
+    },
+    "India": {
+        "GovernmentAgency": ["Kolkata Civil Supplies Office", "West Bengal Consumer Affairs Desk", "Festival Price Monitoring Cell"],
+        "MediaOutlet": ["Kolkata Cost Watch", "Metro Public Desk", "City Price Tracker"],
+        "Organization": ["Resident Welfare Coordination Forum", "Urban Cost Support Network", "Community Kitchen Coalition"],
+        "Expert": ["Dr. Anirban Sen", "Prof. Kavya Iyer", "Ritwik Basu"],
+    },
+    "Pakistan": {
+        "GovernmentAgency": ["Karachi Consumer Affairs Cell", "Sindh Price Monitoring Desk", "Urban Utilities Coordination Office"],
+        "MediaOutlet": ["Karachi City Report", "Public Price Watch", "Metro Affairs Desk"],
+        "Organization": ["Household Support Forum", "Community Relief Circle", "Citizen Cost Network"],
+        "Expert": ["Dr. Hira Malik", "Usman Qureshi", "Prof. Sana Javed"],
+    },
+    "Nepal": {
+        "GovernmentAgency": ["Kathmandu Consumer Protection Desk", "Valley Price Monitoring Cell", "Municipal Household Affairs Office"],
+        "MediaOutlet": ["Kathmandu Cost Watch", "City Pulse Nepal", "Public Affairs Desk"],
+        "Organization": ["Neighborhood Mutual Aid Forum", "Urban Household Network", "Community Support Circle"],
+        "Expert": ["Dr. Suman Karki", "Anjana Koirala", "Prof. Bikash Gurung"],
+    },
+    "Sri Lanka": {
+        "GovernmentAgency": ["Colombo Consumer Affairs Unit", "Essential Goods Monitoring Desk", "Urban Household Support Cell"],
+        "MediaOutlet": ["Colombo Price Watch", "City Public Desk", "Market Pulse Lanka"],
+        "Organization": ["Community Support Forum", "Household Relief Network", "Citizen Solidarity Circle"],
+        "Expert": ["Dr. Dilani Perera", "Sivakumar Rajan", "Prof. Nimal Fernando"],
+    },
+}
+
+INSTITUTIONAL_ROLE_DEFAULTS: Dict[str, Dict[str, Any]] = {
+    "GovernmentAgency": {
+        "gender": "other",
+        "age": 30,
+        "trust_government": 8,
+        "shame_sensitivity": 2,
+        "influence_radius": 80000,
+        "fb_intensity": 5,
+        "income_stability": "institutionally stable",
+        "rumour_amplifier": False,
+        "baseline_anxiety": 2.5,
+    },
+    "MediaOutlet": {
+        "gender": "other",
+        "age": 30,
+        "trust_government": 5,
+        "shame_sensitivity": 3,
+        "influence_radius": 120000,
+        "fb_intensity": 8,
+        "income_stability": "commercial but visible",
+        "rumour_amplifier": False,
+        "baseline_anxiety": 3.0,
+    },
+    "Organization": {
+        "gender": "other",
+        "age": 30,
+        "trust_government": 4,
+        "shame_sensitivity": 4,
+        "influence_radius": 25000,
+        "fb_intensity": 6,
+        "income_stability": "grant- or donation-dependent",
+        "rumour_amplifier": False,
+        "baseline_anxiety": 3.5,
+    },
+    "Expert": {
+        "gender": "other",
+        "age": 42,
+        "trust_government": 5,
+        "shame_sensitivity": 3,
+        "influence_radius": 18000,
+        "fb_intensity": 5,
+        "income_stability": "professionally stable",
+        "rumour_amplifier": False,
+        "baseline_anxiety": 3.2,
+    },
 }
 
 
@@ -448,7 +588,9 @@ class OPSPopulationGenerator:
         normalized_country = COUNTRY_ALIASES.get(str(origin_country).strip().lower(), origin_country if origin_country in COUNTRY_SETTINGS else "Bangladesh")
         normalized_region = str(audience_region or "mixed").strip() or "mixed"
         settings = COUNTRY_SETTINGS.get(normalized_country, COUNTRY_SETTINGS["Bangladesh"])
-        assignments = self._build_segment_assignments(n_agents, segments, settings["segment_weights"])
+        institutional_roles = self._select_institutional_seed_roles(n_agents)
+        public_agent_count = max(1, n_agents - len(institutional_roles))
+        assignments = self._build_segment_assignments(public_agent_count, segments, settings["segment_weights"])
         diaspora_context = DIASPORA_REGION_SETTINGS.get(normalized_region.lower(), DIASPORA_REGION_SETTINGS["mixed"])
 
         profiles: List[OasisAgentProfile] = []
@@ -470,8 +612,22 @@ class OPSPopulationGenerator:
             for future in concurrent.futures.as_completed(futures):
                 profiles.append(future.result())
 
+        for role in institutional_roles:
+            profiles.append(
+                self._generate_institutional_seed_profile(
+                    country=normalized_country,
+                    role_type=role,
+                    region=normalized_region,
+                    agent_index=len(profiles),
+                    scenario_context=scenario_context,
+                    diaspora_region=normalized_region,
+                    diaspora_context=diaspora_context,
+                    use_llm=use_llm,
+                )
+            )
+
         profiles.sort(key=lambda profile: profile.user_id)
-        return profiles
+        return self._reindex_profiles(profiles)
 
     def generate_mixed_south_asia_population(
         self,
@@ -592,7 +748,9 @@ class OPSPopulationGenerator:
         use_llm: bool,
     ) -> List[OasisAgentProfile]:
         settings = COUNTRY_SETTINGS[country]
-        assignments = self._build_segment_assignments(n_agents, segments, settings["segment_weights"])
+        institutional_roles = self._select_institutional_seed_roles(n_agents)
+        public_agent_count = max(1, n_agents - len(institutional_roles))
+        assignments = self._build_segment_assignments(public_agent_count, segments, settings["segment_weights"])
         normalized_region = self._normalize_region(settings["regions"], region)
 
         profiles: List[OasisAgentProfile] = []
@@ -612,8 +770,108 @@ class OPSPopulationGenerator:
             for future in concurrent.futures.as_completed(futures):
                 profiles.append(future.result())
 
+        for role in institutional_roles:
+            profiles.append(
+                self._generate_institutional_seed_profile(
+                    country=country,
+                    role_type=role,
+                    region=normalized_region,
+                    agent_index=len(profiles),
+                    scenario_context=scenario_context,
+                    diaspora_region=None,
+                    diaspora_context=None,
+                    use_llm=use_llm,
+                )
+            )
+
         profiles.sort(key=lambda profile: profile.user_id)
-        return profiles
+        return self._reindex_profiles(profiles)
+
+    def _generate_institutional_seed_profile(
+        self,
+        country: str,
+        role_type: str,
+        region: str,
+        agent_index: int,
+        scenario_context: str,
+        diaspora_region: Optional[str],
+        diaspora_context: Optional[str],
+        use_llm: bool = True,
+    ) -> OasisAgentProfile:
+        if not use_llm:
+            profile_data = self._generate_institutional_fallback_profile(
+                country=country,
+                role_type=role_type,
+                region=region,
+                diaspora_region=diaspora_region,
+            )
+        else:
+            prompt = self._build_institution_prompt(
+                country=country,
+                role_type=role_type,
+                region=region,
+                scenario_context=scenario_context,
+                diaspora_region=diaspora_region,
+                diaspora_context=diaspora_context,
+            )
+            system_prompt = (
+                "You are an OPS institutional-voice generation expert. Generate one high-influence institutional or expert voice for a South Asian behavioral simulation. "
+                "Return one valid JSON object only. String values must not contain unescaped newlines."
+            )
+            profile_data = None
+            last_error = None
+            for attempt in range(3):
+                try:
+                    response = self.client.chat.completions.create(
+                        model=self.model_name,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": prompt},
+                        ],
+                        response_format={"type": "json_object"},
+                        temperature=max(0.2, 0.55 - (attempt * 0.1)),
+                    )
+                    content = response.choices[0].message.content
+                    if response.choices[0].finish_reason == "length":
+                        content = self.profile_helper._fix_truncated_json(content)
+                    try:
+                        profile_data = json.loads(content)
+                    except json.JSONDecodeError:
+                        repaired = self.profile_helper._try_fix_json(
+                            content=content,
+                            entity_name=f"{country}_{role_type}_{agent_index}",
+                            entity_type=role_type,
+                            entity_summary=scenario_context[:200],
+                        )
+                        if repaired.get("_fixed"):
+                            repaired.pop("_fixed", None)
+                        profile_data = repaired
+                    if profile_data:
+                        break
+                except Exception as exc:
+                    last_error = exc
+                    logger.warning(
+                        f"OPS institutional seed generation failed for {country}/{role_type} on attempt {attempt + 1}: {exc}"
+                    )
+            if not profile_data:
+                logger.warning(
+                    f"Falling back to institutional OPS profile for {country}/{role_type}: {last_error}"
+                )
+                profile_data = self._generate_institutional_fallback_profile(
+                    country=country,
+                    role_type=role_type,
+                    region=region,
+                    diaspora_region=diaspora_region,
+                )
+
+        return self._build_profile(
+            country=country,
+            segment=role_type,
+            agent_index=agent_index,
+            region=region,
+            profile_data=profile_data,
+            diaspora_region=diaspora_region,
+        )
 
     def _generate_ops_agent_from_demographics(
         self,
@@ -709,6 +967,7 @@ class OPSPopulationGenerator:
         settings = COUNTRY_SETTINGS.get(country, COUNTRY_SETTINGS["Bangladesh"])
         region_context = settings["regions"].get(region.lower(), settings["regions"]["mixed"])
         segment_rule = GENERIC_SEGMENT_RULES.get(segment, "The agent should feel like a specific person shaped by class, place, and everyday risk.")
+        segment_prior = COUNTRY_SEGMENT_PRIORS.get(country, {}).get(segment, "")
         country_rules = "\n".join(f"- {rule}" for rule in settings["country_rules"])
 
         diaspora_block = ""
@@ -730,6 +989,9 @@ Country-specific region context:
 
 Segment rule:
 - {segment_rule}
+
+Country-segment prior:
+- {segment_prior or "Use country-appropriate class, language, and household pressure patterns."}
 
 Country rules:
 {country_rules}
@@ -771,6 +1033,72 @@ Critical rules:
 
 Return valid JSON only."""
 
+    def _build_institution_prompt(
+        self,
+        country: str,
+        role_type: str,
+        region: str,
+        scenario_context: str,
+        diaspora_region: Optional[str],
+        diaspora_context: Optional[str],
+    ) -> str:
+        settings = COUNTRY_SETTINGS.get(country, COUNTRY_SETTINGS["Bangladesh"])
+        priors = COUNTRY_INSTITUTIONAL_PRIORS.get(country, COUNTRY_INSTITUTIONAL_PRIORS["Bangladesh"])
+        region_context = settings["regions"].get(region.lower(), settings["regions"]["mixed"])
+        examples = ", ".join(priors.get(role_type, []))
+        diaspora_block = ""
+        if diaspora_region:
+            diaspora_block = (
+                f"\nDiaspora context: {diaspora_context or DIASPORA_REGION_SETTINGS.get(diaspora_region.lower(), DIASPORA_REGION_SETTINGS['mixed'])}\n"
+                "- The institutional voice should understand cross-border family obligations and remittance-sensitive publics.\n"
+            )
+
+        return f"""Generate one authentic {country}-relevant institutional seed voice for an OPS simulation.
+
+Role type: {role_type}
+Primary region: {region}
+Scenario context: {scenario_context}
+
+Regional context:
+{region_context}
+
+Reference examples for naming and style:
+- {examples}
+
+Dialect guidance:
+- {settings['dialects']}
+{diaspora_block}
+Generate one complete institutional or expert OPS profile as valid JSON with these fields:
+- name: realistic account or public-facing identity appropriate to the role and country
+- age: realistic integer, usually 30 for institutional accounts and 35-55 for experts
+- gender: "other" for institutional accounts, otherwise realistic
+- occupation: specific institutional or expert role
+- location: specific city/district/locality string
+- trust_government: integer 0-10 consistent with the role
+- shame_sensitivity: integer 0-10
+- primary_fear: specific institutional concern
+- influence_radius: high but realistic integer
+- fb_intensity: integer 0-10 consistent with platform use
+- dialect: public-facing language style used by this voice
+- income_stability: concrete stability description
+- rumour_amplifier: boolean
+- baseline_anxiety: number 0-10
+- interested_topics: array of recurring agenda topics
+- mbti: plausible shorthand for tone/style
+- bio: exactly 2 sentences written as the account or expert bio
+- persona: about 250-320 words covering incentives, reputation risk, communication style, and how this voice frames the scenario
+
+Critical rules:
+- This voice must feel like a real institution, newsroom, civic group, or expert that people would actually encounter in {country}.
+- It must be more influential than an ordinary household voice.
+- GovernmentAgency should sound measured, cautious, and legitimacy-protective.
+- MediaOutlet should sound fast, public-facing, and alert to amplification risk.
+- Organization should sound advocacy-oriented and community-aware.
+- Expert should sound analytical and reputationally cautious, not generic.
+- Keep the voice grounded in the scenario rather than speaking in vague policy clichés.
+
+Return valid JSON only."""
+
     def _build_profile(
         self,
         country: str,
@@ -780,6 +1108,7 @@ Return valid JSON only."""
         profile_data: Dict[str, Any],
         diaspora_region: Optional[str],
     ) -> OasisAgentProfile:
+        is_institutional = self._is_institutional_segment(segment)
         name = str(profile_data.get("name") or f"{country} Citizen {agent_index + 1}").strip()
         user_name = self._generate_username(name, agent_index)
         trust = OasisAgentProfile._clamp_int(profile_data.get("trust_government"), 0, 10)
@@ -792,12 +1121,12 @@ Return valid JSON only."""
             name=name,
             bio=str(profile_data.get("bio") or f"{name} is part of the {segment} segment in {country}.").strip(),
             persona=str(profile_data.get("persona") or f"{name} is a socially active {segment} citizen in {country}.").strip(),
-            karma=random.randint(500, 4000),
-            friend_count=random.randint(40, 400),
-            follower_count=random.randint(80, 1200),
-            statuses_count=random.randint(80, 1800),
+            karma=random.randint(1500, 8000) if is_institutional else random.randint(500, 4000),
+            friend_count=random.randint(120, 600) if is_institutional else random.randint(40, 400),
+            follower_count=random.randint(5000, 50000) if is_institutional else random.randint(80, 1200),
+            statuses_count=random.randint(500, 4000) if is_institutional else random.randint(80, 1800),
             age=OasisAgentProfile._clamp_int(profile_data.get("age"), 13, 100),
-            gender=str(profile_data.get("gender") or "other").strip().lower(),
+            gender=str(profile_data.get("gender") or ("other" if is_institutional else "other")).strip().lower(),
             mbti=str(profile_data.get("mbti") or random.choice(self.profile_helper.MBTI_TYPES)).strip(),
             country=country,
             location=str(profile_data.get("location") or f"{country} ({region})").strip(),
@@ -904,6 +1233,55 @@ Return valid JSON only."""
             "remittance_dependency_flag": segment == "migration_workers" or bool(diaspora_region),
         }
 
+    def _generate_institutional_fallback_profile(
+        self,
+        country: str,
+        role_type: str,
+        region: str,
+        diaspora_region: Optional[str],
+    ) -> Dict[str, Any]:
+        priors = COUNTRY_INSTITUTIONAL_PRIORS.get(country, COUNTRY_INSTITUTIONAL_PRIORS["Bangladesh"])
+        defaults = INSTITUTIONAL_ROLE_DEFAULTS[role_type]
+        name = random.choice(priors.get(role_type, [f"{country} Public Voice"]))
+        location = diaspora_region or f"{country} ({region})"
+        role_occupation = {
+            "GovernmentAgency": "public information desk",
+            "MediaOutlet": "news desk editor",
+            "Organization": "community advocacy coordinator",
+            "Expert": "public policy researcher",
+        }[role_type]
+        bio = f"{name} covers or shapes public discussion from {location}. It speaks in a visible, agenda-setting voice during high-attention events."
+        persona = (
+            f"{name} operates as a {role_occupation} rooted in {location}. This voice watches how the scenario changes trust, panic, rumor spread, and "
+            f"reputational pressure across the public. It prefers concise, public-facing language and weighs whether to calm, frame, or sharpen discussion. "
+            f"Its incentives are shaped by institutional legitimacy, audience reach, and the risk of appearing absent when households are already anxious."
+        )
+        return {
+            "name": name,
+            "age": defaults["age"],
+            "gender": defaults["gender"],
+            "occupation": role_occupation,
+            "location": location,
+            "trust_government": defaults["trust_government"],
+            "shame_sensitivity": defaults["shame_sensitivity"],
+            "primary_fear": {
+                "GovernmentAgency": "loss of public credibility",
+                "MediaOutlet": "being outrun by rumor or losing audience trust",
+                "Organization": "failing vulnerable households during a visible shock",
+                "Expert": "publicly misreading the scale of the crisis",
+            }[role_type],
+            "influence_radius": defaults["influence_radius"],
+            "fb_intensity": defaults["fb_intensity"],
+            "dialect": COUNTRY_SETTINGS.get(country, COUNTRY_SETTINGS["Bangladesh"])["dialects"].split(" such as ")[-1].split(",")[0],
+            "income_stability": defaults["income_stability"],
+            "rumour_amplifier": defaults["rumour_amplifier"],
+            "baseline_anxiety": defaults["baseline_anxiety"],
+            "interested_topics": ["public reaction", "household pressure", "institutional credibility"],
+            "mbti": "ISTJ" if role_type == "GovernmentAgency" else ("ENTJ" if role_type == "MediaOutlet" else "INFJ"),
+            "bio": bio,
+            "persona": persona,
+        }
+
     def _build_segment_assignments(
         self,
         n_agents: int,
@@ -953,18 +1331,33 @@ Return valid JSON only."""
 
     def _segment_to_entity_type(self, segment: Optional[str]) -> str:
         normalized = SEGMENT_ALIASES.get(str(segment or "").strip().lower(), str(segment or "").strip().lower())
+        if normalized in INSTITUTIONAL_SEED_TYPES:
+            return INSTITUTIONAL_SEED_TYPES[normalized]
         return OPS_SEGMENT_ENTITY_TYPES.get(normalized, "Person")
 
     def _segment_to_entity_labels(self, segment: Optional[str]) -> List[str]:
         primary_type = self._segment_to_entity_type(segment)
         labels = ["Entity", primary_type]
-        if primary_type != "Person":
+        if primary_type not in {"Person", *INSTITUTIONAL_SEED_TYPES.values()}:
             labels.append("Person")
         deduped: List[str] = []
         for label in labels:
             if label not in deduped:
                 deduped.append(label)
         return deduped
+
+    def _select_institutional_seed_roles(self, n_agents: int) -> List[str]:
+        if n_agents <= 6:
+            return ["GovernmentAgency"]
+        if n_agents <= 20:
+            return ["GovernmentAgency", "MediaOutlet"]
+        if n_agents <= 50:
+            return ["GovernmentAgency", "MediaOutlet", "Organization"]
+        return ["GovernmentAgency", "MediaOutlet", "Organization", "Expert"]
+
+    def _is_institutional_segment(self, segment: Optional[str]) -> bool:
+        normalized = str(segment or "").strip().lower()
+        return normalized in INSTITUTIONAL_SEED_TYPES
 
     def _generate_username(self, name: str, agent_index: int) -> str:
         return f"{_slugify(name)}_{agent_index:03d}"

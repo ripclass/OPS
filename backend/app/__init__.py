@@ -41,8 +41,16 @@ def create_app(config_class=Config):
         if not app.config.get('ZEP_ENABLED'):
             logger.warning("ZEP_API_KEY is not configured, Zep map related functions will be unavailable, but local UI and non-Zep functions can be started normally")
     
-    # Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Enable CORS. In production, prefer explicit frontend origins.
+    cors_origins = Config.get_cors_origins()
+    if app.config.get('DEBUG', False):
+        cors_origins = cors_origins or "*"
+    else:
+        if not cors_origins:
+            logger.warning("No FRONTEND_ORIGIN configured; falling back to wildcard CORS")
+            cors_origins = "*"
+
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
     
     # Register simulation process cleanup function (ensures all simulation processes are terminated when the server is shut down)
     from .services.simulation_runner import SimulationRunner

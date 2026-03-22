@@ -1,0 +1,22 @@
+[
+  {
+    "country": "Bangladesh",
+    "simulation_id": "sim_be1f9f6e7056",
+    "report_id": "report_a16fa2d7aa59",
+    "total_profiles": 8,
+    "country_match_ratio": 1.0,
+    "segment_coverage_ratio": 1.0,
+    "institutional_seed_profiles": 2,
+    "institutional_seed_posts": 1,
+    "public_seed_posts": 3,
+    "institutional_mention_present": true,
+    "report_scaffolding_absent": true,
+    "fake_citation_absent": true,
+    "report_completed": true,
+    "report_chat_ok": true,
+    "interview_ok": true,
+    "score": 100,
+    "success": true,
+    "error": null
+  }
+]

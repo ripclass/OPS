@@ -23,6 +23,12 @@ class Config:
     # Flask configuration
     SECRET_KEY = os.environ.get('SECRET_KEY', 'ops-secret-key')
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN', '').strip()
+    FRONTEND_ORIGINS = [
+        value.strip()
+        for value in os.environ.get('FRONTEND_ORIGINS', '').split(',')
+        if value.strip()
+    ]
     
     # JSON configuration: disable ASCII escaping so non-ASCII text is shown directly.
     JSON_AS_ASCII = False
@@ -68,6 +74,15 @@ class Config:
     REPORT_AGENT_MAX_TOOL_CALLS = int(os.environ.get('REPORT_AGENT_MAX_TOOL_CALLS', '5'))
     REPORT_AGENT_MAX_REFLECTION_ROUNDS = int(os.environ.get('REPORT_AGENT_MAX_REFLECTION_ROUNDS', '2'))
     REPORT_AGENT_TEMPERATURE = float(os.environ.get('REPORT_AGENT_TEMPERATURE', '0.5'))
+
+    @classmethod
+    def get_cors_origins(cls):
+        """Return configured frontend origins for CORS."""
+        origins = []
+        if cls.FRONTEND_ORIGIN:
+            origins.append(cls.FRONTEND_ORIGIN)
+        origins.extend(origin for origin in cls.FRONTEND_ORIGINS if origin not in origins)
+        return origins
     
     @classmethod
     def validate(cls):

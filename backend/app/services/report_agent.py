@@ -1104,6 +1104,39 @@ class ReportAgent:
                     )
                     lines.append(person_line)
 
+                institutional_profiles = [
+                    profile for profile in profiles
+                    if str(profile.get("source_entity_type") or "").lower() in {
+                        "governmentagency", "mediaoutlet", "organization", "expert"
+                    }
+                ]
+                if institutional_profiles:
+                    lines.append("Institutional seed voices:")
+                    for profile in institutional_profiles[:4]:
+                        lines.append(
+                            f"- {profile.get('name')} | role={profile.get('profession') or profile.get('source_entity_type')} | "
+                            f"place={profile.get('location') or profile.get('country') or 'unknown'} | "
+                            f"influence={profile.get('influence_radius') or 'n/a'} | "
+                            f"trust={profile.get('current_trust_government', profile.get('trust_government'))}"
+                        )
+
+                amplified_profiles = sorted(
+                    profiles,
+                    key=lambda profile: (
+                        int(profile.get("influence_radius") or 0),
+                        int(profile.get("follower_count") or 0),
+                        int(profile.get("statuses_count") or 0),
+                    ),
+                    reverse=True,
+                )
+                if amplified_profiles:
+                    lines.append("Top amplifiers by structural reach:")
+                    for profile in amplified_profiles[:4]:
+                        lines.append(
+                            f"- {profile.get('name')} | segment={profile.get('source_entity_type') or 'unknown'} | "
+                            f"role={profile.get('profession') or 'unknown'} | influence={profile.get('influence_radius') or 'n/a'}"
+                        )
+
             if agent_stats:
                 lines.append("Most active voices:")
                 for stat in agent_stats[:5]:
@@ -1132,6 +1165,23 @@ class ReportAgent:
             if notable_actions:
                 lines.append("Observed public reactions:")
                 lines.extend(notable_actions)
+
+            disagreement_signals = []
+            positive_markers = ("support", "relief", "calm", "manage", "cooperate", "help")
+            negative_markers = ("angry", "fear", "worry", "panic", "struggle", "crisis", "burden")
+            for action in actions:
+                text = self._extract_action_text(action).lower()
+                if not text:
+                    continue
+                if any(token in text for token in positive_markers):
+                    disagreement_signals.append(f"+ {action.agent_name}: {text[:110].strip()}")
+                elif any(token in text for token in negative_markers):
+                    disagreement_signals.append(f"- {action.agent_name}: {text[:110].strip()}")
+                if len(disagreement_signals) >= 6:
+                    break
+            if disagreement_signals:
+                lines.append("Tension and disagreement signals:")
+                lines.extend(disagreement_signals)
 
             snapshot_text = "\n".join(lines).strip()
             if len(snapshot_text) > 4500:
