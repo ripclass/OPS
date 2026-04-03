@@ -12,10 +12,12 @@
     </div>
 
     <div class="audience-figure-block">
-      <figure class="audience-figure" aria-label="Who it's for illustration">
-        <img src="/landing/who-is-it-for-cutout.webp" alt="" />
-      </figure>
-      <div class="audience-note">high-consequence decisions</div>
+      <div class="audience-figure-stage">
+        <div class="audience-note">HIGH\nCONSEQ\nUENCE\nDECISI\nONS</div>
+        <figure class="audience-figure" aria-label="Who it's for illustration">
+          <img src="/landing/WhoIsItFor.webp" alt="" />
+        </figure>
+      </div>
     </div>
 
     <div class="audience-cases">
@@ -124,22 +126,30 @@ const decoratedOutro = computed(() => decorate(
 }
 
 .audience-figure-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin-top: 46px;
+}
+
+.audience-figure-stage {
+  position: relative;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  min-height: 560px;
 }
 
 .audience-figure {
   margin: 0;
-  width: 100%;
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  z-index: 2;
   display: flex;
   justify-content: center;
+  transform: translateX(-50%);
 }
 
 .audience-figure img {
   display: block;
-  width: min(100%, 760px);
+  width: min(100%, 560px);
   height: auto;
 }
 
@@ -170,15 +180,17 @@ const decoratedOutro = computed(() => decorate(
 }
 
 .audience-note {
-  width: min(100%, 760px);
-  margin: 10px 0 0;
+  position: absolute;
+  left: 8px;
+  top: 54px;
+  z-index: 1;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
-  font-size: 28px;
+  font-size: clamp(62px, 8.3vw, 88px);
   line-height: 0.82;
-  transform: rotate(-2deg);
-  text-align: right;
-  white-space: nowrap;
+  text-align: left;
+  transform: rotate(-3deg);
+  white-space: pre-line;
 }
 
 .audience-case {
@@ -279,7 +291,19 @@ const decoratedOutro = computed(() => decorate(
   }
 
   .audience-figure-block {
-    gap: 14px;
+    margin-top: 34px;
+  }
+
+  .audience-figure-stage {
+    min-height: 460px;
+  }
+
+  .audience-figure {
+    top: 26px;
+  }
+
+  .audience-figure img {
+    width: min(100%, 460px);
   }
 
   .audience-intro {
@@ -308,8 +332,9 @@ const decoratedOutro = computed(() => decorate(
   }
 
   .audience-note {
-    text-align: left;
-    font-size: 20px;
+    top: 22px;
+    left: 0;
+    font-size: clamp(42px, 13vw, 64px);
   }
 }
 </style>
