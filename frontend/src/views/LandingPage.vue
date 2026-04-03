@@ -438,7 +438,7 @@ const scrollToTop = () => {
 }
 
 .content-section--audience {
-  padding-top: 124px;
+  padding-top: 168px;
 }
 
 .content-section--privacy {
