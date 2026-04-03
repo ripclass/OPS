@@ -55,8 +55,7 @@ export const AGENT_STORIES = {
     bodyParagraphs: [
       'Her husband went to Saudi Arabia three years ago. He sends 25,000 taka a month through bKash.',
       'She has two daughters in school and a mother-in-law with diabetes. She shares nothing on Facebook. When the rice price hits, she will not post. She will not protest.',
-      "She will cut her own meals to one a day and tell no one.",
-      'She is the cascade no one measures. We built a system that knows Halima exists.',
+      'She will cut her own meals to one a day and tell no one. She is the cascade no one measures. We built a system that knows Halima exists.',
     ],
     bodyLines: [
       'Her husband went to Saudi Arabia three years ago.',

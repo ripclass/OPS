@@ -257,14 +257,14 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__body {
-  margin-top: 5px;
+  margin-top: 14px;
 }
 
 .hero-story__paragraph {
   margin: 0 0 10px;
   color: #000;
   font-family: var(--murmur-font-type);
-  font-size: 10.6px;
+  font-size: 12px;
   line-height: 1;
   text-shadow:
     0.15px 0 rgba(0, 0, 0, 0.9),
@@ -274,7 +274,7 @@ const inkTitleLines = computed(() => {
 .hero-story__brand-lockup {
   position: absolute;
   left: 11px;
-  top: 826px;
+  top: 808px;
   width: 271px;
 }
 
@@ -312,7 +312,7 @@ const inkTitleLines = computed(() => {
 .hero-story__scribble--footer {
   position: absolute;
   left: 655px;
-  top: 840px;
+  top: 822px;
   width: 312px;
   text-align: right;
 }
