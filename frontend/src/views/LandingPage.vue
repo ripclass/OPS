@@ -74,17 +74,17 @@
         <WhatItKnows :items="WHAT_IT_KNOWS" />
       </section>
 
-      <section class="content-section">
+      <section class="content-section content-section--wide content-section--scenario">
         <ScenarioInput @submit="handleScenarioSubmit" @request-access="openAuth('signup')" />
       </section>
 
-      <section id="privacy" class="content-section content-section--privacy">
+      <section id="privacy" class="content-section content-section--wide content-section--privacy">
         <p class="privacy-note">
           No tracking. No surveillance pixels. Scenario submissions are reviewed manually.
         </p>
       </section>
 
-      <section class="content-section">
+      <section class="content-section content-section--wide content-section--footer">
         <LegitimacyFooter :lines="LEGITIMACY_LINES" />
       </section>
     </main>
@@ -445,15 +445,24 @@ const scrollToTop = () => {
   padding-top: 152px;
 }
 
+.content-section--scenario {
+  padding-top: 152px;
+}
+
 .content-section--privacy {
-  padding-top: 88px;
+  padding-top: 42px;
+}
+
+.content-section--footer {
+  padding-top: 72px;
 }
 
 .privacy-note {
   margin: 0;
-  color: var(--murmur-text-muted);
-  font-size: 14px;
-  line-height: 1.8;
+  color: #050505;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 16px;
+  line-height: 1.3;
 }
 
 .auth-modal {
