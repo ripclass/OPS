@@ -31,6 +31,7 @@ export const AGENT_STORIES = {
     },
     headlineName: 'Halima, 41.',
     headlineMeta: 'Noakhali. Fish drying worker.',
+    headlineInkMeta: 'Noakhali.\nFish drying worker.',
     heroInkLines: ['MURMUR', 'KNOWS', 'HALIMA'],
     footerWordmark: 'MURMUR',
     footerSubtitle: 'South Asia Behavioral Intelligence',

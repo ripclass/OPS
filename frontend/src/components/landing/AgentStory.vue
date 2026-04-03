@@ -49,6 +49,7 @@
 
         <div class="hero-story__copy">
           <h1 class="hero-story__headline">{{ story.headlineName }}</h1>
+          <p v-if="story.headlineInkMeta" class="hero-story__headline-meta">{{ story.headlineInkMeta }}</p>
           <div class="hero-story__body">
             <p
               v-for="(paragraph, index) in storyParagraphs"
@@ -162,7 +163,7 @@ const inkTitleLines = computed(() => {
 .hero-story__canvas {
   position: relative;
   width: min(978px, 100%);
-  min-height: 874px;
+  min-height: 940px;
 }
 
 .hero-story__media {
@@ -232,7 +233,7 @@ const inkTitleLines = computed(() => {
 .hero-story__copy {
   position: absolute;
   left: 595px;
-  top: 580px;
+  top: 606px;
   width: 263px;
   color: #000;
 }
@@ -246,8 +247,17 @@ const inkTitleLines = computed(() => {
   line-height: 1.29;
 }
 
+.hero-story__headline-meta {
+  margin: 6px 0 0;
+  color: #0048ff;
+  font-family: var(--murmur-font-hand);
+  font-size: 18px;
+  line-height: 0.68;
+  white-space: pre-line;
+}
+
 .hero-story__body {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .hero-story__paragraph {
@@ -264,7 +274,7 @@ const inkTitleLines = computed(() => {
 .hero-story__brand-lockup {
   position: absolute;
   left: 11px;
-  top: 785px;
+  top: 828px;
   width: 271px;
 }
 
@@ -302,7 +312,7 @@ const inkTitleLines = computed(() => {
 .hero-story__scribble--footer {
   position: absolute;
   left: 655px;
-  top: 796px;
+  top: 842px;
   width: 312px;
   text-align: right;
 }
@@ -350,7 +360,7 @@ const inkTitleLines = computed(() => {
 }
 
 .scribble--hero-footer-note {
-  font-size: 32px;
+  font-size: 28px;
   transform: rotate(-2deg);
 }
 
