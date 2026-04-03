@@ -65,7 +65,11 @@ const decoratedTitle = computed(() => decorate(
 ))
 
 const decoratedSummary = computed(() => decorate(
-  props.summary,
+  decorate(
+    props.summary,
+    'Murmur',
+    '<span class="intro-circle intro-circle--brand">Murmur</span>'
+  ),
   'simulated public sphere',
   '<span class="intro-underline intro-underline--summary">simulated public sphere</span>'
 ))
@@ -225,6 +229,14 @@ const decoratedDetail = computed(() => decorate(
 
 :deep(.intro-circle--small::after) {
   inset: -0.07em -0.14em -0.12em -0.14em;
+}
+
+:deep(.intro-circle--brand::before) {
+  inset: -0.2em -0.2em -0.08em -0.22em;
+}
+
+:deep(.intro-circle--brand::after) {
+  inset: -0.12em -0.14em -0.18em -0.16em;
 }
 
 @media (max-width: 900px) {
