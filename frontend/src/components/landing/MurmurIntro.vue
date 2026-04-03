@@ -14,7 +14,8 @@
     </div>
 
     <figure class="intro-illustration" aria-label="Murmur editorial illustration">
-      <img src="/landing/murmur-intro-illustration.webp" alt="" />
+      <img src="/landing/murmur-intro-illustration-cutout.png" alt="" />
+      <figcaption class="intro-illustration__note">what people say / what they hide</figcaption>
     </figure>
 
   </section>
@@ -140,6 +141,7 @@ const decoratedDetail = computed(() => decorate(
 }
 
 .intro-illustration {
+  position: relative;
   margin: 32px auto 0;
   width: min(100%, 620px);
 }
@@ -148,6 +150,18 @@ const decoratedDetail = computed(() => decorate(
   display: block;
   width: 100%;
   height: auto;
+}
+
+.intro-illustration__note {
+  position: absolute;
+  right: -18px;
+  bottom: 42px;
+  margin: 0;
+  color: #0048ff;
+  font-family: var(--murmur-font-hand);
+  font-size: 22px;
+  line-height: 0.82;
+  text-align: right;
 }
 
 :deep(.intro-underline),
@@ -227,6 +241,12 @@ const decoratedDetail = computed(() => decorate(
   .intro-illustration {
     margin-top: 26px;
     width: min(100%, 520px);
+  }
+
+  .intro-illustration__note {
+    right: 0;
+    bottom: -8px;
+    font-size: 18px;
   }
 
 }
