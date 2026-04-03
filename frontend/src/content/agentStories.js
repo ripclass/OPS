@@ -23,6 +23,28 @@ export const AGENT_STORIES = {
     imageAlt: 'Halima portrait',
     headlineName: 'Halima, 41.',
     headlineMeta: 'Noakhali. Fish drying worker.',
+    scribbles: [
+      {
+        text: 'MURMUR KNOWS\nHALIMA',
+        className: 'scribble--top-left scribble--xl',
+      },
+      {
+        text: 'NO POST.\nNO PROTEST.',
+        className: 'scribble--left-mid scribble--md',
+      },
+      {
+        text: 'PRICE SHOCK',
+        className: 'scribble--top-right scribble--sm',
+      },
+      {
+        text: 'CASCADE\nNO ONE\nMEASURES',
+        className: 'scribble--bottom-right scribble--lg',
+      },
+      {
+        text: 'bKash / rice / silence',
+        className: 'scribble--bottom-left scribble--xs',
+      },
+    ],
     bodyLines: [
       'Her husband went to Saudi Arabia three years ago.',
       'He sends 25,000 taka a month through bKash.',
@@ -40,6 +62,20 @@ export const AGENT_STORIES = {
     name: 'Phulwanti Devi',
     headlineName: 'Phulwanti Devi, 38.',
     headlineMeta: 'Gaya district, Bihar. NREGA worker and ASHA volunteer.',
+    scribbles: [
+      {
+        text: 'INFRASTRUCTURE\nNO POLICY\nSEES',
+        className: 'scribble--top-left scribble--xl',
+      },
+      {
+        text: 'ration line 5am',
+        className: 'scribble--top-right scribble--sm',
+      },
+      {
+        text: 'volunteer /\nworker /\nlife',
+        className: 'scribble--bottom-right scribble--lg',
+      },
+    ],
     bodyLines: [
       'Her husband does construction in Surat. He sends Rs 5,000 a month through PhonePe.',
       "She earns Rs 200 a day on NREGA when the work is available - it hasn't been for three months.",
@@ -59,6 +95,16 @@ export const AGENT_STORIES = {
     name: 'Nasreen',
     headlineName: 'Nasreen, 33.',
     headlineMeta: 'Faisalabad. Home-based phulkari embroidery worker.',
+    scribbles: [
+      {
+        text: 'SILENCE HOLDS\nTHE HOUSE',
+        className: 'scribble--top-left scribble--xl',
+      },
+      {
+        text: 'Quran verse /\npatience /\nrelief rumor',
+        className: 'scribble--bottom-right scribble--lg',
+      },
+    ],
     bodyLines: [
       "Her husband works the power loom twelve hours a day. She sells embroidery through a WhatsApp group her sister-in-law started. Together they earn Rs 40,000 a month. Rent is Rs 22,000. Her son goes to a government school. Her daughter goes to a madrasa because it's free.",
       "She voted PTI but will never say so at the factory where her husband's seth supports PML-N.",
@@ -73,6 +119,20 @@ export const AGENT_STORIES = {
     name: 'Selvamani',
     headlineName: 'Selvamani, 42.',
     headlineMeta: 'Nuwara Eliya. Tea plucker.',
+    scribbles: [
+      {
+        text: '200 YEARS\nUNANSWERED',
+        className: 'scribble--top-left scribble--xl',
+      },
+      {
+        text: 'Rs 1,350 / 250kg',
+        className: 'scribble--top-right scribble--sm',
+      },
+      {
+        text: 'despair\nnot anger',
+        className: 'scribble--bottom-right scribble--lg',
+      },
+    ],
     bodyLines: [
       'She earns Rs 1,350 a day picking tea leaves on an estate her grandmother also picked.',
       'She lives in a line room built in 1920 - ten feet by twelve feet, five people, one shared latrine for the row.',
@@ -92,6 +152,16 @@ export const AGENT_STORIES = {
     name: 'Kalpana Tamang',
     headlineName: 'Kalpana Tamang, 38.',
     headlineMeta: 'Sindhupalchok. Farmer, goat keeper, FCHV health volunteer.',
+    scribbles: [
+      {
+        text: 'ECONOMY OF\nSILENCE',
+        className: 'scribble--top-left scribble--xl',
+      },
+      {
+        text: 'Qatar /\ntransfer /\nroof still leaks',
+        className: 'scribble--bottom-right scribble--lg',
+      },
+    ],
     bodyLines: [
       'Her husband went to Qatar through a Kathmandu manpower agency three years ago.',
       'He paid Rs 250,000 to the agent - borrowed from a moneylender at 36% interest.',

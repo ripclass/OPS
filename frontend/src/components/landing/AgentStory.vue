@@ -1,6 +1,15 @@
 <template>
   <Transition name="story-shell" mode="out-in">
     <article :key="story.key" class="agent-story">
+      <div
+        v-for="(scribble, index) in story.scribbles || []"
+        :key="`${story.key}-scribble-${index}`"
+        class="agent-story__scribble"
+        :class="scribble.className"
+      >
+        {{ scribble.text }}
+      </div>
+
       <div class="agent-story__media">
         <div class="agent-story__frame">
           <img
@@ -34,8 +43,7 @@
             :key="`${story.key}-${index}`"
             class="agent-story__line"
           >
-            <span>{{ typedLines[index] }}</span>
-            <span v-if="index === activeLine && typedLines[index] !== line" class="agent-story__cursor">|</span>
+            {{ line }}
           </p>
         </div>
       </div>
@@ -44,7 +52,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   story: {
@@ -59,77 +67,24 @@ const props = defineProps({
 
 const emit = defineEmits(['complete'])
 
-const typedLines = ref([])
-const activeLine = ref(-1)
 const imageFailed = ref(false)
-let timers = []
-
-const clearTimers = () => {
-  timers.forEach(timer => window.clearTimeout(timer))
-  timers = []
-}
-
-const resetTypingState = () => {
-  typedLines.value = props.story.bodyLines.map(() => '')
-  activeLine.value = -1
-}
-
-const completeInstantly = () => {
-  typedLines.value = [...props.story.bodyLines]
-  activeLine.value = -1
-  emit('complete', props.story.key)
-}
-
-const queueTimeout = (callback, delay) => {
-  const timer = window.setTimeout(callback, delay)
-  timers.push(timer)
-}
-
-const typeLine = (lineIndex, charIndex = 0) => {
-  if (lineIndex >= props.story.bodyLines.length) {
-    activeLine.value = -1
-    queueTimeout(() => emit('complete', props.story.key), 450)
-    return
-  }
-
-  const line = props.story.bodyLines[lineIndex]
-  activeLine.value = lineIndex
-
-  if (charIndex < line.length) {
-    typedLines.value[lineIndex] = line.slice(0, charIndex + 1)
-    const currentChar = line[charIndex]
-    const delay = currentChar === ' ' ? 12 : 22
-    queueTimeout(() => typeLine(lineIndex, charIndex + 1), delay)
-    return
-  }
-
-  queueTimeout(() => typeLine(lineIndex + 1, 0), 260)
-}
-
-const startTypewriter = () => {
-  clearTimers()
-  resetTypingState()
-
-  if (typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    completeInstantly()
-    return
-  }
-
-  queueTimeout(() => typeLine(0, 0), 320)
-}
-
-const handleImageError = () => {
-  imageFailed.value = true
-}
 
 watch(
   () => props.story.key,
   () => {
     imageFailed.value = false
-    startTypewriter()
+    if (typeof window !== 'undefined') {
+      window.setTimeout(() => emit('complete', props.story.key), 220)
+    } else {
+      emit('complete', props.story.key)
+    }
   },
   { immediate: true }
 )
+
+const handleImageError = () => {
+  imageFailed.value = true
+}
 
 const showImage = computed(() => Boolean(props.story.imagePath) && !imageFailed.value)
 const placeholderNote = computed(() => (
@@ -142,24 +97,28 @@ const placeholderPath = computed(() => (
     ? `frontend/public${props.story.imagePath}`
     : ''
 ))
-
-onBeforeUnmount(() => {
-  clearTimers()
-})
 </script>
 
 <style scoped>
 .agent-story {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
-  gap: 48px;
+  grid-template-columns: minmax(250px, 348px) minmax(0, 420px);
+  gap: 56px;
   align-items: start;
+  justify-content: center;
+  padding: 40px 0 0;
+}
+
+.agent-story__media {
+  position: relative;
+  z-index: 2;
 }
 
 .agent-story__frame {
   width: 100%;
-  background: #ddd7cd;
-  box-shadow: 0 20px 40px rgba(28, 21, 12, 0.1);
+  background: #f5f5f1;
+  box-shadow: 0 18px 28px rgba(16, 13, 10, 0.14);
   overflow: hidden;
 }
 
@@ -176,8 +135,8 @@ onBeforeUnmount(() => {
   flex-direction: column;
   justify-content: center;
   padding: 24px;
-  background: #dfd8ce;
-  color: #1f1a16;
+  background: #ece7de;
+  color: #111;
 }
 
 .agent-story__placeholder-note {
@@ -190,20 +149,26 @@ onBeforeUnmount(() => {
   margin-top: 12px;
   font-family: var(--murmur-font-mono);
   font-size: 12px;
-  line-height: 1.8;
+  line-height: 1.5;
+}
+
+.agent-story__copy {
+  position: relative;
+  z-index: 2;
+  padding-top: 10px;
 }
 
 .agent-story__label {
-  margin-bottom: 18px;
-  color: var(--murmur-text-muted);
+  margin-bottom: 16px;
+  color: #6e6a64;
   font-family: var(--murmur-font-mono);
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .agent-story__headline {
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .agent-story__headline-name,
@@ -212,42 +177,100 @@ onBeforeUnmount(() => {
 }
 
 .agent-story__headline-name {
-  color: var(--murmur-text-heading);
+  color: #0c0c0c;
   font-family: var(--murmur-font-body);
-  font-size: clamp(42px, 5vw, 62px);
+  font-size: clamp(42px, 5vw, 64px);
   font-weight: 700;
-  line-height: 0.98;
-  letter-spacing: -0.04em;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
 }
 
 .agent-story__headline-meta {
-  margin-top: 12px;
-  color: var(--murmur-text-primary);
+  margin-top: 8px;
+  color: #111;
   font-family: var(--murmur-font-body);
-  font-size: clamp(20px, 2vw, 25px);
-  line-height: 1.45;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.2;
 }
 
 .agent-story__body {
-  max-width: 34rem;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  max-width: 30rem;
 }
 
 .agent-story__line {
-  margin: 0;
-  color: var(--murmur-text-primary);
+  margin: 0 0 4px;
+  color: #090909;
   font-family: var(--murmur-font-mono);
-  font-size: clamp(17px, 1.45vw, 19px);
-  line-height: 1.85;
-  min-height: 1.85em;
+  font-size: clamp(15px, 1.22vw, 17px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
 }
 
-.agent-story__cursor {
-  display: inline-block;
-  margin-left: 2px;
-  animation: cursor-blink 0.9s steps(1, end) infinite;
+.agent-story__scribble {
+  position: absolute;
+  z-index: 1;
+  white-space: pre-line;
+  color: #0b0b0b;
+  font-family: var(--murmur-font-hand);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  transform: rotate(-4deg);
+  opacity: 0.97;
+}
+
+.scribble--xl {
+  font-size: clamp(38px, 5vw, 72px);
+}
+
+.scribble--lg {
+  font-size: clamp(28px, 3.3vw, 44px);
+}
+
+.scribble--md {
+  font-size: clamp(22px, 2.5vw, 32px);
+}
+
+.scribble--sm {
+  font-size: clamp(16px, 1.8vw, 22px);
+}
+
+.scribble--xs {
+  font-size: clamp(14px, 1.35vw, 18px);
+}
+
+.scribble--top-left {
+  top: -38px;
+  left: -8px;
+  max-width: 360px;
+  transform: rotate(-5deg);
+}
+
+.scribble--left-mid {
+  top: 150px;
+  left: -118px;
+  max-width: 180px;
+  transform: rotate(-7deg);
+}
+
+.scribble--top-right {
+  top: 24px;
+  right: 56px;
+  transform: rotate(5deg);
+}
+
+.scribble--bottom-right {
+  right: 12px;
+  bottom: -12px;
+  max-width: 270px;
+  transform: rotate(-4deg);
+}
+
+.scribble--bottom-left {
+  left: 200px;
+  bottom: 48px;
+  transform: rotate(3deg);
 }
 
 .story-shell-enter-active,
@@ -260,26 +283,41 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-@keyframes cursor-blink {
-  50% {
-    opacity: 0;
+@media (max-width: 1040px) {
+  .agent-story {
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    gap: 38px;
+  }
+
+  .scribble--left-mid {
+    left: -72px;
+  }
+
+  .scribble--bottom-right {
+    right: 0;
+    bottom: -30px;
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 820px) {
   .agent-story {
     grid-template-columns: 1fr;
     gap: 28px;
+    padding-top: 14px;
   }
 
   .agent-story__frame {
-    max-width: 420px;
+    max-width: 360px;
+  }
+
+  .agent-story__scribble {
+    display: none;
   }
 }
 
 @media (max-width: 640px) {
   .agent-story__headline-name {
-    font-size: 34px;
+    font-size: 36px;
   }
 
   .agent-story__headline-meta {
@@ -287,7 +325,9 @@ onBeforeUnmount(() => {
   }
 
   .agent-story__line {
-    font-size: 16px;
+    font-size: 14px;
+    line-height: 1.08;
+    margin-bottom: 4px;
   }
 
   .agent-story__placeholder {

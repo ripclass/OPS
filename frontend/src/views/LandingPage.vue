@@ -286,24 +286,24 @@ const scrollToTop = () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Permanent+Marker&display=swap');
 
 .murmur-page {
-  --murmur-bg-primary: #f3eee6;
-  --murmur-bg-card: #ebe3d9;
-  --murmur-bg-input: #f7f1e8;
+  --murmur-bg-primary: #ffffff;
+  --murmur-bg-card: #f6f5f2;
+  --murmur-bg-input: #fcfcfb;
   --murmur-text-primary: #2a241d;
   --murmur-text-heading: #100d0a;
   --murmur-text-muted: #85796e;
   --murmur-text-agent-name: #756a60;
   --murmur-accent: #8d392c;
   --murmur-accent-subtle: rgba(141, 57, 44, 0.1);
-  --murmur-border: #d8cfc2;
+  --murmur-border: #ddd8d0;
   --murmur-link: #5a7692;
   --murmur-font-serif: 'DM Serif Display', 'Source Serif 4', serif;
   --murmur-font-body: 'DM Sans', 'Source Sans 3', sans-serif;
   --murmur-font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
-  --murmur-font-hand: 'Caveat', cursive;
+  --murmur-font-hand: 'Permanent Marker', cursive;
   --murmur-font-script-bengali: 'Noto Sans Bengali', sans-serif;
   --murmur-font-script-devanagari: 'Noto Sans Devanagari', sans-serif;
   --murmur-font-script-arabic: 'Noto Sans Arabic', sans-serif;
@@ -324,7 +324,7 @@ const scrollToTop = () => {
   justify-content: space-between;
   gap: 16px;
   padding: 22px 32px;
-  background: rgba(243, 238, 230, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(42, 36, 29, 0.06);
 }
