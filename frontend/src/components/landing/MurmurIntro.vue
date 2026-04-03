@@ -21,7 +21,7 @@
 import { computed } from 'vue'
 import { useRevealOnScroll } from '../../composables/useRevealOnScroll'
 
-defineProps({
+const props = defineProps({
   kicker: {
     type: String,
     required: true,
