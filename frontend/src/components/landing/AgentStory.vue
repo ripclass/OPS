@@ -245,6 +245,8 @@ const inkTitleLines = computed(() => {
   font-size: 24px;
   font-weight: 700;
   line-height: 1.08;
+  position: relative;
+  top: -6px;
 }
 
 .hero-story__headline-meta {
@@ -254,6 +256,8 @@ const inkTitleLines = computed(() => {
   font-size: 18px;
   line-height: 0.68;
   white-space: pre-line;
+  position: relative;
+  top: -7px;
 }
 
 .hero-story__body {
@@ -265,10 +269,8 @@ const inkTitleLines = computed(() => {
   color: #000;
   font-family: var(--murmur-font-type);
   font-size: 12px;
-  line-height: 1;
-  text-shadow:
-    0.15px 0 rgba(0, 0, 0, 0.9),
-    0 0 0.35px rgba(0, 0, 0, 0.45);
+  line-height: 1.08;
+  text-shadow: 0 0 0.12px rgba(0, 0, 0, 0.3);
 }
 
 .hero-story__brand-lockup {
