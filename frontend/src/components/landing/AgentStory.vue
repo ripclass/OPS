@@ -267,7 +267,7 @@ const inkTitleLines = computed(() => {
 .hero-story__paragraph {
   margin: 0 0 10px;
   color: #000;
-  font-family: var(--murmur-font-type);
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
   font-size: 12px;
   line-height: 1.08;
   text-shadow: 0 0 0.12px rgba(0, 0, 0, 0.3);
