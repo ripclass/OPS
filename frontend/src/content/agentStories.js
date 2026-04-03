@@ -19,8 +19,11 @@ export const AGENT_STORIES = {
     key: 'bangladesh',
     code: 'BD',
     name: 'Halima',
-    lines: [
-      'Halima, 41. Noakhali. Fish drying worker.',
+    imagePath: '/landing/halima-hero.webp',
+    imageAlt: 'Halima portrait',
+    headlineName: 'Halima, 41.',
+    headlineMeta: 'Noakhali. Fish drying worker.',
+    bodyLines: [
       'Her husband went to Saudi Arabia three years ago.',
       'He sends 25,000 taka a month through bKash.',
       'She has two daughters in school and a mother-in-law with diabetes.',
@@ -35,8 +38,9 @@ export const AGENT_STORIES = {
     key: 'india',
     code: 'IN',
     name: 'Phulwanti Devi',
-    lines: [
-      'Phulwanti Devi, 38. Gaya district, Bihar. NREGA worker and ASHA volunteer.',
+    headlineName: 'Phulwanti Devi, 38.',
+    headlineMeta: 'Gaya district, Bihar. NREGA worker and ASHA volunteer.',
+    bodyLines: [
       'Her husband does construction in Surat. He sends Rs 5,000 a month through PhonePe.',
       "She earns Rs 200 a day on NREGA when the work is available - it hasn't been for three months.",
       'She walks four kilometres every morning to check on pregnant women in six villages.',
@@ -53,8 +57,9 @@ export const AGENT_STORIES = {
     key: 'pakistan',
     code: 'PK',
     name: 'Nasreen',
-    lines: [
-      'Nasreen, 33. Faisalabad. Home-based phulkari embroidery worker.',
+    headlineName: 'Nasreen, 33.',
+    headlineMeta: 'Faisalabad. Home-based phulkari embroidery worker.',
+    bodyLines: [
       "Her husband works the power loom twelve hours a day. She sells embroidery through a WhatsApp group her sister-in-law started. Together they earn Rs 40,000 a month. Rent is Rs 22,000. Her son goes to a government school. Her daughter goes to a madrasa because it's free.",
       "She voted PTI but will never say so at the factory where her husband's seth supports PML-N.",
       "When the flour price hits, she won't post about politics. She'll post a Quran verse about patience. Then she'll message three women in the WhatsApp group to ask if anyone has heard about a government relief scheme. No one will have heard. She'll reduce the evening roti from three per person to two and hope her husband doesn't notice.",
@@ -66,8 +71,9 @@ export const AGENT_STORIES = {
     key: 'srilanka',
     code: 'LK',
     name: 'Selvamani',
-    lines: [
-      'Selvamani, 42. Nuwara Eliya. Tea plucker.',
+    headlineName: 'Selvamani, 42.',
+    headlineMeta: 'Nuwara Eliya. Tea plucker.',
+    bodyLines: [
       'She earns Rs 1,350 a day picking tea leaves on an estate her grandmother also picked.',
       'She lives in a line room built in 1920 - ten feet by twelve feet, five people, one shared latrine for the row.',
       'Her eldest daughter left for a garment factory in Katunayake. She sends Rs 5,000 a month.',
@@ -84,8 +90,9 @@ export const AGENT_STORIES = {
     key: 'nepal',
     code: 'NP',
     name: 'Kalpana Tamang',
-    lines: [
-      'Kalpana Tamang, 38. Sindhupalchok. Farmer, goat keeper, FCHV health volunteer.',
+    headlineName: 'Kalpana Tamang, 38.',
+    headlineMeta: 'Sindhupalchok. Farmer, goat keeper, FCHV health volunteer.',
+    bodyLines: [
       'Her husband went to Qatar through a Kathmandu manpower agency three years ago.',
       'He paid Rs 250,000 to the agent - borrowed from a moneylender at 36% interest.',
       'He sends Rs 30,000 a month. It used to cover everything.',
@@ -99,39 +106,6 @@ export const AGENT_STORIES = {
       'She is the economy that runs on silence and bKash and faith that the transfer will come on the fifteenth.',
       'We built a system that knows Kalpana exists.',
     ],
-  },
-}
-
-export const HERO_NOTES = {
-  bangladesh: {
-    kicker: 'field note',
-    notes: ['she never posts', 'remittance house', 'one meal disappears first'],
-    doodle: 'the missing signal',
-  },
-  india: {
-    kicker: 'health system',
-    notes: ['volunteer on paper', 'worker in reality', 'walks before sunrise'],
-    doodle: 'infrastructure with no salary',
-  },
-  pakistan: {
-    kicker: 'household silence',
-    notes: ['WhatsApp first', 'Quran verse second', 'politics stays coded'],
-    doodle: 'patience is not consent',
-  },
-  srilanka: {
-    kicker: 'estate arithmetic',
-    notes: ['Rs 1,350', '5 mouths', 'numbers do not resolve'],
-    doodle: 'despair, not rage',
-  },
-  nepal: {
-    kicker: 'migration debt',
-    notes: ['Qatar transfer', 'roof still leaks', 'medication delayed'],
-    doodle: 'the fifteenth decides the month',
-  },
-  global: {
-    kicker: 'five openings',
-    notes: ['five countries', 'same shock', 'different silences'],
-    doodle: 'none of this is generic',
   },
 }
 
