@@ -62,7 +62,7 @@
         <WhatItDoes :paragraphs="WHAT_IT_DOES" />
       </section>
 
-      <section class="content-section content-section--wide">
+      <section class="content-section content-section--wide content-section--audience">
         <WhoItsFor
           :intro="WHO_ITS_FOR_INTRO"
           :lines="WHO_ITS_FOR_LINES"
@@ -435,6 +435,10 @@ const scrollToTop = () => {
 
 .content-section--wide {
   max-width: 978px;
+}
+
+.content-section--audience {
+  padding-top: 124px;
 }
 
 .content-section--privacy {
