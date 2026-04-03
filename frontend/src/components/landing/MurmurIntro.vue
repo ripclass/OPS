@@ -1,15 +1,15 @@
 <template>
   <section ref="targetRef" class="intro-shell" :class="{ 'intro-shell--visible': isVisible }">
-    <div class="intro-kicker">{{ kicker }}</div>
+    <div class="intro-kicker" v-html="decoratedKicker" />
 
     <div class="intro-grid">
       <div class="intro-lead">
-        <h2 class="intro-title">{{ title }}</h2>
+        <h2 class="intro-title" v-html="decoratedTitle" />
       </div>
 
       <div class="intro-copy">
-        <p class="intro-summary">{{ summary }}</p>
-        <p class="intro-detail">{{ detail }}</p>
+        <p class="intro-summary" v-html="decoratedSummary" />
+        <p class="intro-detail" v-html="decoratedDetail" />
       </div>
     </div>
 
@@ -18,6 +18,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRevealOnScroll } from '../../composables/useRevealOnScroll'
 
 defineProps({
@@ -40,6 +41,36 @@ defineProps({
 })
 
 const { targetRef, isVisible } = useRevealOnScroll()
+
+const decorate = (text, target, replacement) => text.replace(target, replacement)
+
+const decoratedKicker = computed(() => decorate(
+  props.kicker,
+  'scenario simulation',
+  '<span class="intro-underline">scenario simulation</span>'
+))
+
+const decoratedTitle = computed(() => decorate(
+  decorate(
+    props.title,
+    'populations',
+    '<span class="intro-circle">populations</span>'
+  ),
+  'narratives react',
+  '<span class="intro-underline intro-underline--tight">narratives react</span>'
+))
+
+const decoratedSummary = computed(() => decorate(
+  props.summary,
+  'simulated public sphere',
+  '<span class="intro-underline intro-underline--summary">simulated public sphere</span>'
+))
+
+const decoratedDetail = computed(() => decorate(
+  props.detail,
+  'market moves.',
+  '<span class="intro-circle intro-circle--small">market moves.</span>'
+))
 </script>
 
 <style scoped>
@@ -108,12 +139,66 @@ const { targetRef, isVisible } = useRevealOnScroll()
 .intro-note {
   margin-top: 28px;
   color: #050505;
-  font-family: var(--murmur-font-display);
-  font-size: 34px;
-  font-weight: 800;
-  line-height: 0.9;
-  letter-spacing: -0.02em;
+  font-family: var(--murmur-font-hand);
+  font-size: 32px;
+  line-height: 0.82;
   text-align: right;
+}
+
+:deep(.intro-underline),
+:deep(.intro-circle) {
+  position: relative;
+  display: inline-block;
+}
+
+:deep(.intro-underline::after) {
+  content: '';
+  position: absolute;
+  left: -0.08em;
+  right: -0.08em;
+  bottom: -0.08em;
+  border-bottom: 3px solid #0048ff;
+  border-radius: 999px;
+  transform: rotate(-1.5deg);
+  pointer-events: none;
+}
+
+:deep(.intro-underline--tight::after) {
+  left: -0.04em;
+  right: -0.04em;
+  bottom: -0.05em;
+}
+
+:deep(.intro-underline--summary::after) {
+  bottom: -0.09em;
+}
+
+:deep(.intro-circle::before),
+:deep(.intro-circle::after) {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+}
+
+:deep(.intro-circle::before) {
+  inset: -0.12em -0.18em -0.06em -0.18em;
+  border: 2px solid rgba(0, 72, 255, 0.9);
+  transform: rotate(-5deg);
+}
+
+:deep(.intro-circle::after) {
+  inset: -0.06em -0.12em -0.12em -0.14em;
+  border: 2px solid rgba(0, 72, 255, 0.7);
+  transform: rotate(4deg);
+}
+
+:deep(.intro-circle--small::before) {
+  inset: -0.12em -0.18em -0.08em -0.18em;
+}
+
+:deep(.intro-circle--small::after) {
+  inset: -0.07em -0.14em -0.12em -0.14em;
 }
 
 @media (max-width: 900px) {
