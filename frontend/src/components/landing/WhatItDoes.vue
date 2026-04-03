@@ -24,12 +24,11 @@
       <article class="does-column does-column--center">
         <div class="does-column__eyebrow">MURMUR RUNS</div>
 
-        <ul class="does-mechanism" aria-label="Murmur simulation mechanism">
-          <li>country priors</li>
-          <li>specific agents</li>
-          <li>institutional seeds</li>
-          <li>cascade simulation</li>
-          <li>memory + silence</li>
+        <ul class="does-note-list" aria-label="Murmur simulation mechanism">
+          <li v-for="item in mechanismItems" :key="item.label" class="does-note-item">
+            <div class="does-note-item__label">{{ item.label }}</div>
+            <p class="does-note-item__detail">{{ item.detail }}</p>
+          </li>
         </ul>
 
         <div class="does-scribble">who shares / who absorbs / who goes quiet</div>
@@ -40,12 +39,11 @@
       <article class="does-column">
         <div class="does-column__eyebrow">IT RETURNS</div>
 
-        <ul class="does-output" aria-label="Murmur outputs">
-          <li>likely reactions</li>
-          <li>segment splits</li>
-          <li>amplifier paths</li>
-          <li>silent absorption</li>
-          <li>report + scenario rehearsal</li>
+        <ul class="does-note-list" aria-label="Murmur outputs">
+          <li v-for="item in outputItems" :key="item.label" class="does-note-item">
+            <div class="does-note-item__label">{{ item.label }}</div>
+            <p class="does-note-item__detail">{{ item.detail }}</p>
+          </li>
         </ul>
 
         <p class="does-column__copy">{{ outputCopy }}</p>
@@ -72,6 +70,52 @@ const inputCopy = computed(() => props.paragraphs[0] || '')
 const runCopy = computed(() => [props.paragraphs[1], props.paragraphs[2]].filter(Boolean).join(' '))
 const outputCopy = computed(() => props.paragraphs[3] || '')
 const closingCopy = computed(() => props.paragraphs[4] || '')
+
+const mechanismItems = [
+  {
+    label: 'Country priors',
+    detail: 'Local conditions, class structure, language, and trust baselines.',
+  },
+  {
+    label: 'Specific agents',
+    detail: 'Named people with income sources, dialects, fears, and social position.',
+  },
+  {
+    label: 'Institutional seeds',
+    detail: 'Parties, media, ministries, unions, clinics, and community voices.',
+  },
+  {
+    label: 'Cascade simulation',
+    detail: 'Who hears it first, who passes it on, and where it accelerates.',
+  },
+  {
+    label: 'Memory + silence',
+    detail: 'What gets spoken, what stays hidden, and what behavior changes quietly.',
+  },
+]
+
+const outputItems = [
+  {
+    label: 'Likely reactions',
+    detail: 'The first emotional and practical responses the scenario triggers.',
+  },
+  {
+    label: 'Segment splits',
+    detail: 'How workers, students, migrants, and officials react differently.',
+  },
+  {
+    label: 'Amplifier paths',
+    detail: 'Which people, networks, and channels drive wider spread.',
+  },
+  {
+    label: 'Silent absorption',
+    detail: 'Who changes behavior without posting, protesting, or declaring anything.',
+  },
+  {
+    label: 'Report + rehearsal',
+    detail: 'A readable forecast plus a structured way to test the scenario again.',
+  },
+]
 
 const decorate = (text, target, replacement) => text.replace(target, replacement)
 
@@ -227,22 +271,43 @@ const decoratedDetail = computed(() => decorate(
   line-height: 1.5;
 }
 
-.does-mechanism,
-.does-output {
+.does-note-list {
   margin: 0 0 18px;
   padding: 0;
   list-style: none;
 }
 
-.does-mechanism li,
-.does-output li {
-  margin: 0 0 9px;
+.does-note-item {
+  position: relative;
+  margin: 0 0 14px;
+  padding-left: 16px;
+}
+
+.does-note-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.48em;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #0048ff;
+}
+
+.does-note-item__label {
   color: #050505;
   font-family: var(--murmur-font-ui);
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 0.03em;
-  text-transform: lowercase;
+}
+
+.does-note-item__detail {
+  margin: 4px 0 0;
+  color: #050505;
+  font-family: var(--murmur-font-ui);
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .does-scribble {
