@@ -181,7 +181,7 @@ const knowledgeEntries = computed(() => props.items.map((text, index) => ({
 
 .knowledge-item__meta {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .knowledge-item__index {
@@ -192,12 +192,11 @@ const knowledgeEntries = computed(() => props.items.map((text, index) => ({
 }
 
 .knowledge-item__label {
-  color: #050505;
-  font-family: var(--murmur-font-ui);
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.09em;
-  line-height: 1.15;
+  color: #0048ff;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  line-height: 1.12;
   text-transform: uppercase;
 }
 
@@ -205,8 +204,8 @@ const knowledgeEntries = computed(() => props.items.map((text, index) => ({
   margin: 0;
   color: #050505;
   font-family: var(--murmur-font-ui);
-  font-size: 21px;
-  line-height: 1.48;
+  font-size: 20px;
+  line-height: 1.52;
 }
 
 .knowledge-close {
