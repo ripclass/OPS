@@ -12,18 +12,7 @@
         <p class="intro-detail" v-html="decoratedDetail" />
       </div>
     </div>
-    <div class="intro-proof">
-      <div class="intro-proof__rail" aria-label="Murmur proof strip">
-        <span class="intro-proof__item">NOT A POLL</span>
-        <span class="intro-proof__item">NOT SOCIAL LISTENING</span>
-        <span class="intro-proof__item">NOT A DEMOGRAPHIC AVERAGE</span>
-      </div>
-      <p class="intro-proof__line">
-        A Murmur simulation is a synthetic public sphere built from scenario material,
-        country priors, institutional seeds, and behaviorally specific agents.
-      </p>
-      <div class="intro-proof__note">who absorbs / who shares / who goes silent</div>
-    </div>
+
   </section>
 </template>
 
@@ -146,55 +135,6 @@ const decoratedDetail = computed(() => decorate(
   line-height: 1.5;
 }
 
-.intro-proof {
-  margin-top: 34px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(5, 5, 5, 0.12);
-}
-
-.intro-proof__rail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 18px;
-  align-items: center;
-}
-
-.intro-proof__item {
-  color: #050505;
-  font-family: var(--murmur-font-ui);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.intro-proof__item:not(:last-child)::after {
-  content: '';
-  display: inline-block;
-  width: 34px;
-  margin-left: 18px;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(5, 5, 5, 0.2);
-}
-
-.intro-proof__line {
-  max-width: 760px;
-  margin: 18px 0 0;
-  color: #050505;
-  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
-  font-size: 18px;
-  line-height: 1.36;
-}
-
-.intro-proof__note {
-  margin-top: 18px;
-  color: #0048ff;
-  font-family: var(--murmur-font-hand);
-  font-size: 24px;
-  line-height: 0.84;
-  text-align: right;
-}
-
 :deep(.intro-underline),
 :deep(.intro-circle) {
   position: relative;
@@ -267,32 +207,6 @@ const decoratedDetail = computed(() => decorate(
 
   .intro-detail {
     font-size: 16px;
-  }
-
-  .intro-proof {
-    margin-top: 28px;
-  }
-
-  .intro-proof__rail {
-    gap: 10px 14px;
-  }
-
-  .intro-proof__item {
-    font-size: 11px;
-  }
-
-  .intro-proof__item:not(:last-child)::after {
-    width: 24px;
-    margin-left: 14px;
-  }
-
-  .intro-proof__line {
-    font-size: 16px;
-  }
-
-  .intro-proof__note {
-    font-size: 21px;
-    text-align: left;
   }
 
 }
