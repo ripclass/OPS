@@ -58,10 +58,6 @@
         />
       </section>
 
-      <section id="research" class="content-section">
-        <WhatItKnows :items="WHAT_IT_KNOWS" />
-      </section>
-
       <section class="content-section">
         <WhatItDoes :paragraphs="WHAT_IT_DOES" />
       </section>
@@ -72,6 +68,10 @@
           :lines="WHO_ITS_FOR_LINES"
           :outro="WHO_ITS_FOR_OUTRO"
         />
+      </section>
+
+      <section id="research" class="content-section">
+        <WhatItKnows :items="WHAT_IT_KNOWS" />
       </section>
 
       <section class="content-section">
