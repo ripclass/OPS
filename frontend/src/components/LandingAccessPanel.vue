@@ -1,6 +1,6 @@
 <template>
   <aside class="access-card">
-    <div class="access-meta">OPS Access</div>
+    <div class="access-meta">Murmur access</div>
     <h2 class="access-title">Sign in or create an account</h2>
     <p class="access-copy">
       The landing stays public. Scenario runs and reports stay behind authentication.
@@ -11,7 +11,7 @@
       <div class="signed-in-email">{{ authState.user.email }}</div>
       <div class="signed-in-actions">
         <button class="access-button access-button--primary" type="button" @click="handleContinue">
-          Continue into OPS
+          Continue into Murmur
         </button>
         <button class="access-button access-button--ghost" type="button" @click="handleSignOut">
           Sign out
@@ -166,7 +166,7 @@ const handleSubmit = async () => {
 
     if (result?.session) {
       emit('authenticated')
-      message.value = 'Account created. You can continue into OPS.'
+      message.value = 'Account created. You can continue into Murmur.'
       return
     }
 
@@ -182,19 +182,18 @@ const handleSubmit = async () => {
 <style scoped>
 .access-card {
   width: min(100%, 390px);
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.08);
+  border: 1px solid var(--murmur-border, #1a1a24);
+  background: rgba(15, 15, 22, 0.98);
   padding: 28px;
   z-index: 1;
 }
 
 .access-meta {
-  font-family: var(--ops-font-mono, monospace);
+  font-family: var(--murmur-font-mono, var(--ops-font-mono, monospace));
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #c94b22;
+  color: var(--murmur-text-muted, #52525b);
   margin-bottom: 12px;
 }
 
@@ -202,12 +201,12 @@ const handleSubmit = async () => {
   margin: 0 0 12px;
   font-size: 30px;
   line-height: 1.15;
-  color: #111827;
+  color: var(--murmur-text-heading, #e8e8ec);
 }
 
 .access-copy {
   margin: 0 0 20px;
-  color: #4b5563;
+  color: var(--murmur-text-primary, #d4d4d8);
   line-height: 1.6;
 }
 
@@ -219,16 +218,16 @@ const handleSubmit = async () => {
 
 .access-tab {
   flex: 1;
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  background: #ffffff;
-  color: #6b7280;
+  border: 1px solid var(--murmur-border, #1a1a24);
+  background: transparent;
+  color: var(--murmur-text-muted, #52525b);
   padding: 10px 12px;
   cursor: pointer;
 }
 
 .access-tab--active {
-  border-color: #111827;
-  color: #111827;
+  border-color: rgba(232, 232, 236, 0.28);
+  color: var(--murmur-text-heading, #e8e8ec);
 }
 
 .access-form {
@@ -241,36 +240,38 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #111827;
+  color: var(--murmur-text-primary, #d4d4d8);
   font-size: 14px;
 }
 
 .access-field input {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--murmur-border, #1a1a24);
+  background: var(--murmur-bg-input, #12121a);
+  color: var(--murmur-text-heading, #e8e8ec);
   padding: 12px 14px;
   font-size: 14px;
   outline: none;
 }
 
 .access-field input:focus {
-  border-color: #111827;
+  border-color: rgba(192, 57, 43, 0.5);
 }
 
 .access-button {
-  border: 1px solid #111827;
+  border: 1px solid var(--murmur-border, #1a1a24);
   padding: 13px 14px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .access-button--primary {
-  background: #111827;
-  color: #ffffff;
+  background: var(--murmur-text-heading, #e8e8ec);
+  color: #08080c;
 }
 
 .access-button--ghost {
-  background: #ffffff;
-  color: #111827;
+  background: transparent;
+  color: var(--murmur-text-heading, #e8e8ec);
 }
 
 .access-button:disabled {
@@ -279,22 +280,22 @@ const handleSubmit = async () => {
 }
 
 .access-alert {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--murmur-border, #1a1a24);
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.5;
 }
 
 .access-alert--error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: rgba(192, 57, 43, 0.35);
+  background: rgba(192, 57, 43, 0.08);
+  color: #f3b1aa;
 }
 
 .access-alert--success {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: rgba(139, 157, 195, 0.35);
+  background: rgba(139, 157, 195, 0.1);
+  color: #c7d1ea;
 }
 
 .access-note {
@@ -303,7 +304,7 @@ const handleSubmit = async () => {
 }
 
 .access-note--error {
-  color: #991b1b;
+  color: #f3b1aa;
 }
 
 .signed-in-state {
@@ -313,16 +314,16 @@ const handleSubmit = async () => {
 }
 
 .signed-in-label {
-  font-family: var(--ops-font-mono, monospace);
+  font-family: var(--murmur-font-mono, var(--ops-font-mono, monospace));
   font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--murmur-text-muted, #52525b);
 }
 
 .signed-in-email {
   font-size: 16px;
-  color: #111827;
+  color: var(--murmur-text-heading, #e8e8ec);
   word-break: break-word;
 }
 

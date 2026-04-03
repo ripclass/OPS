@@ -148,12 +148,13 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
 
 const router = useRouter()
+const route = useRoute()
 const heroImageUrl = new URL('../assets/logo/ops_logo_left.png', import.meta.url).href
 
 const steps = [
@@ -198,6 +199,16 @@ const canSubmit = computed(() => formData.value.simulationRequirement.trim() !==
 const heroSectionStyle = computed(() => ({
   '--hero-image': `url("${heroImageUrl}")`,
 }))
+
+watch(
+  () => route.query.scenario,
+  value => {
+    if (typeof value === 'string' && value.trim()) {
+      formData.value.simulationRequirement = value.trim()
+    }
+  },
+  { immediate: true }
+)
 
 const triggerFileInput = () => {
   if (!loading.value) {
