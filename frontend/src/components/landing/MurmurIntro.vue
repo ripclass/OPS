@@ -164,7 +164,7 @@ const decoratedDetail = computed(() => decorate(
   margin: 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
-  font-size: 96px;
+  font-size: 75px;
   line-height: 0.72;
   text-align: left;
   white-space: pre-line;
