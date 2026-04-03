@@ -13,7 +13,7 @@
 
     <div class="audience-figure-block">
       <figure class="audience-figure" aria-label="Who it's for illustration">
-        <img src="/landing/WhoIsItFor.png" alt="" />
+        <img src="/landing/who-is-it-for-cutout.webp" alt="" />
       </figure>
       <div class="audience-note">high-consequence decisions</div>
     </div>
@@ -124,20 +124,22 @@ const decoratedOutro = computed(() => decorate(
 }
 
 .audience-figure-block {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 46px;
 }
 
 .audience-figure {
   margin: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .audience-figure img {
   display: block;
-  width: min(100%, 720px);
+  width: min(100%, 760px);
   height: auto;
 }
 
@@ -168,7 +170,8 @@ const decoratedOutro = computed(() => decorate(
 }
 
 .audience-note {
-  margin: 0;
+  width: min(100%, 760px);
+  margin: 10px 0 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
   font-size: 28px;
@@ -276,7 +279,6 @@ const decoratedOutro = computed(() => decorate(
   }
 
   .audience-figure-block {
-    grid-template-columns: 1fr;
     gap: 14px;
   }
 
