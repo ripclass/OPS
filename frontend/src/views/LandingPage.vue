@@ -62,7 +62,7 @@
         <WhatItDoes :paragraphs="WHAT_IT_DOES" />
       </section>
 
-      <section class="content-section">
+      <section class="content-section content-section--wide">
         <WhoItsFor
           :intro="WHO_ITS_FOR_INTRO"
           :lines="WHO_ITS_FOR_LINES"
