@@ -53,8 +53,8 @@ const decorate = (text, target, replacement) => text.replace(target, replacement
 
 const decoratedTitle = computed(() => decorate(
   'For decisions that do not stay on paper.',
-  'do not stay on paper',
-  '<span class="audience-underline">do not stay on paper</span>'
+  'on paper',
+  '<span class="audience-circle">on paper</span>'
 ))
 
 const decoratedLead = computed(() => decorate(
