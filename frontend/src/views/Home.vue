@@ -1,1005 +1,731 @@
 <template>
-  <div class="home-container">
-    <nav class="navbar">
-      <div class="nav-brand">OPS</div>
-      <div class="nav-links">
-        <a href="https://github.com/ripclass/OPS" target="_blank" rel="noreferrer" class="github-link">
-          Open the source repository <span class="arrow">&gt;</span>
+  <div class="landing-page">
+    <header class="landing-nav">
+      <div class="landing-brand">
+        <img class="landing-brand__logo" :src="heroImageUrl" alt="OPS" />
+        <span class="landing-brand__text">OPS</span>
+      </div>
+
+      <nav class="landing-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#use-cases">Use Cases</a>
+        <a href="#readiness">Readiness</a>
+      </nav>
+
+      <div class="landing-actions">
+        <button
+          v-if="authState.user"
+          class="nav-button nav-button--primary"
+          type="button"
+          @click="openConsole"
+        >
+          Open Console
+        </button>
+        <template v-else>
+          <button class="nav-button nav-button--primary" type="button" @click="openConsole">
+            Try
+          </button>
+          <button class="nav-button" type="button" @click="openAuth('signup')">
+            Sign up
+          </button>
+          <button class="nav-button" type="button" @click="openAuth('signin')">
+            Sign in
+          </button>
+        </template>
+
+        <button
+          v-if="authState.user"
+          class="nav-button"
+          type="button"
+          @click="handleSignOut"
+        >
+          Sign out
+        </button>
+
+        <a
+          href="https://github.com/ripclass/OPS"
+          target="_blank"
+          rel="noreferrer"
+          class="nav-button nav-button--ghost"
+        >
+          GitHub
         </a>
       </div>
-    </nav>
+    </header>
 
-    <div class="main-content">
-      <section class="hero-section" :style="heroSectionStyle">
-        <div class="hero-left hero-copy-card">
-          <div class="tag-row">
-            <span class="orange-tag">Organic Population Simulation</span>
-            <span class="version-text">/ South Asia Preview</span>
-          </div>
-
-          <h1 class="main-title">
-            Start from a Scenario<br>
-            <span class="gradient-text">Forecast Public Response Across South Asia</span>
+    <main class="landing-main">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="hero-eyebrow">South Asia-grounded scenario simulation</div>
+          <h1 class="hero-title">
+            Rehearse how populations, institutions, and narratives react before the event goes live.
           </h1>
-
-          <div class="hero-desc">
-            <p>
-              <span class="highlight-bold">OPS</span> turns short briefs and supporting evidence into
-              simulated populations grounded in the political, economic, and social realities of
-              <span class="highlight-orange">Bangladesh, India, Pakistan, Nepal, and Sri Lanka</span>.
-              Model how narratives move through households, communities, and social feeds before the real
-              event unfolds.
-            </p>
-            <p class="slogan-text">
-              Stress-test public reaction before the signal reaches the street<span class="blinking-cursor">_</span>
-            </p>
-          </div>
-
-          <div class="decoration-square"></div>
-        </div>
-
-        <LandingAccessPanel
-          class="hero-auth-card"
-          :initial-mode="accessMode"
-          :redirect-path="redirectPath"
-          @authenticated="handleAuthenticated"
-        />
-
-        <button class="scroll-down-btn" @click="scrollToBottom">
-          v
-        </button>
-      </section>
-
-      <section class="dashboard-section">
-        <div class="left-panel">
-          <div class="panel-header">
-            <span class="status-dot">■</span> System Status
-          </div>
-
-          <h2 class="section-title">Ready for Scenario Design</h2>
-          <p class="section-desc">
-            OPS is ready. Upload supporting material or continue directly with a scenario brief.
+          <p class="hero-description">
+            OPS turns scenario briefs, policy drafts, news material, and field evidence into a
+            simulated public sphere across Bangladesh, India, Pakistan, Nepal, and Sri Lanka.
+            Model likely reaction pathways before the street, the feed, or the market moves.
           </p>
 
-          <div class="metrics-row">
-            <div class="metric-card">
-              <div class="metric-value">Scenario-led</div>
-              <div class="metric-label">Start from a brief, a policy note, or a field report</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value">South Asia</div>
-              <div class="metric-label">Built for Bangladesh, India, Pakistan, Nepal, and Sri Lanka</div>
-            </div>
+          <div class="hero-buttons">
+            <button class="hero-button hero-button--primary" type="button" @click="openConsole">
+              Try Live Console
+            </button>
+            <button class="hero-button" type="button" @click="openAuth('signup')">
+              Get Access
+            </button>
           </div>
 
-          <div class="steps-container">
-            <div class="steps-header">
-              <span class="diamond-icon">◇</span> Workflow Sequence
+          <div class="hero-trust">
+            <div class="trust-item">
+              <span class="trust-item__value">5-step</span>
+              <span class="trust-item__label">world simulation workflow</span>
             </div>
-            <div class="workflow-list">
-              <div class="workflow-item">
-                <span class="step-num">01</span>
-                <div class="step-info">
-                  <div class="step-title">Scenario Graph</div>
-                  <div class="step-desc">
-                    Extract actors, institutions, locations, grievances, and memory anchors from
-                    source material and scenario text.
-                  </div>
-                </div>
-              </div>
-              <div class="workflow-item">
-                <span class="step-num">02</span>
-                <div class="step-info">
-                  <div class="step-title">Population Setup</div>
-                  <div class="step-desc">
-                    Generate personas, platform behavior, and world settings for population segments
-                    across South Asia.
-                  </div>
-                </div>
-              </div>
-              <div class="workflow-item">
-                <span class="step-num">03</span>
-                <div class="step-info">
-                  <div class="step-title">Run Simulation</div>
-                  <div class="step-desc">
-                    Execute multi-agent cascades, update memories round by round, and observe opinion
-                    and rumor dynamics.
-                  </div>
-                </div>
-              </div>
-              <div class="workflow-item">
-                <span class="step-num">04</span>
-                <div class="step-info">
-                  <div class="step-title">Insight Report</div>
-                  <div class="step-desc">
-                    Compile structured findings on amplification risk, narrative spread, sentiment
-                    shifts, and intervention options.
-                  </div>
-                </div>
-              </div>
-              <div class="workflow-item">
-                <span class="step-num">05</span>
-                <div class="step-info">
-                  <div class="step-title">Live Interactions</div>
-                  <div class="step-desc">
-                    Interview simulated people or question the OPS report agent for follow-up analysis.
-                  </div>
-                </div>
-              </div>
+            <div class="trust-item">
+              <span class="trust-item__value">South Asia</span>
+              <span class="trust-item__label">country and segment priors</span>
+            </div>
+            <div class="trust-item">
+              <span class="trust-item__value">Report + Live Q&A</span>
+              <span class="trust-item__label">post-run interrogation</span>
             </div>
           </div>
         </div>
 
-        <div class="right-panel">
-          <div class="console-box">
-            <div class="console-section">
-              <div class="console-header">
-                <span class="console-label">01 / Source Material</span>
-                <span class="console-meta">Optional Uploads: PDF, MD, MARKDOWN, TXT</span>
+        <div class="hero-visual">
+          <div class="hero-visual__frame">
+            <div class="hero-visual__badge">OPS Console</div>
+            <div class="hero-visual__terminal">
+              <div class="terminal-line">
+                <span class="terminal-label">Scenario</span>
+                <span class="terminal-text">Rice prices increase 40% before Eid in Dhaka.</span>
               </div>
-
-              <div
-                class="upload-zone"
-                :class="{ 'drag-over': isDragOver, 'has-files': files.length > 0 }"
-                @dragover.prevent="handleDragOver"
-                @dragleave.prevent="handleDragLeave"
-                @drop.prevent="handleDrop"
-                @click="triggerFileInput"
-              >
-                <input
-                  ref="fileInput"
-                  type="file"
-                  multiple
-                  accept=".pdf,.md,.markdown,.txt"
-                  style="display: none"
-                  :disabled="loading"
-                  @change="handleFileSelect"
-                />
-
-                <div v-if="files.length === 0" class="upload-placeholder">
-                  <div class="upload-icon">^</div>
-                  <div class="upload-title">Drag Files to Upload (Optional)</div>
-                  <div class="upload-hint">
-                    Or click to browse. You can continue with only the scenario prompt below.
-                  </div>
+              <div class="terminal-line">
+                <span class="terminal-label">Population</span>
+                <span class="terminal-text">Urban working, middle class, migration-linked families</span>
+              </div>
+              <div class="terminal-line">
+                <span class="terminal-label">Primary Shift</span>
+                <span class="terminal-text">Economic anxiety -> anger -> rumor amplification</span>
+              </div>
+              <div class="terminal-divider"></div>
+              <div class="terminal-grid">
+                <div class="terminal-card">
+                  <div class="terminal-card__title">Graph</div>
+                  <div class="terminal-card__copy">Actors, institutions, grievances, locations</div>
                 </div>
-
-                <div v-else class="file-list">
-                  <div v-for="(file, index) in files" :key="`${file.name}-${index}`" class="file-item">
-                    <span class="file-icon">DOC</span>
-                    <span class="file-name">{{ file.name }}</span>
-                    <button class="remove-btn" @click.stop="removeFile(index)">x</button>
-                  </div>
+                <div class="terminal-card">
+                  <div class="terminal-card__title">Population</div>
+                  <div class="terminal-card__copy">Country priors, segment weighting, institutional seeds</div>
+                </div>
+                <div class="terminal-card">
+                  <div class="terminal-card__title">Simulation</div>
+                  <div class="terminal-card__copy">Multi-round cascades, memory, amplification</div>
+                </div>
+                <div class="terminal-card">
+                  <div class="terminal-card__title">Report</div>
+                  <div class="terminal-card__copy">Evidence-backed forecast and live interview layer</div>
                 </div>
               </div>
-            </div>
-
-            <div class="console-section url-section">
-              <div class="console-header">
-                <span class="console-label">&gt;_ 01B / Source URLs</span>
-                <span class="console-meta">One public URL per line</span>
-              </div>
-              <div class="input-wrapper url-input-wrapper">
-                <textarea
-                  v-model="formData.sourceUrls"
-                  class="code-input url-input"
-                  rows="4"
-                  :disabled="loading"
-                  placeholder="https://example.com/news-article&#10;https://example.com/blog-post"
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="console-divider">
-              <span>Scenario Inputs</span>
-            </div>
-
-            <div class="console-section">
-              <div class="console-header">
-                <span class="console-label">&gt;_ 02 / Scenario Brief</span>
-              </div>
-              <div class="input-wrapper">
-                <textarea
-                  v-model="formData.simulationRequirement"
-                  class="code-input"
-                  rows="6"
-                  :disabled="loading"
-                  placeholder="Describe the trigger you want to test. Example: The government announces a 40% rice price increase before Eid. How do low-income households in Dhaka respond?"
-                ></textarea>
-                <div class="model-badge">Engine: OPS / OASIS</div>
-              </div>
-            </div>
-
-            <div class="console-section btn-section">
-              <button
-                class="start-engine-btn"
-                :disabled="!canSubmit || loading"
-                @click="startSimulation"
-              >
-                <span v-if="!loading">{{ startButtonLabel }}</span>
-                <span v-else>Initializing...</span>
-                <span class="btn-arrow">-&gt;</span>
-              </button>
             </div>
           </div>
         </div>
       </section>
 
-      <HistoryDatabase />
-    </div>
+      <section id="how-it-works" class="section">
+        <div class="section-heading">
+          <div class="section-eyebrow">Predict in 5 Steps</div>
+          <h2>Built for structured simulation, not generic chatbot output.</h2>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card" v-for="step in steps" :key="step.number">
+            <div class="step-card__number">{{ step.number }}</div>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="use-cases" class="section">
+        <div class="section-heading">
+          <div class="section-eyebrow">Built for high-context work</div>
+          <h2>OPS is strongest where decisions meet public uncertainty.</h2>
+        </div>
+
+        <div class="use-case-grid">
+          <article class="use-case-card" v-for="useCase in useCases" :key="useCase.title">
+            <div class="use-case-card__label">{{ useCase.label }}</div>
+            <h3>{{ useCase.title }}</h3>
+            <p>{{ useCase.description }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="readiness" class="section section--narrow">
+        <div class="readiness-card">
+          <div class="section-eyebrow">Launch stance</div>
+          <h2>Private, paid, and high-context.</h2>
+          <p>
+            OPS is designed for teams who need scenario rehearsal, narrative stress-testing, and
+            population-specific foresight. It is not positioned as a consumer toy or a certainty engine.
+          </p>
+          <div class="readiness-actions">
+            <button class="hero-button hero-button--primary" type="button" @click="openConsole">
+              Try the Console
+            </button>
+            <button class="hero-button" type="button" @click="openAuth('signup')">
+              Request Access
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <transition name="modal-fade">
+      <div v-if="authModalOpen" class="auth-modal" @click.self="closeAuth">
+        <div class="auth-modal__dialog">
+          <button class="auth-modal__close" type="button" @click="closeAuth">
+            ×
+          </button>
+          <LandingAccessPanel
+            :initial-mode="accessMode"
+            :redirect-path="redirectPath"
+            @authenticated="handleAuthenticated"
+          />
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import HistoryDatabase from '../components/HistoryDatabase.vue'
 import LandingAccessPanel from '../components/LandingAccessPanel.vue'
-import { authState } from '../store/auth'
+import { authState, signOut } from '../store/auth'
 
 const router = useRouter()
 const route = useRoute()
 const heroImageUrl = new URL('../assets/logo/ops_logo_left.png', import.meta.url).href
 
-const formData = ref({
-  simulationRequirement: '',
-  sourceUrls: '',
-})
+const steps = [
+  {
+    number: '01',
+    title: 'Graph Construction',
+    description: 'Extract actors, institutions, locations, grievances, and memory anchors from source material.',
+  },
+  {
+    number: '02',
+    title: 'Population Setup',
+    description: 'Weight segments, generate personas, and configure institutional seed voices for the world.',
+  },
+  {
+    number: '03',
+    title: 'Start Simulation',
+    description: 'Run multi-agent cascades with memory updates, rumor spread, and temporal continuity.',
+  },
+  {
+    number: '04',
+    title: 'Report Generation',
+    description: 'Produce structured findings grounded in evidence from the simulated environment.',
+  },
+  {
+    number: '05',
+    title: 'Deep Interaction',
+    description: 'Interview simulated people or question the report agent about what moved the outcome.',
+  },
+]
 
-const files = ref([])
-const loading = ref(false)
-const isDragOver = ref(false)
-const fileInput = ref(null)
+const useCases = [
+  {
+    label: 'Policy / Government',
+    title: 'Policy reaction forecasting',
+    description: 'Stress-test public response before an announcement, price change, or institutional move.',
+  },
+  {
+    label: 'Enterprise / Crisis',
+    title: 'Narrative and crisis rehearsal',
+    description: 'Model how a controversy, product shock, or reputational event moves through media and communities.',
+  },
+  {
+    label: 'Research / Strategy',
+    title: 'Population response analysis',
+    description: 'Compare how segments react differently across class, geography, and institutional trust.',
+  },
+]
 
-const canSubmit = computed(() => formData.value.simulationRequirement.trim() !== '')
-const startButtonLabel = computed(() => (
-  authState.user ? 'Continue to Population Setup' : 'Sign in to Continue'
-))
+const authModalOpen = computed(() => Boolean(route.query.auth))
 const accessMode = computed(() => (route.query.auth === 'signup' ? 'signup' : 'signin'))
 const redirectPath = computed(() => (
   typeof route.query.redirect === 'string' && route.query.redirect
     ? route.query.redirect
-    : '/'
+    : '/process/new'
 ))
-const heroSectionStyle = computed(() => ({
-  '--hero-image': `url("${heroImageUrl}")`,
-}))
 
-const triggerFileInput = () => {
-  if (!loading.value) {
-    fileInput.value?.click()
-  }
-}
-
-const normalizeSourceUrls = (rawValue) => {
-  return String(rawValue || '')
-    .split(/\r?\n/)
-    .map((value) => value.trim())
-    .filter(Boolean)
-}
-
-const addFiles = (newFiles) => {
-  const validFiles = newFiles.filter((file) => {
-    const ext = file.name.split('.').pop()?.toLowerCase()
-    return ['pdf', 'md', 'markdown', 'txt'].includes(ext)
+const mergeQuery = (patch = {}) => {
+  const next = { ...route.query, ...patch }
+  Object.keys(next).forEach(key => {
+    if (next[key] === undefined || next[key] === null || next[key] === '') {
+      delete next[key]
+    }
   })
-  files.value.push(...validFiles)
+  return next
 }
 
-const handleFileSelect = (event) => {
-  addFiles(Array.from(event.target.files || []))
-}
-
-const handleDragOver = () => {
-  if (!loading.value) {
-    isDragOver.value = true
-  }
-}
-
-const handleDragLeave = () => {
-  isDragOver.value = false
-}
-
-const handleDrop = (event) => {
-  isDragOver.value = false
-  if (loading.value) {
-    return
-  }
-  addFiles(Array.from(event.dataTransfer.files || []))
-}
-
-const removeFile = (index) => {
-  files.value.splice(index, 1)
-}
-
-const scrollToBottom = () => {
-  window.scrollTo({
-    top: document.body.scrollHeight,
-    behavior: 'smooth',
+const openAuth = (mode) => {
+  router.replace({
+    name: 'Home',
+    query: mergeQuery({
+      auth: mode,
+      redirect: route.query.redirect || '/process/new',
+    }),
   })
 }
 
-const startSimulation = () => {
-  if (!canSubmit.value || loading.value) {
+const closeAuth = () => {
+  router.replace({
+    name: 'Home',
+    query: mergeQuery({
+      auth: undefined,
+      redirect: undefined,
+    }),
+  })
+}
+
+const openConsole = () => {
+  if (authState.user) {
+    router.push({ name: 'Process', params: { projectId: 'new' } })
     return
   }
 
-  if (!authState.user) {
-    router.replace({
-      name: 'Home',
-      query: {
-        ...route.query,
-        auth: 'signin',
-        redirect: '/process/new',
-      },
-    })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    return
-  }
-
-  import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
-    setPendingUpload(
-      files.value,
-      formData.value.simulationRequirement,
-      undefined,
-      normalizeSourceUrls(formData.value.sourceUrls)
-    )
-    router.push({
-      name: 'Process',
-      params: { projectId: 'new' },
-    })
+  router.replace({
+    name: 'Home',
+    query: mergeQuery({
+      auth: 'signin',
+      redirect: '/process/new',
+    }),
   })
 }
 
 const handleAuthenticated = () => {
-  if (route.query.auth || route.query.redirect) {
-    router.replace({ name: 'Home' })
+  const redirect = redirectPath.value
+  closeAuth()
+  if (redirect && redirect !== '/') {
+    router.push(redirect)
   }
+}
+
+const handleSignOut = async () => {
+  await signOut()
 }
 </script>
 
 <style scoped>
-:root {
-  --black: #000000;
-  --white: #ffffff;
-  --orange: #ff4500;
-  --gray-text: #666666;
-  --border: #e5e5e5;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
-}
-
-.home-container {
+.landing-page {
   min-height: 100vh;
-  background: var(--white);
-  font-family: var(--font-sans);
-  color: var(--black);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(201, 75, 34, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(77, 124, 255, 0.12), transparent 26%),
+    #050608;
+  color: #f7f7f3;
 }
 
-.navbar {
-  height: 60px;
-  background: var(--white);
-  color: var(--black);
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 40px;
-  border-bottom: 1px solid var(--border);
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 40px;
+  backdrop-filter: blur(18px);
+  background: rgba(5, 6, 8, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.nav-brand {
-  font-family: var(--font-mono);
-  font-weight: 800;
-  letter-spacing: 1px;
-  font-size: 1.2rem;
+.landing-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.github-link {
-  color: var(--black);
+.landing-brand__logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.landing-brand__text {
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.landing-links {
+  display: inline-flex;
+  gap: 28px;
+}
+
+.landing-links a {
+  color: rgba(247, 247, 243, 0.7);
   text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 14px;
+}
+
+.landing-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-button,
+.hero-button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  color: #f7f7f3;
+  padding: 12px 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.nav-button:hover,
+.hero-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.nav-button--primary,
+.hero-button--primary {
+  background: #f7f7f3;
+  color: #050608;
+  border-color: #f7f7f3;
+}
+
+.nav-button--ghost {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.landing-main {
+  padding: 0 40px 120px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 42px;
+  align-items: center;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 78px 0 64px;
+}
+
+.hero-copy {
+  max-width: 760px;
+}
+
+.hero-eyebrow,
+.section-eyebrow {
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f0a37d;
+}
+
+.hero-title {
+  margin: 18px 0 22px;
+  font-size: clamp(48px, 8vw, 88px);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  max-width: 820px;
+}
+
+.hero-description {
+  max-width: 640px;
+  font-size: 18px;
+  line-height: 1.8;
+  color: rgba(247, 247, 243, 0.76);
+}
+
+.hero-buttons {
   display: flex;
+  gap: 14px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.hero-trust {
+  display: flex;
+  gap: 18px;
+  margin-top: 34px;
+  flex-wrap: wrap;
+}
+
+.trust-item {
+  min-width: 180px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.trust-item__value {
+  display: block;
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f7f7f3;
+}
+
+.trust-item__label {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(247, 247, 243, 0.64);
+  line-height: 1.5;
+}
+
+.hero-visual__frame {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.32);
+  padding: 22px;
+}
+
+.hero-visual__badge {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: opacity 0.2s;
+  margin-bottom: 16px;
+  padding: 6px 10px;
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(247, 247, 243, 0.78);
 }
 
-.github-link:hover {
-  opacity: 0.75;
+.hero-visual__terminal {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 6, 8, 0.72);
+  padding: 18px;
 }
 
-.main-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 60px 40px;
-}
-
-.hero-section {
+.terminal-line {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 28px;
-  margin-bottom: 80px;
-  position: relative;
-  min-height: 620px;
-  padding: 48px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  background-image: var(--hero-image);
-  background-position: right center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-color: #ffffff;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.hero-left {
-  flex: 0 1 720px;
+.terminal-label {
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(247, 247, 243, 0.48);
 }
 
-.hero-auth-card {
-  flex: 0 0 390px;
-  align-self: center;
+.terminal-text {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(247, 247, 243, 0.84);
 }
 
-.hero-copy-card {
-  position: relative;
-  z-index: 1;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08);
-  padding: 42px 44px;
+.terminal-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 18px 0;
+}
+
+.terminal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.terminal-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+}
+
+.terminal-card__title {
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f7f7f3;
+}
+
+.terminal-card__copy {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(247, 247, 243, 0.66);
+}
+
+.section {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 72px 0 0;
+}
+
+.section--narrow {
+  max-width: 1080px;
+}
+
+.section-heading {
   max-width: 720px;
 }
 
-.tag-row {
+.section-heading h2 {
+  margin: 14px 0 0;
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.steps-grid,
+.use-case-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.step-card,
+.use-case-card,
+.readiness-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+}
+
+.step-card__number,
+.use-case-card__label {
+  font-family: var(--ops-font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f0a37d;
+}
+
+.step-card h3,
+.use-case-card h3,
+.readiness-card h2 {
+  margin: 16px 0 10px;
+  font-size: 24px;
+}
+
+.step-card p,
+.use-case-card p,
+.readiness-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(247, 247, 243, 0.68);
+}
+
+.readiness-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(5, 6, 8, 0.74);
+  backdrop-filter: blur(16px);
 }
 
-.orange-tag {
-  background: var(--orange);
-  color: var(--white);
-  padding: 4px 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: 0.75rem;
+.auth-modal__dialog {
+  position: relative;
+  width: min(100%, 430px);
 }
 
-.version-text {
-  color: #666;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.main-title {
-  font-size: 4.5rem;
-  line-height: 1.2;
-  font-weight: 500;
-  margin: 0 0 32px;
-  letter-spacing: -2px;
-  color: var(--black);
-}
-
-.gradient-text {
-  color: var(--black);
-  display: inline-block;
-}
-
-.hero-desc {
-  font-size: 1.05rem;
-  line-height: 1.8;
-  color: #303030;
-  max-width: 620px;
-  margin-bottom: 34px;
-  font-weight: 400;
-  text-align: left;
-}
-
-.hero-desc p {
-  margin-bottom: 1.5rem;
-}
-
-.highlight-bold {
-  color: var(--black);
-  font-weight: 700;
-}
-
-.highlight-orange {
-  color: var(--orange);
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-
-.slogan-text {
-  font-size: 1.2rem;
-  font-weight: 520;
-  color: var(--black);
-  letter-spacing: 1px;
-  border-left: 3px solid var(--orange);
-  padding-left: 15px;
-  margin-top: 20px;
-}
-
-.blinking-cursor {
-  color: var(--orange);
-  animation: blink 1s step-end infinite;
-  font-weight: 700;
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-.decoration-square {
-  width: 16px;
-  height: 16px;
-  background: var(--orange);
-}
-
-.scroll-down-btn {
+.auth-modal__close {
   position: absolute;
-  right: 32px;
-  bottom: 32px;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--black);
-  font-size: 1.1rem;
-  transition: all 0.2s;
-  z-index: 1;
-}
-
-.scroll-down-btn:hover {
-  border-color: var(--orange);
-  color: var(--orange);
-}
-
-.dashboard-section {
-  display: flex;
-  gap: 60px;
-  border-top: 1px solid var(--border);
-  padding-top: 60px;
-  align-items: flex-start;
-}
-
-.dashboard-section .left-panel,
-.dashboard-section .right-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.left-panel {
-  flex: 0.8;
-}
-
-.panel-header {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: #999;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.status-dot {
-  color: var(--orange);
-  font-size: 0.8rem;
-}
-
-.section-title {
-  font-size: 2rem;
-  font-weight: 520;
-  margin: 0 0 15px;
-}
-
-.section-desc {
-  color: var(--gray-text);
-  margin-bottom: 25px;
-  line-height: 1.6;
-}
-
-.metrics-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
-}
-
-.metric-card {
-  border: 1px solid var(--border);
-  padding: 20px 30px;
-  min-width: 150px;
-}
-
-.metric-value {
-  font-family: var(--font-mono);
-  font-size: 1.8rem;
-  font-weight: 520;
-  margin-bottom: 5px;
-}
-
-.metric-label {
-  font-size: 0.85rem;
-  color: #999;
-}
-
-.steps-container {
-  border: 1px solid var(--border);
-  padding: 30px;
-  position: relative;
-}
-
-.steps-header {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: #999;
-  margin-bottom: 25px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.diamond-icon {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.workflow-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.workflow-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.step-num {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--black);
-  opacity: 0.3;
-}
-
-.step-info {
-  flex: 1;
-}
-
-.step-title {
-  font-weight: 520;
-  font-size: 1rem;
-  margin-bottom: 4px;
-}
-
-.step-desc {
-  font-size: 0.85rem;
-  color: var(--gray-text);
-}
-
-.right-panel {
-  flex: 1.2;
-}
-
-.console-box {
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-
-.console-section {
-  padding: 20px;
-}
-
-.console-section.btn-section {
-  padding-top: 0;
-}
-
-.url-section {
-  padding-top: 0;
-}
-
-.console-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: #666;
-}
-
-.upload-zone {
-  border: 1px dashed #ccc;
-  min-height: 200px;
-  overflow-y: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: #fafafa;
-}
-
-.upload-zone.has-files {
-  align-items: flex-start;
-}
-
-.upload-zone.drag-over,
-.upload-zone:hover {
-  background: #f0f0f0;
-  border-color: #999;
-}
-
-.upload-placeholder {
-  text-align: center;
-}
-
-.upload-icon {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-  color: #999;
-}
-
-.upload-title {
-  font-weight: 500;
-  font-size: 0.9rem;
-  margin-bottom: 5px;
-}
-
-.upload-hint {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: #999;
-}
-
-.file-list {
-  width: 100%;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.file-item {
-  display: flex;
-  align-items: center;
-  background: var(--white);
-  padding: 8px 12px;
-  border: 1px solid #eee;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  gap: 10px;
-}
-
-.file-icon {
-  font-size: 0.72rem;
-  color: #999;
-}
-
-.file-name {
-  flex: 1;
-}
-
-.remove-btn {
-  background: none;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
   border: none;
+  background: rgba(17, 24, 39, 0.08);
+  color: #111827;
+  font-size: 24px;
   cursor: pointer;
-  font-size: 1rem;
-  color: #999;
 }
 
-.console-divider {
-  display: flex;
-  align-items: center;
-  margin: 10px 0;
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.18s ease;
 }
 
-.console-divider::before,
-.console-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #eee;
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
 }
 
-.console-divider span {
-  padding: 0 15px;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: #bbb;
-  letter-spacing: 1px;
-}
-
-.input-wrapper {
-  position: relative;
-  border: 1px solid #ddd;
-  background: #fafafa;
-}
-
-.url-input-wrapper {
-  min-height: 132px;
-}
-
-.code-input {
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 20px;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  resize: vertical;
-  outline: none;
-  min-height: 150px;
-}
-
-.url-input {
-  min-height: 120px;
-}
-
-.model-badge {
-  position: absolute;
-  bottom: 10px;
-  right: 15px;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: #aaa;
-}
-
-.start-engine-btn {
-  width: 100%;
-  background: var(--black);
-  color: var(--white);
-  border: none;
-  padding: 20px;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1.1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  letter-spacing: 1px;
-  position: relative;
-  overflow: hidden;
-}
-
-.start-engine-btn:not(:disabled) {
-  background: var(--black);
-  border: 1px solid var(--black);
-  animation: pulse-border 2s infinite;
-}
-
-.start-engine-btn:hover:not(:disabled) {
-  background: var(--orange);
-  border-color: var(--orange);
-  transform: translateY(-2px);
-}
-
-.start-engine-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.start-engine-btn:disabled {
-  background: #e5e5e5;
-  color: #999;
-  cursor: not-allowed;
-  transform: none;
-  border: 1px solid #e5e5e5;
-}
-
-@keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-  }
-}
-
-@media (max-width: 1024px) {
-  .dashboard-section {
-    flex-direction: column;
+@media (max-width: 1100px) {
+  .landing-nav,
+  .landing-main {
+    padding-left: 24px;
+    padding-right: 24px;
   }
 
-  .hero-section {
-    min-height: 520px;
-    padding: 28px;
-    background-size: 78%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .hero-left {
-    max-width: none;
-  }
-
-  .hero-auth-card {
-    width: 100%;
-    max-width: none;
-    align-self: stretch;
-  }
-
-  .hero-copy-card {
-    padding: 28px 24px;
-  }
-
-  .main-title {
-    font-size: 3rem;
-    letter-spacing: -1px;
-  }
-
-  .scroll-down-btn {
-    right: 20px;
-    bottom: 20px;
-  }
-}
-
-@media (max-width: 640px) {
-  .main-content {
-    padding: 32px 18px;
-  }
-
-  .navbar {
-    padding: 0 18px;
-  }
-
-  .hero-section {
-    min-height: 460px;
-    padding: 18px;
-    background-position: center top;
-    background-size: 120%;
-  }
-
-  .hero-auth-card {
-    width: 100%;
-  }
-
-  .hero-copy-card {
-    padding: 22px 18px;
-  }
-
-  .tag-row {
+  .landing-nav {
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 18px;
   }
 
-  .main-title {
-    font-size: 2.2rem;
-    margin-bottom: 20px;
+  .hero {
+    grid-template-columns: 1fr;
   }
 
-  .hero-desc {
-    font-size: 0.95rem;
-    line-height: 1.65;
-    margin-bottom: 22px;
+  .steps-grid,
+  .use-case-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .landing-nav {
+    align-items: flex-start;
+  }
+
+  .landing-links {
+    display: none;
+  }
+
+  .landing-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .hero {
+    padding-top: 48px;
+  }
+
+  .hero-title {
+    font-size: 44px;
+  }
+
+  .steps-grid,
+  .use-case-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
