@@ -14,7 +14,7 @@
     </div>
 
     <figure class="intro-illustration" aria-label="Murmur editorial illustration">
-      <figcaption class="intro-illustration__note">what people say /&#10;what they hide</figcaption>
+      <figcaption class="intro-illustration__note">WHAT&#10;PEOPLE&#10;SAY /&#10;WHAT&#10;THEY&#10;HIDE</figcaption>
       <img src="/landing/murmur-intro-illustration-cutout.png" alt="" />
     </figure>
 
@@ -157,14 +157,14 @@ const decoratedDetail = computed(() => decorate(
 .intro-illustration__note {
   position: absolute;
   z-index: 1;
-  left: -14px;
-  top: 54px;
-  width: 320px;
+  left: 6px;
+  top: 12px;
+  width: 286px;
   margin: 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
-  font-size: 34px;
-  line-height: 0.78;
+  font-size: 96px;
+  line-height: 0.72;
   text-align: left;
   white-space: pre-line;
   transform: rotate(-2deg);
@@ -250,10 +250,11 @@ const decoratedDetail = computed(() => decorate(
   }
 
   .intro-illustration__note {
-    left: -4px;
-    top: 32px;
-    width: 220px;
-    font-size: 24px;
+    left: 0;
+    top: 18px;
+    width: 210px;
+    font-size: 54px;
+    line-height: 0.74;
   }
 
 }
