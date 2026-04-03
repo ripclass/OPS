@@ -213,10 +213,9 @@ const knowledgeEntries = computed(() => props.items.map((text, index) => ({
   max-width: 820px;
   margin: 38px 0 0;
   color: #050505;
-  font-family: var(--murmur-font-display);
-  font-size: clamp(28px, 3.6vw, 44px);
-  font-weight: 700;
-  line-height: 1.08;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 22px;
+  line-height: 1.3;
 }
 
 :deep(.knowledge-underline),
