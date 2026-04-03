@@ -57,7 +57,7 @@ const { targetRef, isVisible } = useRevealOnScroll()
 
 .intro-kicker {
   margin-bottom: 18px;
-  color: #0048ff;
+  color: #050505;
   font-family: var(--murmur-font-ui);
   font-size: 18px;
   font-weight: 400;
@@ -90,15 +90,16 @@ const { targetRef, isVisible } = useRevealOnScroll()
 .intro-detail {
   margin: 0;
   color: #050505;
-  font-family: var(--murmur-font-ui);
 }
 
 .intro-summary {
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
   font-size: 24px;
   line-height: 1.28;
 }
 
 .intro-detail {
+  font-family: var(--murmur-font-ui);
   margin-top: 20px;
   font-size: 17px;
   line-height: 1.5;
@@ -106,12 +107,13 @@ const { targetRef, isVisible } = useRevealOnScroll()
 
 .intro-note {
   margin-top: 28px;
-  color: #0048ff;
-  font-family: var(--murmur-font-hand);
-  font-size: 24px;
-  line-height: 0.82;
+  color: #050505;
+  font-family: var(--murmur-font-display);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
   text-align: right;
-  transform: rotate(-2deg);
 }
 
 @media (max-width: 900px) {
