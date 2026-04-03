@@ -13,7 +13,6 @@
       </div>
     </div>
 
-    <div class="intro-note">THIS IS WHAT MURMUR IS.</div>
   </section>
 </template>
 
@@ -136,15 +135,6 @@ const decoratedDetail = computed(() => decorate(
   line-height: 1.5;
 }
 
-.intro-note {
-  margin-top: 28px;
-  color: #050505;
-  font-family: var(--murmur-font-hand);
-  font-size: 32px;
-  line-height: 0.82;
-  text-align: right;
-}
-
 :deep(.intro-underline),
 :deep(.intro-circle) {
   position: relative;
@@ -219,8 +209,5 @@ const decoratedDetail = computed(() => decorate(
     font-size: 16px;
   }
 
-  .intro-note {
-    text-align: left;
-  }
 }
 </style>
