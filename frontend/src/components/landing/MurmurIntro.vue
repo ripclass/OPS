@@ -143,6 +143,7 @@ const decoratedDetail = computed(() => decorate(
 .intro-illustration {
   position: relative;
   margin: 32px auto 0;
+  padding-top: 56px;
   width: min(100%, 620px);
 }
 
@@ -246,6 +247,7 @@ const decoratedDetail = computed(() => decorate(
 
   .intro-illustration {
     margin-top: 26px;
+    padding-top: 34px;
     width: min(100%, 520px);
   }
 
