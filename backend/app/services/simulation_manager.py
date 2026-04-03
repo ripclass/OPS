@@ -6,6 +6,7 @@ Uses preset scripts plus LLM-generated configuration parameters.
 
 import os
 import json
+import re
 import shutil
 import asyncio
 from typing import Dict, Any, List, Optional
@@ -235,6 +236,61 @@ class SimulationManager:
         generator.save_profiles_snapshot(profiles, self._get_profiles_snapshot_path(simulation_id))
         return len(profiles)
     
+    @staticmethod
+    def _parse_ops_wizard_metadata(simulation_requirement: str) -> Optional[Dict[str, Any]]:
+        """Parse the [OPS Wizard Metadata] block from the simulation requirement text.
+
+        Returns a raw params dict suitable for ``normalize_ops_population_params``,
+        or ``None`` if no metadata block is found.
+        """
+        if not simulation_requirement or "[OPS Wizard Metadata]" not in simulation_requirement:
+            return None
+
+        pattern = re.compile(
+            r"\[OPS Wizard Metadata\](.*?)\[/OPS Wizard Metadata\]",
+            re.DOTALL | re.IGNORECASE,
+        )
+        match = pattern.search(simulation_requirement)
+        if not match:
+            return None
+
+        metadata: Dict[str, str] = {}
+        for raw_line in match.group(1).splitlines():
+            line = raw_line.strip()
+            if not line or ":" not in line:
+                continue
+            separator = line.index(":")
+            key = line[:separator].strip().lower().replace(" ", "_")
+            value = line[separator + 1:].strip()
+            metadata[key] = value
+
+        if not metadata:
+            return None
+
+        segments_raw = metadata.get("segments", "")
+        segments = [s.strip() for s in segments_raw.split(",") if s.strip()]
+
+        origin_countries_raw = metadata.get("origin_countries", "")
+        origin_countries = [c.strip() for c in origin_countries_raw.split(",") if c.strip()]
+
+        params: Dict[str, Any] = {
+            "run_type": metadata.get("run_type", metadata.get("use_case", "Domestic")),
+            "origin_country": metadata.get("origin_country", metadata.get("country", "Bangladesh")),
+            "origin_countries": origin_countries,
+            "audience_region": metadata.get("audience_region", ""),
+            "corridor": metadata.get("corridor", ""),
+            "segments": segments,
+            "n_agents": metadata.get("target_agents", "100"),
+            "requested_outputs": [
+                o.strip()
+                for o in metadata.get("requested_outputs", "").split(",")
+                if o.strip()
+            ],
+            "region": metadata.get("region", "mixed"),
+        }
+
+        return params
+
     def _save_simulation_state(self, state: SimulationState):
         """Save the simulation state to disk."""
         sim_dir = self._get_simulation_dir(state.simulation_id)
@@ -381,6 +437,17 @@ class SimulationManager:
             )
 
             ops_population_params = normalize_ops_population_params(state.ops_population_params)
+
+            # Fallback: parse OPS wizard metadata from the simulation requirement text
+            if not ops_population_params:
+                parsed_from_text = self._parse_ops_wizard_metadata(simulation_requirement)
+                if parsed_from_text:
+                    ops_population_params = normalize_ops_population_params(parsed_from_text)
+                    if ops_population_params:
+                        logger.info(
+                            "Extracted OPS population params from [OPS Wizard Metadata] block in simulation requirement"
+                        )
+
             if ops_population_params:
                 state.ops_population_params = ops_population_params
                 state.entities_count = ops_population_params["n_agents"]
@@ -388,16 +455,16 @@ class SimulationManager:
             else:
                 state.entities_count = filtered.filtered_count
                 state.entity_types = list(filtered.entity_types)
-            
+
             if progress_callback:
                 progress_callback(
-                    "reading", 100, 
+                    "reading", 100,
                     f"Done, found {filtered.filtered_count} graph entities",
                     current=filtered.filtered_count,
                     total=filtered.filtered_count
                 )
-            
-            if filtered.filtered_count == 0:
+
+            if filtered.filtered_count == 0 and not ops_population_params:
                 state.status = SimulationStatus.FAILED
                 state.error = "No matching entities were found. Please check whether the graph was built correctly."
                 self._save_simulation_state(state)

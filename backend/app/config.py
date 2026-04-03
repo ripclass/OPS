@@ -37,6 +37,19 @@ class Config:
     LLM_API_KEY = os.environ.get('LLM_API_KEY', 'ollama')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'http://localhost:11434/v1')
     LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'qwen2.5:7b')
+
+    # Three-tier LLM model routing (falls back to LLM_MODEL_NAME if not set)
+    # Persona generation — needs creativity and cultural depth
+    LLM_PERSONA_MODEL = os.environ.get('LLM_PERSONA_MODEL', LLM_MODEL_NAME)
+    # Simulation runtime — needs speed, runs per-agent per-round
+    LLM_SIMULATION_MODEL = os.environ.get('LLM_SIMULATION_MODEL', LLM_MODEL_NAME)
+    # Report generation — needs analytical depth
+    LLM_REPORT_MODEL = os.environ.get('LLM_REPORT_MODEL', LLM_MODEL_NAME)
+
+    # Boost LLM (heavier tasks — config generation, complex analysis)
+    LLM_BOOST_API_KEY = os.environ.get('LLM_BOOST_API_KEY', LLM_API_KEY)
+    LLM_BOOST_BASE_URL = os.environ.get('LLM_BOOST_BASE_URL', LLM_BASE_URL)
+    LLM_BOOST_MODEL_NAME = os.environ.get('LLM_BOOST_MODEL_NAME', LLM_MODEL_NAME)
     
     # Zep configuration
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
@@ -49,7 +62,12 @@ class Config:
     
     # File upload configuration
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '../uploads')
+    UPLOAD_FOLDER = os.path.abspath(
+        os.environ.get(
+            'UPLOAD_FOLDER',
+            os.path.join(os.path.dirname(__file__), '../uploads'),
+        )
+    )
     ALLOWED_EXTENSIONS = {'pdf', 'md', 'txt', 'markdown'}
     
     # Text processing configuration
@@ -58,7 +76,12 @@ class Config:
     
     # OASIS simulation configuration
     OASIS_DEFAULT_MAX_ROUNDS = int(os.environ.get('OASIS_DEFAULT_MAX_ROUNDS', '10'))
-    OASIS_SIMULATION_DATA_DIR = os.path.join(os.path.dirname(__file__), '../uploads/simulations')
+    OASIS_SIMULATION_DATA_DIR = os.path.abspath(
+        os.environ.get(
+            'OASIS_SIMULATION_DATA_DIR',
+            os.path.join(UPLOAD_FOLDER, 'simulations'),
+        )
+    )
     
     # OASIS platform action configuration
     OASIS_TWITTER_ACTIONS = [

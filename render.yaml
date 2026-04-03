@@ -8,12 +8,16 @@ services:
     healthCheckPath: /health
     disk:
       name: ops-uploads
-      mountPath: /opt/render/project/src/uploads
+      mountPath: /opt/render/project/src/backend/uploads
       sizeGB: 10
     envVars:
       - key: FLASK_DEBUG
         value: "False"
+      - key: UPLOAD_FOLDER
+        value: /opt/render/project/src/backend/uploads
       - key: FRONTEND_ORIGIN
+        sync: false
+      - key: FRONTEND_ORIGINS
         sync: false
       - key: SECRET_KEY
         sync: false
