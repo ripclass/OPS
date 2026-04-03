@@ -11,9 +11,14 @@
       </div>
     </div>
 
-    <div class="audience-cases">
+    <div class="audience-figure-block">
+      <figure class="audience-figure" aria-label="Who it's for illustration">
+        <img src="/landing/WhoIsItFor.png" alt="" />
+      </figure>
       <div class="audience-note">high-consequence decisions</div>
+    </div>
 
+    <div class="audience-cases">
       <article
         v-for="(line, index) in lines"
         :key="line"
@@ -118,6 +123,24 @@ const decoratedOutro = computed(() => decorate(
   padding-top: 10px;
 }
 
+.audience-figure-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: end;
+  margin-top: 46px;
+}
+
+.audience-figure {
+  margin: 0;
+}
+
+.audience-figure img {
+  display: block;
+  width: min(100%, 720px);
+  height: auto;
+}
+
 .audience-intro__lead,
 .audience-intro__detail {
   margin: 0;
@@ -139,19 +162,20 @@ const decoratedOutro = computed(() => decorate(
 
 .audience-cases {
   position: relative;
-  margin-top: 40px;
+  margin-top: 30px;
   padding-top: 24px;
   border-top: 1px solid rgba(5, 5, 5, 0.12);
 }
 
 .audience-note {
-  margin: 0 0 18px;
+  margin: 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
-  font-size: 24px;
+  font-size: 28px;
   line-height: 0.82;
   transform: rotate(-2deg);
   text-align: right;
+  white-space: nowrap;
 }
 
 .audience-case {
@@ -249,6 +273,11 @@ const decoratedOutro = computed(() => decorate(
   .audience-top {
     grid-template-columns: 1fr;
     gap: 22px;
+  }
+
+  .audience-figure-block {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .audience-intro {
