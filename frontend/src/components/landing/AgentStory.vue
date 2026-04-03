@@ -233,7 +233,7 @@ const inkTitleLines = computed(() => {
 .hero-story__copy {
   position: absolute;
   left: 595px;
-  bottom: 262px;
+  bottom: 182px;
   width: 263px;
   color: #000;
 }
