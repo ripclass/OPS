@@ -34,23 +34,27 @@ export const AGENT_STORIES = {
       {
         text: 'MURMUR KNOWS\nHALIMA',
         className: 'scribble--top-left scribble--xl',
+        target: 'shell',
       },
       {
-        text: 'NO POST.\nNO PROTEST.',
-        className: 'scribble--left-mid scribble--md',
-      },
-      {
-        text: 'TRANSFER DUE\n15TH',
-        className: 'scribble--top-right scribble--sm',
+        text: 'NO POST /\nNO PROTEST',
+        className: 'scribble--copy-top scribble--md',
+        target: 'copy',
       },
       {
         text: 'CASCADE\nNO ONE\nMEASURES',
-        className: 'scribble--below-copy scribble--lg scribble--accent',
+        className: 'scribble--in-image scribble--lg scribble--accent',
+        target: 'media',
       },
       {
         text: 'REMITTANCE /\nSKIPPED MEAL /\nSILENCE',
-        className: 'scribble--bottom-left scribble--xs',
+        className: 'scribble--below-image scribble--xs',
+        target: 'belowMedia',
       },
+    ],
+    bodyParagraphs: [
+      'Her husband went to Saudi Arabia three years ago. He sends 25,000 taka a month through bKash. She has two daughters in school and a mother-in-law with diabetes. She shares nothing on Facebook.',
+      "When the rice price hits, she won't post. She won't protest. She'll cut her own meals to one a day and tell no one. She is the cascade no one measures. We built a system that knows Halima exists.",
     ],
     bodyLines: [
       'Her husband went to Saudi Arabia three years ago.',
