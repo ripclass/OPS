@@ -21,7 +21,7 @@ import { authState, signOut } from './store/auth'
 const route = useRoute()
 const router = useRouter()
 
-const showSessionBar = computed(() => !['Login', 'Home'].includes(String(route.name)) && Boolean(authState.user))
+const showSessionBar = computed(() => !['Login', 'Home', 'ConsoleStart'].includes(String(route.name)) && Boolean(authState.user))
 
 const handleSignOut = async () => {
   await signOut()

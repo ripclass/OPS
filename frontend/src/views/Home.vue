@@ -259,7 +259,7 @@ const accessMode = computed(() => (route.query.auth === 'signup' ? 'signup' : 's
 const redirectPath = computed(() => (
   typeof route.query.redirect === 'string' && route.query.redirect
     ? route.query.redirect
-    : '/process/new'
+    : '/console'
 ))
 
 const mergeQuery = (patch = {}) => {
@@ -277,7 +277,7 @@ const openAuth = (mode) => {
     name: 'Home',
     query: mergeQuery({
       auth: mode,
-      redirect: route.query.redirect || '/process/new',
+      redirect: route.query.redirect || '/console',
     }),
   })
 }
@@ -294,7 +294,7 @@ const closeAuth = () => {
 
 const openConsole = () => {
   if (authState.user) {
-    router.push({ name: 'Process', params: { projectId: 'new' } })
+    router.push({ name: 'ConsoleStart' })
     return
   }
 
@@ -302,7 +302,7 @@ const openConsole = () => {
     name: 'Home',
     query: mergeQuery({
       auth: 'signin',
-      redirect: '/process/new',
+      redirect: '/console',
     }),
   })
 }

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authState, initAuth } from '../store/auth'
 import Home from '../views/Home.vue'
+import ConsoleStartView from '../views/ConsoleStartView.vue'
 import Process from '../views/MainView.vue'
 import SimulationView from '../views/SimulationView.vue'
 import SimulationRunView from '../views/SimulationRunView.vue'
@@ -23,6 +24,11 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/console',
+    name: 'ConsoleStart',
+    component: ConsoleStartView
   },
   {
     path: '/process/:projectId',
