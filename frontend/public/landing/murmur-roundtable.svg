@@ -1,0 +1,113 @@
+<svg width="640" height="240" viewBox="0 0 640 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="roughPrint" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="softGrain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="1" seed="3" result="grain"/>
+      <feColorMatrix in="grain" type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.16"/>
+      </feComponentTransfer>
+    </filter>
+    <style>
+      .ink { stroke: #000; stroke-linecap: round; stroke-linejoin: round; }
+      .ink-fill { fill: #000; }
+      .thin { stroke-width: 4; }
+      .mid { stroke-width: 6; }
+      .heavy { stroke-width: 9; }
+    </style>
+  </defs>
+
+  <g opacity="0.18" filter="url(#softGrain)">
+    <rect x="40" y="48" width="560" height="132" fill="#000"/>
+  </g>
+
+  <g filter="url(#roughPrint)">
+    <g opacity="0.95">
+      <path class="ink heavy" d="M62 175H118" />
+      <path class="ink heavy" d="M175 175H236" />
+      <path class="ink heavy" d="M288 175H351" />
+      <path class="ink heavy" d="M430 175H488" />
+
+      <path class="ink mid" d="M68 118V175" />
+      <path class="ink mid" d="M111 118V175" />
+      <path class="ink mid" d="M180 118V175" />
+      <path class="ink mid" d="M229 118V175" />
+      <path class="ink mid" d="M292 118V175" />
+      <path class="ink mid" d="M344 118V175" />
+      <path class="ink mid" d="M436 118V175" />
+      <path class="ink mid" d="M482 118V175" />
+
+      <path class="ink mid" d="M64 117H115" />
+      <path class="ink mid" d="M177 117H232" />
+      <path class="ink mid" d="M290 117H346" />
+      <path class="ink mid" d="M432 117H487" />
+
+      <path class="ink heavy" d="M120 122H408" />
+      <path class="ink mid" d="M123 136H404" />
+
+      <circle cx="76" cy="88" r="13" class="ink-fill" />
+      <path class="ink heavy" d="M79 101L84 132" />
+      <path class="ink mid" d="M84 132L100 153" />
+      <path class="ink mid" d="M80 111L63 127" />
+      <path class="ink mid" d="M65 127L53 150" />
+
+      <circle cx="152" cy="82" r="14" class="ink-fill" />
+      <path class="ink heavy" d="M151 96L169 132" />
+      <path class="ink heavy" d="M169 132L193 152" />
+      <path class="ink mid" d="M157 102L143 121" />
+      <path class="ink mid" d="M141 122L127 146" />
+
+      <circle cx="270" cy="82" r="13" class="ink-fill" />
+      <path class="ink heavy" d="M269 95L281 129" />
+      <path class="ink mid" d="M281 129L300 150" />
+      <path class="ink mid" d="M274 101L259 122" />
+      <path class="ink mid" d="M258 122L244 147" />
+
+      <circle cx="386" cy="83" r="14" class="ink-fill" />
+      <path class="ink heavy" d="M387 97L392 131" />
+      <path class="ink mid" d="M392 131L408 153" />
+      <path class="ink mid" d="M384 103L369 124" />
+      <path class="ink mid" d="M369 124L355 149" />
+
+      <circle cx="463" cy="113" r="13" class="ink-fill" />
+      <path class="ink heavy" d="M463 127L474 149" />
+      <path class="ink mid" d="M474 149L487 165" />
+      <path class="ink mid" d="M455 124L441 136" />
+      <path class="ink mid" d="M441 136L430 154" />
+
+      <circle cx="552" cy="76" r="16" class="ink-fill" />
+      <path class="ink heavy" d="M552 92L548 148" />
+      <path class="ink heavy" d="M548 148L545 188" />
+      <path class="ink mid" d="M548 111L532 132" />
+      <path class="ink mid" d="M532 132L514 151" />
+      <path class="ink mid" d="M551 110L570 118" />
+      <path class="ink mid" d="M570 118L582 139" />
+      <path class="ink mid" d="M546 188L529 212" />
+      <path class="ink mid" d="M547 188L563 212" />
+
+      <path class="ink mid" d="M542 55L554 63" />
+      <path class="ink mid" d="M522 67L534 73" />
+      <path class="ink mid" d="M517 84L529 88" />
+
+      <path class="ink thin" d="M119 121C135 100 161 97 176 120" />
+      <path class="ink thin" d="M233 121C246 101 273 99 289 120" />
+      <path class="ink thin" d="M347 121C360 101 387 100 405 120" />
+    </g>
+
+    <g opacity="0.28" transform="translate(2 2)">
+      <path class="ink heavy" d="M62 175H118" />
+      <path class="ink heavy" d="M175 175H236" />
+      <path class="ink heavy" d="M288 175H351" />
+      <path class="ink heavy" d="M430 175H488" />
+      <path class="ink heavy" d="M120 122H408" />
+      <path class="ink heavy" d="M79 101L84 132" />
+      <path class="ink heavy" d="M151 96L169 132" />
+      <path class="ink heavy" d="M269 95L281 129" />
+      <path class="ink heavy" d="M387 97L392 131" />
+      <path class="ink heavy" d="M552 92L548 148" />
+    </g>
+  </g>
+</svg>

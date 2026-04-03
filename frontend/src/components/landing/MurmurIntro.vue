@@ -13,6 +13,10 @@
       </div>
     </div>
 
+    <figure class="intro-illustration" aria-label="Murmur roundtable illustration">
+      <img src="/landing/murmur-roundtable.svg" alt="" />
+    </figure>
+
   </section>
 </template>
 
@@ -135,6 +139,17 @@ const decoratedDetail = computed(() => decorate(
   line-height: 1.5;
 }
 
+.intro-illustration {
+  margin: 32px auto 0;
+  width: min(100%, 620px);
+}
+
+.intro-illustration img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 :deep(.intro-underline),
 :deep(.intro-circle) {
   position: relative;
@@ -207,6 +222,11 @@ const decoratedDetail = computed(() => decorate(
 
   .intro-detail {
     font-size: 16px;
+  }
+
+  .intro-illustration {
+    margin-top: 26px;
+    width: min(100%, 520px);
   }
 
 }
