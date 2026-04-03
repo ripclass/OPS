@@ -58,7 +58,7 @@
         />
       </section>
 
-      <section class="content-section">
+      <section class="content-section content-section--wide">
         <WhatItDoes :paragraphs="WHAT_IT_DOES" />
       </section>
 
@@ -431,6 +431,10 @@ const scrollToTop = () => {
 .content-section--intro {
   max-width: 978px;
   padding-top: 58px;
+}
+
+.content-section--wide {
+  max-width: 978px;
 }
 
 .content-section--privacy {
