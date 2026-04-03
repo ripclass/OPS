@@ -7,6 +7,7 @@
 
       <div class="audience-intro">
         <p class="audience-intro__lead" v-html="decoratedLead" />
+        <p class="audience-intro__detail">{{ intro[1] }}</p>
       </div>
     </div>
 
@@ -51,9 +52,9 @@ const { targetRef, isVisible } = useRevealOnScroll()
 const decorate = (text, target, replacement) => text.replace(target, replacement)
 
 const decoratedTitle = computed(() => decorate(
-  'You need to know what they will do before you make it.',
-  'before you make it',
-  '<span class="audience-underline">before you make it</span>'
+  'For decisions that do not stay on paper.',
+  'do not stay on paper',
+  '<span class="audience-underline">do not stay on paper</span>'
 ))
 
 const decoratedLead = computed(() => decorate(
@@ -117,7 +118,8 @@ const decoratedOutro = computed(() => decorate(
   padding-top: 10px;
 }
 
-.audience-intro__lead {
+.audience-intro__lead,
+.audience-intro__detail {
   margin: 0;
   color: #050505;
 }
@@ -126,6 +128,13 @@ const decoratedOutro = computed(() => decorate(
   font-family: var(--murmur-font-ui);
   font-size: 21px;
   line-height: 1.45;
+}
+
+.audience-intro__detail {
+  margin-top: 18px;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 18px;
+  line-height: 1.24;
 }
 
 .audience-cases {
@@ -252,6 +261,7 @@ const decoratedOutro = computed(() => decorate(
     font-size: 18px;
   }
 
+  .audience-intro__detail,
   .audience-outro,
   .audience-case__index {
     font-size: 16px;
