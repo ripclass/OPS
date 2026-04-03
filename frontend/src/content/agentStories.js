@@ -260,7 +260,7 @@ export const WHO_ITS_FOR_LINES = [
   'A government about to cut a subsidy.',
   "A health campaign that will fail if it doesn't reach the women who distrust the clinic.",
   'A disaster warning in a language the affected population does not trust.',
-  'A price shock hitting five countries in the same week with no relief plan.',
+  'A price shock hitting households across Bangladesh with no relief plan.',
   'A brand entering a market where the wrong word triggers a boycott in forty minutes.',
 ]
 
