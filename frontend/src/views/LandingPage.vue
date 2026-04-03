@@ -70,7 +70,7 @@
         />
       </section>
 
-      <section id="research" class="content-section">
+      <section id="research" class="content-section content-section--wide content-section--knowledge">
         <WhatItKnows :items="WHAT_IT_KNOWS" />
       </section>
 
@@ -439,6 +439,10 @@ const scrollToTop = () => {
 
 .content-section--audience {
   padding-top: 168px;
+}
+
+.content-section--knowledge {
+  padding-top: 152px;
 }
 
 .content-section--privacy {
