@@ -5,6 +5,13 @@
         <span class="murmur-brand__word">Murmur</span>
       </button>
 
+      <nav class="murmur-nav__links" aria-label="Primary">
+        <a href="#console">Get Started</a>
+        <a href="#videos">Videos</a>
+        <a href="#introduction">Introduction</a>
+        <a href="#about-us">About US</a>
+      </nav>
+
       <div class="murmur-actions">
         <template v-if="authState.user">
           <button class="nav-button nav-button--primary" type="button" @click="openConsole()">
@@ -15,14 +22,8 @@
           </button>
         </template>
         <template v-else>
-          <button class="nav-button nav-button--primary" type="button" @click="openConsole()">
-            Try
-          </button>
-          <button class="nav-button" type="button" @click="openAuth('signup')">
-            Sign up
-          </button>
           <button class="nav-button" type="button" @click="openAuth('signin')">
-            Sign in
+            Login
           </button>
         </template>
       </div>
@@ -46,12 +47,6 @@
           />
         </div>
 
-        <Transition name="brand-fade">
-          <div v-if="brandVisible" id="about" class="title-reveal">
-            <div class="title-reveal__wordmark">MURMUR</div>
-            <p class="title-reveal__subtitle">South Asia behavioral intelligence</p>
-          </div>
-        </Transition>
       </section>
 
       <section class="content-section">
@@ -286,7 +281,7 @@ const scrollToTop = () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Permanent+Marker&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;900&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Outfit:wght@700;800&family=Permanent+Marker&family=Special+Elite&display=swap');
 
 .murmur-page {
   --murmur-bg-primary: #ffffff;
@@ -304,6 +299,9 @@ const scrollToTop = () => {
   --murmur-font-body: 'DM Sans', 'Source Sans 3', sans-serif;
   --murmur-font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
   --murmur-font-hand: 'Permanent Marker', cursive;
+  --murmur-font-display: 'Outfit', 'DM Sans', sans-serif;
+  --murmur-font-ui: 'Lato', sans-serif;
+  --murmur-font-type: 'Special Elite', 'IBM Plex Mono', monospace;
   --murmur-font-script-bengali: 'Noto Sans Bengali', sans-serif;
   --murmur-font-script-devanagari: 'Noto Sans Devanagari', sans-serif;
   --murmur-font-script-arabic: 'Noto Sans Arabic', sans-serif;
@@ -316,17 +314,15 @@ const scrollToTop = () => {
 }
 
 .murmur-nav {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 32px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(42, 36, 29, 0.06);
+  max-width: 978px;
+  margin: 0 auto;
+  padding: 12px 10px 0;
 }
 
 .murmur-brand {
@@ -338,11 +334,33 @@ const scrollToTop = () => {
 }
 
 .murmur-brand__word {
-  color: var(--murmur-text-heading);
-  font-family: var(--murmur-font-serif);
+  color: #050505;
+  font-family: var(--murmur-font-display);
   font-size: 24px;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.murmur-nav__links {
+  position: absolute;
+  left: 398px;
+  top: 20px;
+  display: flex;
+  gap: 13px;
+}
+
+.murmur-nav__links a {
+  color: #000;
+  font-family: var(--murmur-font-ui);
+  font-size: 10px;
+  font-weight: 300;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.murmur-nav__links a:first-child {
+  font-weight: 900;
 }
 
 .murmur-actions {
@@ -353,34 +371,37 @@ const scrollToTop = () => {
 }
 
 .nav-button {
-  border: 1px solid var(--murmur-border);
-  background: transparent;
-  color: var(--murmur-text-heading);
-  padding: 11px 16px;
+  min-width: 52px;
+  border: 0;
+  border-radius: 6px;
+  background: #f6f6f6;
+  color: #000;
+  font-family: var(--murmur-font-ui);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 9px 14px;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .nav-button:hover {
-  border-color: #b9ac9d;
-  background: rgba(255, 255, 255, 0.35);
+  background: #ececec;
 }
 
 .nav-button--primary {
-  border-color: #100d0a;
-  background: #100d0a;
-  color: #f7f1e8;
+  background: #111;
+  color: #fff;
 }
 
 .murmur-main {
-  max-width: 1120px;
+  max-width: 978px;
   margin: 0 auto;
-  padding: 88px 24px 40px;
+  padding: 36px 0 40px;
 }
 
 .opening-shell {
-  min-height: 74vh;
-  padding-top: 8px;
+  min-height: 900px;
+  padding-top: 0;
 }
 
 .opening-status {
@@ -397,31 +418,10 @@ const scrollToTop = () => {
   margin-top: 24px;
 }
 
-.title-reveal {
-  max-width: 680px;
-  margin: 72px auto 0;
-}
-
-.title-reveal__wordmark {
-  color: var(--murmur-accent);
-  font-family: var(--murmur-font-serif);
-  font-size: clamp(52px, 10vw, 84px);
-  line-height: 0.95;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.title-reveal__subtitle {
-  margin: 14px 0 0;
-  color: var(--murmur-text-heading);
-  font-size: 20px;
-  line-height: 1.7;
-}
-
 .content-section {
   max-width: 680px;
   margin: 0 auto;
-  padding-top: 120px;
+  padding-top: 96px;
 }
 
 .content-section--privacy {
@@ -480,11 +480,19 @@ const scrollToTop = () => {
 
 @media (max-width: 768px) {
   .murmur-nav {
-    padding: 18px 20px;
+    padding: 16px 20px 0;
+  }
+
+  .murmur-nav__links {
+    display: none;
   }
 
   .murmur-main {
-    padding: 64px 20px 32px;
+    padding: 28px 20px 32px;
+  }
+
+  .opening-shell {
+    min-height: 0;
   }
 
   .content-section {

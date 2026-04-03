@@ -1,81 +1,79 @@
 <template>
   <Transition name="story-shell" mode="out-in">
-    <article :key="story.key" class="agent-story">
-      <div
-        v-for="(scribble, index) in shellScribbles"
-        :key="`${story.key}-scribble-${index}`"
-        class="agent-story__scribble"
-        :class="scribble.className"
-      >
-        {{ scribble.text }}
-      </div>
+    <article :key="story.key" class="hero-story">
+      <div class="hero-story__canvas">
+        <div
+          v-for="(scribble, index) in shellScribbles"
+          :key="`${story.key}-shell-${index}`"
+          class="hero-story__scribble"
+          :class="scribble.className"
+        >
+          {{ scribble.text }}
+        </div>
 
-      <div class="agent-story__media">
-        <div class="agent-story__frame">
+        <div class="hero-story__media">
           <img
             v-if="showImage"
-            class="agent-story__image"
+            class="hero-story__image"
             :src="story.imagePath"
             :alt="story.imageAlt || story.headlineName"
             @error="handleImageError"
           />
           <div
+            v-else
+            class="hero-story__placeholder"
+          >
+            <div class="hero-story__placeholder-note">Place portrait here</div>
+            <div class="hero-story__placeholder-path">{{ placeholderPath }}</div>
+          </div>
+
+          <div
             v-for="(scribble, index) in mediaScribbles"
             :key="`${story.key}-media-${index}`"
-            class="agent-story__scribble agent-story__scribble--media"
+            class="hero-story__scribble hero-story__scribble--media"
             :class="scribble.className"
           >
             {{ scribble.text }}
           </div>
+
           <div
             v-if="showImage && story.eyeMarker"
-            class="agent-story__eye-marker"
+            class="hero-story__eye-marker"
             :style="eyeMarkerStyle"
           />
-          <div v-else class="agent-story__placeholder">
-            <div class="agent-story__placeholder-note">{{ placeholderNote }}</div>
-            <div v-if="placeholderPath" class="agent-story__placeholder-path">{{ placeholderPath }}</div>
+        </div>
+
+        <div class="hero-story__ink-title">
+          <p v-for="(line, index) in inkTitleLines" :key="`${story.key}-ink-${index}`">{{ line }}</p>
+        </div>
+
+        <div class="hero-story__copy">
+          <h1 class="hero-story__headline">{{ story.headlineName }}</h1>
+          <div class="hero-story__body">
+            <p
+              v-for="(paragraph, index) in storyParagraphs"
+              :key="`${story.key}-paragraph-${index}`"
+              class="hero-story__paragraph"
+            >
+              {{ paragraph }}
+            </p>
           </div>
+        </div>
+
+        <div class="hero-story__brand-lockup">
+          <div class="hero-story__brand-word">{{ story.footerWordmark || 'MURMUR' }}</div>
+          <p class="hero-story__brand-subtitle">
+            {{ story.footerSubtitle || 'South Asia Behavioral Intelligence' }}
+          </p>
         </div>
 
         <div
           v-for="(scribble, index) in belowMediaScribbles"
-          :key="`${story.key}-below-media-${index}`"
-          class="agent-story__scribble agent-story__scribble--below-media"
+          :key="`${story.key}-footer-note-${index}`"
+          class="hero-story__scribble hero-story__scribble--footer"
           :class="scribble.className"
         >
           {{ scribble.text }}
-        </div>
-      </div>
-
-      <div class="agent-story__copy">
-        <div
-          v-for="(scribble, index) in copyScribbles"
-          :key="`${story.key}-copy-${index}`"
-          class="agent-story__scribble agent-story__scribble--copy"
-          :class="scribble.className"
-        >
-          {{ scribble.text }}
-        </div>
-
-        <div class="agent-story__label">
-          <span v-if="globalMode">South Asia opening story</span>
-          <span v-else>{{ story.code }} opening story</span>
-        </div>
-
-        <header class="agent-story__headline">
-          <h1 class="agent-story__headline-name">{{ story.headlineName }}</h1>
-          <p class="agent-story__headline-meta">{{ story.headlineMeta }}</p>
-        </header>
-
-        <div class="agent-story__body">
-          <p
-            v-for="(paragraph, index) in storyParagraphs"
-            :key="`${story.key}-${index}`"
-            class="agent-story__paragraph"
-          >
-            {{ paragraph }}
-          </p>
         </div>
       </div>
     </article>
@@ -105,7 +103,7 @@ watch(
   () => {
     imageFailed.value = false
     if (typeof window !== 'undefined') {
-      window.setTimeout(() => emit('complete', props.story.key), 220)
+      window.setTimeout(() => emit('complete', props.story.key), 180)
     } else {
       emit('complete', props.story.key)
     }
@@ -117,12 +115,16 @@ const handleImageError = () => {
   imageFailed.value = true
 }
 
-const allScribbles = computed(() => props.story.scribbles || [])
-const shellScribbles = computed(() => allScribbles.value.filter(s => (s.target || 'shell') === 'shell'))
-const mediaScribbles = computed(() => allScribbles.value.filter(s => s.target === 'media'))
-const belowMediaScribbles = computed(() => allScribbles.value.filter(s => s.target === 'belowMedia'))
-const copyScribbles = computed(() => allScribbles.value.filter(s => s.target === 'copy'))
 const showImage = computed(() => Boolean(props.story.imagePath) && !imageFailed.value)
+const allScribbles = computed(() => props.story.scribbles || [])
+const shellScribbles = computed(() => allScribbles.value.filter(item => (item.target || 'shell') === 'shell'))
+const mediaScribbles = computed(() => allScribbles.value.filter(item => item.target === 'media'))
+const belowMediaScribbles = computed(() => allScribbles.value.filter(item => item.target === 'belowMedia'))
+const placeholderPath = computed(() => (
+  props.story.imagePath
+    ? `frontend/public${props.story.imagePath}`
+    : ''
+))
 const eyeMarkerStyle = computed(() => {
   if (!props.story.eyeMarker) {
     return {}
@@ -133,6 +135,7 @@ const eyeMarkerStyle = computed(() => {
     left: props.story.eyeMarker.left,
     width: props.story.eyeMarker.width,
     height: props.story.eyeMarker.height,
+    background: props.story.eyeMarker.color || '#0048ffbf',
     transform: `rotate(${props.story.eyeMarker.rotate || '0deg'})`,
   }
 })
@@ -142,219 +145,218 @@ const storyParagraphs = computed(() => {
   }
   return props.story.bodyLines || []
 })
-const placeholderNote = computed(() => (
-  props.story.imagePath
-    ? 'Place portrait here'
-    : 'Portrait archive pending'
-))
-const placeholderPath = computed(() => (
-  props.story.imagePath
-    ? `frontend/public${props.story.imagePath}`
-    : ''
-))
+const inkTitleLines = computed(() => {
+  if (Array.isArray(props.story.heroInkLines) && props.story.heroInkLines.length) {
+    return props.story.heroInkLines
+  }
+  return ['MURMUR', 'KNOWS', String(props.story.name || '').toUpperCase()]
+})
 </script>
 
 <style scoped>
-.agent-story {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(250px, 348px) minmax(0, 420px);
-  gap: 56px;
-  align-items: start;
+.hero-story {
+  display: flex;
   justify-content: center;
-  padding: 40px 0 84px;
 }
 
-.agent-story__media {
+.hero-story__canvas {
   position: relative;
-  z-index: 2;
+  width: min(978px, 100%);
+  min-height: 874px;
 }
 
-.agent-story__frame {
-  position: relative;
-  width: 100%;
-  background: #f5f5f1;
+.hero-story__media {
+  position: absolute;
+  left: 7px;
+  top: 81px;
+  width: 560px;
+  height: 677px;
   overflow: hidden;
 }
 
-.agent-story__image {
-  display: block;
+.hero-story__image,
+.hero-story__placeholder {
   width: 100%;
-  height: auto;
+  height: 100%;
+}
+
+.hero-story__image {
+  display: block;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.08) brightness(1.02);
+  object-position: center 30%;
+  filter: grayscale(1) contrast(1.05) brightness(1.02);
 }
 
-.agent-story__eye-marker {
-  position: absolute;
-  background: #c0392b;
-  opacity: 0.96;
-  mix-blend-mode: multiply;
-}
-
-.agent-story__placeholder {
+.hero-story__placeholder {
   display: flex;
-  min-height: 470px;
   flex-direction: column;
   justify-content: center;
-  padding: 24px;
-  background: #ece7de;
-  color: #111;
+  padding: 32px;
+  background: #ece9e3;
 }
 
-.agent-story__placeholder-note {
+.hero-story__placeholder-note {
   font-family: var(--murmur-font-hand);
   font-size: 34px;
-  line-height: 1;
+  line-height: 0.9;
 }
 
-.agent-story__placeholder-path {
-  margin-top: 12px;
-  font-family: var(--murmur-font-mono);
+.hero-story__placeholder-path {
+  margin-top: 14px;
+  color: #111;
+  font-family: var(--murmur-font-type);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.3;
 }
 
-.agent-story__copy {
-  position: relative;
-  z-index: 2;
-  padding-top: 10px;
+.hero-story__eye-marker {
+  position: absolute;
 }
 
-.agent-story__label {
-  margin-bottom: 16px;
-  color: #6e6a64;
-  font-family: var(--murmur-font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+.hero-story__ink-title {
+  position: absolute;
+  left: 595px;
+  top: 144px;
+  width: 383px;
+  color: #000;
+  font-family: var(--murmur-font-hand);
+  font-size: 78px;
+  line-height: 0.7;
   text-transform: uppercase;
 }
 
-.agent-story__headline {
-  margin-bottom: 18px;
-}
-
-.agent-story__headline-name,
-.agent-story__headline-meta {
+.hero-story__ink-title p {
   margin: 0;
 }
 
-.agent-story__headline-name {
-  color: #0c0c0c;
-  font-family: var(--murmur-font-body);
-  font-size: clamp(42px, 5vw, 64px);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.06em;
-}
-
-.agent-story__headline-meta {
-  margin-top: 8px;
-  color: #111;
-  font-family: var(--murmur-font-body);
-  font-size: clamp(18px, 2vw, 24px);
-  line-height: 1.2;
-}
-
-.agent-story__body {
-  max-width: 30rem;
-}
-
-.agent-story__paragraph {
-  margin: 0 0 12px;
+.hero-story__copy {
+  position: absolute;
+  left: 616px;
+  top: 505px;
+  width: 263px;
   color: #000;
-  font-family: var(--murmur-font-mono);
-  font-size: clamp(15px, 1.22vw, 17px);
-  line-height: 1.22;
-  letter-spacing: -0.01em;
-  text-shadow:
-    0.14px 0 rgba(0, 0, 0, 0.85),
-    0 0 0.5px rgba(0, 0, 0, 0.35);
 }
 
-.agent-story__scribble {
-  position: absolute;
-  z-index: 1;
-  white-space: pre-line;
-  color: #0b0b0b;
-  font-family: var(--murmur-font-hand);
+.hero-story__headline {
+  margin: 0;
+  color: #050505;
+  font-family: var(--murmur-font-display);
+  font-size: 24px;
   font-weight: 700;
-  line-height: 0.9;
-  letter-spacing: 0.01em;
+  line-height: 1.29;
+}
+
+.hero-story__body {
+  margin-top: 14px;
+}
+
+.hero-story__paragraph {
+  margin: 0 0 10px;
+  color: #000;
+  font-family: var(--murmur-font-type);
+  font-size: 10px;
+  line-height: 1;
+  text-shadow:
+    0.15px 0 rgba(0, 0, 0, 0.9),
+    0 0 0.35px rgba(0, 0, 0, 0.45);
+}
+
+.hero-story__brand-lockup {
+  position: absolute;
+  left: 11px;
+  top: 785px;
+  width: 271px;
+}
+
+.hero-story__brand-word {
+  color: #050505;
+  font-family: var(--murmur-font-display);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-story__brand-subtitle {
+  margin: 6px 0 0;
+  color: #000;
+  font-family: var(--murmur-font-ui);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.hero-story__scribble {
+  position: absolute;
+  z-index: 2;
+  white-space: pre-line;
+  color: #000;
+  font-family: var(--murmur-font-hand);
+  line-height: 0.68;
+  letter-spacing: 0;
   pointer-events: none;
-  transform: rotate(-4deg);
-  opacity: 0.97;
 }
 
-.agent-story__scribble--media {
+.hero-story__scribble--media {
+  z-index: 3;
+}
+
+.hero-story__scribble--footer {
   position: absolute;
+  left: 655px;
+  top: 796px;
+  width: 312px;
+  text-align: right;
 }
 
-.agent-story__scribble--below-media {
-  position: relative;
-  display: inline-block;
-  margin-top: 16px;
-}
-
-.agent-story__scribble--copy {
-  position: absolute;
-}
-
-.scribble--xl {
-  font-size: clamp(38px, 5vw, 72px);
-}
-
-.scribble--lg {
-  font-size: clamp(28px, 3.3vw, 44px);
-}
-
-.scribble--md {
-  font-size: clamp(22px, 2.5vw, 32px);
-}
-
-.scribble--sm {
-  font-size: clamp(16px, 1.8vw, 22px);
-}
-
-.scribble--xs {
-  font-size: clamp(14px, 1.35vw, 18px);
+.scribble--hero-top-left {
+  left: 7px;
+  top: 30px;
+  font-size: 36px;
+  transform: rotate(-2deg);
 }
 
 .scribble--top-left {
-  top: -38px;
-  left: -8px;
-  max-width: 360px;
-  transform: rotate(-5deg);
-}
-
-.scribble--copy-shoulder {
-  top: 52px;
-  right: 10px;
-  max-width: 190px;
-  transform: rotate(4deg);
-}
-
-.scribble--accent {
-  color: #c0392b;
-}
-
-.scribble--in-image {
-  left: 18px;
-  bottom: 18px;
-  max-width: 220px;
-  line-height: 0.86;
+  left: 14px;
+  top: 32px;
+  max-width: 320px;
+  font-size: 52px;
   transform: rotate(-3deg);
 }
 
-.scribble--under-image {
-  max-width: 220px;
-  line-height: 0.96;
+.scribble--top-right {
+  right: 6px;
+  top: 42px;
+  max-width: 260px;
+  font-size: 24px;
+  text-align: right;
+  transform: rotate(4deg);
+}
+
+.scribble--bottom-right {
+  right: 0;
+  bottom: 36px;
+  max-width: 260px;
+  font-size: 34px;
+  text-align: right;
+  transform: rotate(-3deg);
+}
+
+.scribble--hero-in-image {
+  left: 17px;
+  top: 471px;
+  width: 302px;
+  color: #fff;
+  font-size: 64px;
+  transform: rotate(-3deg);
+}
+
+.scribble--hero-footer-note {
+  font-size: 36px;
   transform: rotate(-2deg);
 }
 
 .story-shell-enter-active,
 .story-shell-leave-active {
-  transition: opacity 0.45s ease;
+  transition: opacity 0.35s ease;
 }
 
 .story-shell-enter-from,
@@ -362,49 +364,55 @@ const placeholderPath = computed(() => (
   opacity: 0;
 }
 
-@media (max-width: 1040px) {
-  .agent-story {
-    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
-    gap: 38px;
-  }
-}
-
-@media (max-width: 820px) {
-  .agent-story {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding-top: 14px;
+@media (max-width: 1024px) {
+  .hero-story__canvas {
+    min-height: 0;
+    padding-bottom: 48px;
   }
 
-  .agent-story__frame {
-    max-width: 360px;
+  .hero-story__media,
+  .hero-story__ink-title,
+  .hero-story__copy,
+  .hero-story__brand-lockup,
+  .hero-story__scribble,
+  .hero-story__scribble--footer {
+    position: static;
+    width: auto;
   }
 
-  .agent-story__scribble,
-  .agent-story__scribble--copy,
-  .agent-story__scribble--media,
-  .agent-story__scribble--below-media {
+  .hero-story__canvas {
+    display: grid;
+    gap: 24px;
+  }
+
+  .hero-story__media {
+    height: auto;
+  }
+
+  .hero-story__image,
+  .hero-story__placeholder {
+    aspect-ratio: 560 / 677;
+    height: auto;
+  }
+
+  .hero-story__ink-title {
+    font-size: 56px;
+  }
+
+  .hero-story__copy {
+    max-width: 420px;
+  }
+
+  .hero-story__brand-word {
+    font-size: 48px;
+  }
+
+  .hero-story__brand-subtitle {
+    font-size: 16px;
+  }
+
+  .hero-story__scribble {
     display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .agent-story__headline-name {
-    font-size: 36px;
-  }
-
-  .agent-story__headline-meta {
-    font-size: 18px;
-  }
-
-  .agent-story__paragraph {
-    font-size: 14px;
-    line-height: 1.2;
-    margin-bottom: 10px;
-  }
-
-  .agent-story__placeholder {
-    min-height: 320px;
   }
 }
 </style>
