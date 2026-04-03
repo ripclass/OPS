@@ -5,12 +5,8 @@
     <div class="does-top">
       <h2 class="does-title" v-html="decoratedTitle" />
       <div class="does-standfirst">
-        <p class="does-standfirst__lead">
-          Murmur takes a scenario brief and runs it through specific people, not averages.
-        </p>
-        <p class="does-standfirst__detail">
-          You are not looking at sentiment. You are looking at behavior under pressure.
-        </p>
+        <p class="does-standfirst__lead" v-html="decoratedLead" />
+        <p class="does-standfirst__detail" v-html="decoratedDetail" />
       </div>
     </div>
 
@@ -79,8 +75,28 @@ const runCopy = computed(() => [props.paragraphs[1], props.paragraphs[2]].filter
 const outputCopy = computed(() => props.paragraphs[3] || '')
 const closingCopy = computed(() => props.paragraphs[4] || '')
 
-const decoratedTitle = computed(() => (
-  'It turns a scenario into a <span class="does-title__underline">living public sphere</span> before reality catches up.'
+const decorate = (text, target, replacement) => text.replace(target, replacement)
+
+const decoratedTitle = computed(() => decorate(
+  'It turns a scenario into a living public sphere before reality catches up.',
+  'scenario',
+  '<span class="does-circle">scenario</span>'
+))
+
+const decoratedLead = computed(() => decorate(
+  'Murmur takes a scenario brief and runs it through specific people, not averages.',
+  'Murmur',
+  '<span class="does-circle does-circle--brand">Murmur</span>'
+))
+
+const decoratedDetail = computed(() => decorate(
+  decorate(
+    'You are not looking at sentiment. You are looking at behavior under pressure.',
+    'sentiment',
+    '<span class="does-circle does-circle--small">sentiment</span>'
+  ),
+  'behavior under pressure',
+  '<span class="does-underline">behavior under pressure</span>'
 ))
 </script>
 
@@ -243,12 +259,13 @@ const decoratedTitle = computed(() => (
   line-height: 1.2;
 }
 
-:deep(.does-title__underline) {
+:deep(.does-circle),
+:deep(.does-underline) {
   position: relative;
   display: inline-block;
 }
 
-:deep(.does-title__underline::after) {
+:deep(.does-underline::after) {
   content: '';
   position: absolute;
   left: -0.08em;
@@ -258,6 +275,34 @@ const decoratedTitle = computed(() => (
   border-radius: 999px;
   transform: rotate(-1.5deg);
   pointer-events: none;
+}
+
+:deep(.does-circle::before),
+:deep(.does-circle::after) {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+}
+
+:deep(.does-circle::before) {
+  inset: -0.14em -0.18em -0.08em -0.18em;
+  border: 2px solid rgba(0, 72, 255, 0.9);
+  transform: rotate(-5deg);
+}
+
+:deep(.does-circle::after) {
+  inset: -0.08em -0.12em -0.14em -0.14em;
+  border: 2px solid rgba(0, 72, 255, 0.72);
+  transform: rotate(4deg);
+}
+
+:deep(.does-circle--small::before) {
+  inset: -0.12em -0.16em -0.08em -0.16em;
+}
+
+:deep(.does-circle--small::after) {
+  inset: -0.08em -0.12em -0.12em -0.12em;
 }
 
 @media (max-width: 960px) {
