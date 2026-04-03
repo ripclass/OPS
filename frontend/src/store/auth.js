@@ -73,6 +73,25 @@ export async function signInWithPassword({ email, password }) {
   }
 }
 
+export async function signUpWithPassword({ email, password }) {
+  if (!supabase) {
+    throw new Error('Supabase auth is not configured.')
+  }
+
+  state.loading = true
+  state.error = ''
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) {
+      throw error
+    }
+    applySession(data.session)
+    return data
+  } finally {
+    state.loading = false
+  }
+}
+
 export async function signOut() {
   if (!supabase) {
     applySession(null)

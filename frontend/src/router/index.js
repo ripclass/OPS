@@ -6,13 +6,18 @@ import SimulationView from '../views/SimulationView.vue'
 import SimulationRunView from '../views/SimulationRunView.vue'
 import ReportView from '../views/ReportView.vue'
 import InteractionView from '../views/InteractionView.vue'
-import LoginView from '../views/LoginView.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: LoginView
+    redirect: to => ({
+      name: 'Home',
+      query: {
+        auth: 'signin',
+        ...(typeof to.query.redirect === 'string' ? { redirect: to.query.redirect } : {})
+      }
+    })
   },
   {
     path: '/',
@@ -59,11 +64,7 @@ const router = createRouter({
 router.beforeEach(async to => {
   await initAuth()
 
-  if (to.name === 'Login') {
-    if (authState.user) {
-      const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : '/'
-      return redirect
-    }
+  if (to.name === 'Home' || to.name === 'Login') {
     return true
   }
 

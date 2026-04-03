@@ -38,6 +38,13 @@
           <div class="decoration-square"></div>
         </div>
 
+        <LandingAccessPanel
+          class="hero-auth-card"
+          :initial-mode="accessMode"
+          :redirect-path="redirectPath"
+          @authenticated="handleAuthenticated"
+        />
+
         <button class="scroll-down-btn" @click="scrollToBottom">
           v
         </button>
@@ -209,7 +216,7 @@
                 :disabled="!canSubmit || loading"
                 @click="startSimulation"
               >
-                <span v-if="!loading">Continue to Population Setup</span>
+                <span v-if="!loading">{{ startButtonLabel }}</span>
                 <span v-else>Initializing...</span>
                 <span class="btn-arrow">-&gt;</span>
               </button>
@@ -225,10 +232,13 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
+import LandingAccessPanel from '../components/LandingAccessPanel.vue'
+import { authState } from '../store/auth'
 
 const router = useRouter()
+const route = useRoute()
 const heroImageUrl = new URL('../assets/logo/ops_logo_left.png', import.meta.url).href
 
 const formData = ref({
@@ -242,6 +252,15 @@ const isDragOver = ref(false)
 const fileInput = ref(null)
 
 const canSubmit = computed(() => formData.value.simulationRequirement.trim() !== '')
+const startButtonLabel = computed(() => (
+  authState.user ? 'Continue to Population Setup' : 'Sign in to Continue'
+))
+const accessMode = computed(() => (route.query.auth === 'signup' ? 'signup' : 'signin'))
+const redirectPath = computed(() => (
+  typeof route.query.redirect === 'string' && route.query.redirect
+    ? route.query.redirect
+    : '/'
+))
 const heroSectionStyle = computed(() => ({
   '--hero-image': `url("${heroImageUrl}")`,
 }))
@@ -305,6 +324,19 @@ const startSimulation = () => {
     return
   }
 
+  if (!authState.user) {
+    router.replace({
+      name: 'Home',
+      query: {
+        ...route.query,
+        auth: 'signin',
+        redirect: '/process/new',
+      },
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    return
+  }
+
   import('../store/pendingUpload.js').then(({ setPendingUpload }) => {
     setPendingUpload(
       files.value,
@@ -317,6 +349,12 @@ const startSimulation = () => {
       params: { projectId: 'new' },
     })
   })
+}
+
+const handleAuthenticated = () => {
+  if (route.query.auth || route.query.redirect) {
+    router.replace({ name: 'Home' })
+  }
 }
 </script>
 
@@ -381,6 +419,8 @@ const startSimulation = () => {
 .hero-section {
   display: flex;
   align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
   margin-bottom: 80px;
   position: relative;
   min-height: 620px;
@@ -396,6 +436,11 @@ const startSimulation = () => {
 
 .hero-left {
   flex: 0 1 720px;
+}
+
+.hero-auth-card {
+  flex: 0 0 390px;
+  align-self: center;
 }
 
 .hero-copy-card {
@@ -887,10 +932,18 @@ const startSimulation = () => {
     min-height: 520px;
     padding: 28px;
     background-size: 78%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .hero-left {
     max-width: none;
+  }
+
+  .hero-auth-card {
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
   }
 
   .hero-copy-card {
@@ -922,6 +975,10 @@ const startSimulation = () => {
     padding: 18px;
     background-position: center top;
     background-size: 120%;
+  }
+
+  .hero-auth-card {
+    width: 100%;
   }
 
   .hero-copy-card {
