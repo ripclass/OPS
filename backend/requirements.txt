@@ -1,7 +1,7 @@
 # ===========================================
 # OPS Backend Dependencies
 # ===========================================
-# Python 3.11+ required
+# Python 3.11.x required
 # Install: pip install -r requirements.txt
 # ===========================================
 

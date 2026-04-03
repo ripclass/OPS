@@ -9,11 +9,12 @@ import warnings
 # Needs to be set before all other imports
 warnings.filterwarnings("ignore", message=".*resource_tracker.*")
 
-from flask import Flask, request
+from flask import Flask, jsonify, g, request
 from flask_cors import CORS
 
 from .config import Config
 from .utils.logger import setup_logger, get_logger
+from .services.auth_service import AuthConfigurationError, AuthError, verify_access_token
 
 
 def create_app(config_class=Config):
@@ -72,6 +73,31 @@ def create_app(config_class=Config):
         logger = get_logger('ops.request')
         logger.debug(f"response:{response.status_code}")
         return response
+
+    @app.before_request
+    def authenticate_api_requests():
+        if not app.config.get('AUTH_REQUIRED', False):
+            return None
+        if request.method == 'OPTIONS':
+            return None
+        if not request.path.startswith('/api/'):
+            return None
+
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authentication required'}), 401
+
+        token = auth_header.split(' ', 1)[1].strip()
+        if not token:
+            return jsonify({'error': 'Authentication required'}), 401
+
+        try:
+            g.current_user = verify_access_token(token)
+        except AuthConfigurationError as exc:
+            logger.error("Auth configuration error: %s", exc)
+            return jsonify({'error': 'Authentication backend misconfigured'}), 500
+        except AuthError as exc:
+            return jsonify({'error': str(exc)}), 401
     
     # Registration blueprint
     from .api import graph_bp, simulation_bp, report_bp

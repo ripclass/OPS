@@ -11,8 +11,12 @@ services:
       mountPath: /opt/render/project/src/backend/uploads
       sizeGB: 10
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
       - key: FLASK_DEBUG
         value: "False"
+      - key: AUTH_REQUIRED
+        value: "true"
       - key: UPLOAD_FOLDER
         value: /opt/render/project/src/backend/uploads
       - key: FRONTEND_ORIGIN

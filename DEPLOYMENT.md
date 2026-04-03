@@ -15,6 +15,7 @@ Docker is optional for local development only. It is not required for the hosted
 - Backend: Flask API with long-running simulation/report jobs
 - Persistent storage: Render disk mounted to `backend/uploads`
 - Temporal continuity: Supabase
+- Authentication: Supabase Auth
 - Graph/report runtime: Zep + configured LLM backend
 
 ## 1. Backend on Render
@@ -23,6 +24,7 @@ Docker is optional for local development only. It is not required for the hosted
 
 - Service type: `Web Service`
 - Runtime: `Python`
+- Python version: `3.11.11`
 - Root directory: `backend`
 - Build command:
 
@@ -63,6 +65,13 @@ This is required because the current backend persists:
 - reports
 - OPS profile snapshots
 
+Important:
+
+- The backend currently depends on `camel-oasis==0.2.5`, which requires Python `<3.12`.
+- Use Python `3.11.11` on Render. The repo includes:
+  - `backend/.python-version`
+  - `PYTHON_VERSION=3.11.11` in [render.yaml](/J:/OPS/OPS/render.yaml)
+
 Set this backend env alongside the disk:
 
 ```text
@@ -76,6 +85,7 @@ Set these in Render:
 ```text
 SECRET_KEY=<strong random value>
 FLASK_DEBUG=False
+AUTH_REQUIRED=true
 FRONTEND_ORIGIN=https://<your-vercel-domain>
 UPLOAD_FOLDER=/opt/render/project/src/backend/uploads
 LLM_API_KEY=<value>
@@ -123,6 +133,8 @@ Set these in Vercel:
 
 ```text
 VITE_API_BASE_URL=https://<your-render-domain>
+VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-publishable-or-anon-key>
 VITE_DEMO_MODE=false
 VITE_STRIPE_CHECKOUT_URL=<optional>
 VITE_CALENDLY_URL=<optional>
@@ -136,7 +148,7 @@ This is required because the app uses history-mode Vue Router.
 
 ## 3. Supabase
 
-Temporal continuity depends on Supabase.
+Temporal continuity and login both depend on Supabase.
 
 Required backend envs:
 
@@ -144,6 +156,28 @@ Required backend envs:
 SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 ```
+
+Required frontend envs:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+```
+
+Use the keys like this:
+
+- `SUPABASE_SERVICE_ROLE_KEY`: backend-only secret key, never expose this in Vercel or browser code
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: frontend publishable/anon key for login
+
+### Invite-only auth
+
+The live product should be kept behind Supabase Auth:
+
+1. In Supabase, open `Authentication -> Users`
+2. Create or invite your customer users
+3. Give them email/password access
+4. The frontend login screen uses Supabase Auth directly
+5. The backend verifies the bearer token on every `/api/*` request
 
 If you have not created the memory table yet, use:
 
@@ -204,8 +238,9 @@ Before exposing the app beyond private staging:
 4. Deploy frontend to Vercel.
 5. Set frontend env vars.
 6. Confirm Vercel can reach Render.
-7. Confirm `/health` returns OK.
-8. Confirm direct refresh works on:
+7. Confirm login works for an invited Supabase user.
+8. Confirm `/health` returns OK.
+9. Confirm direct refresh works on:
    - `/`
    - `/process/:projectId`
    - `/simulation/:simulationId`
@@ -219,6 +254,7 @@ Run these before public release:
 
 ### A. Source ingestion
 
+- sign in as an invited user
 - upload a PDF
 - submit one public news URL
 - submit mixed file + URL

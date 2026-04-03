@@ -23,6 +23,10 @@ class Config:
     # Flask configuration
     SECRET_KEY = os.environ.get('SECRET_KEY', 'ops-secret-key')
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    AUTH_REQUIRED = os.environ.get(
+        'AUTH_REQUIRED',
+        'false' if DEBUG else 'true'
+    ).lower() == 'true'
     FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN', '').strip()
     FRONTEND_ORIGINS = [
         value.strip()
@@ -113,6 +117,8 @@ class Config:
         errors = []
         if not cls.LLM_API_KEY:
             errors.append("LLM_API_KEY is not configured")
+        if cls.AUTH_REQUIRED and not (cls.SUPABASE_URL and cls.SUPABASE_SERVICE_ROLE_KEY):
+            errors.append("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured when AUTH_REQUIRED is enabled")
         if not cls.DEBUG:
             if cls.SECRET_KEY == 'ops-secret-key':
                 errors.append("SECRET_KEY must be set to a non-default value in production")

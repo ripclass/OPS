@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getAccessToken, signOut } from '../store/auth'
 
 const configuredBaseURL = import.meta.env.VITE_API_BASE_URL
 const resolvedBaseURL = configuredBaseURL || (import.meta.env.DEV ? 'http://localhost:5001' : '')
@@ -18,7 +19,12 @@ const service = axios.create({
 
 // Request interceptor
 service.interceptors.request.use(
-  config => {
+  async config => {
+    const token = await getAccessToken()
+    if (token) {
+      config.headers = config.headers || {}
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   error => {
@@ -40,8 +46,17 @@ service.interceptors.response.use(
     
     return res
   },
-  error => {
+  async error => {
     console.error('Response error:', error)
+
+    if (error?.response?.status === 401 && typeof window !== 'undefined') {
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`
+      await signOut().catch(() => {})
+      if (!window.location.pathname.startsWith('/login')) {
+        const redirect = encodeURIComponent(currentPath || '/')
+        window.location.replace(`/login?redirect=${redirect}`)
+      }
+    }
     
     // Handle timeouts
     if (error.code === 'ECONNABORTED' && error.message.includes('timeout')) {

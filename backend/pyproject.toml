@@ -2,7 +2,7 @@
 name = "ops-backend"
 version = "0.1.0"
 description = "OPS backend for Organic Population Simulation and scenario forecasting."
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 license = { text = "AGPL-3.0" }
 authors = [
     { name = "OPS Team" }
