@@ -49,8 +49,13 @@
 
       </section>
 
-      <section class="content-section">
-        <AgentFeed :posts="AGENT_FEED_POSTS" />
+      <section id="introduction" class="content-section content-section--intro">
+        <MurmurIntro
+          kicker="South Asia-grounded scenario simulation"
+          title="Rehearse how populations, institutions, and narratives react before the event goes live."
+          summary="Murmur turns scenario briefs, policy drafts, news material, and field evidence into a simulated public sphere across Bangladesh, India, Pakistan, Nepal, and Sri Lanka."
+          detail="Model likely reaction pathways before the street, the feed, or the market moves."
+        />
       </section>
 
       <section id="research" class="content-section">
@@ -103,16 +108,15 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LandingAccessPanel from '../components/LandingAccessPanel.vue'
-import AgentFeed from '../components/landing/AgentFeed.vue'
 import AgentStory from '../components/landing/AgentStory.vue'
 import CarouselDots from '../components/landing/CarouselDots.vue'
 import LegitimacyFooter from '../components/landing/LegitimacyFooter.vue'
+import MurmurIntro from '../components/landing/MurmurIntro.vue'
 import ScenarioInput from '../components/landing/ScenarioInput.vue'
 import WhatItDoes from '../components/landing/WhatItDoes.vue'
 import WhatItKnows from '../components/landing/WhatItKnows.vue'
 import WhoItsFor from '../components/landing/WhoItsFor.vue'
 import {
-  AGENT_FEED_POSTS,
   AGENT_STORIES,
   GLOBAL_ROTATION_ORDER,
   LEGITIMACY_LINES,
@@ -422,6 +426,11 @@ const scrollToTop = () => {
   max-width: 680px;
   margin: 0 auto;
   padding-top: 96px;
+}
+
+.content-section--intro {
+  max-width: 978px;
+  padding-top: 58px;
 }
 
 .content-section--privacy {
