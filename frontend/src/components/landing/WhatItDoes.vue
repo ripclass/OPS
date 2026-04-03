@@ -14,11 +14,9 @@
       <article class="does-column">
         <div class="does-column__eyebrow">YOU GIVE IT</div>
 
-        <div class="does-sample">
-          <p>Rice rises 40% before Eid in Dhaka.</p>
-          <p>What happens in low-income households,</p>
-          <p>student networks, and rumor chains?</p>
-        </div>
+        <figure class="does-illustration" aria-label="What it does illustration">
+          <img src="/landing/what-it-does-illustration-cutout.png" alt="" />
+        </figure>
 
         <p class="does-column__copy">{{ inputCopy }}</p>
       </article>
@@ -188,6 +186,8 @@ const decoratedDetail = computed(() => decorate(
 }
 
 .does-column__eyebrow {
+  position: relative;
+  display: inline-block;
   margin-bottom: 18px;
   color: #050505;
   font-family: var(--murmur-font-ui);
@@ -197,23 +197,26 @@ const decoratedDetail = computed(() => decorate(
   text-transform: uppercase;
 }
 
-.does-sample {
-  margin-bottom: 18px;
-  padding: 14px 16px 12px;
-  border: 1px solid rgba(5, 5, 5, 0.12);
-  background: rgba(255, 255, 255, 0.6);
+.does-column__eyebrow::after {
+  content: '';
+  position: absolute;
+  left: -0.08em;
+  right: -0.08em;
+  bottom: -0.28em;
+  border-bottom: 3px solid #0048ff;
+  border-radius: 999px;
+  transform: rotate(-1.5deg);
+  pointer-events: none;
 }
 
-.does-sample p {
-  margin: 0;
-  color: #050505;
-  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
-  font-size: 15px;
-  line-height: 1.18;
+.does-illustration {
+  margin: 2px 0 18px;
 }
 
-.does-sample p + p {
-  margin-top: 6px;
+.does-illustration img {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
 }
 
 .does-column__copy {
