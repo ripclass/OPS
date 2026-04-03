@@ -21,6 +21,13 @@ export const AGENT_STORIES = {
     name: 'Halima',
     imagePath: '/landing/halima-hero.webp',
     imageAlt: 'Halima portrait',
+    eyeMarker: {
+      top: '21%',
+      left: '23%',
+      width: '52%',
+      height: '8%',
+      rotate: '-1deg',
+    },
     headlineName: 'Halima, 41.',
     headlineMeta: 'Noakhali. Fish drying worker.',
     scribbles: [
@@ -33,15 +40,15 @@ export const AGENT_STORIES = {
         className: 'scribble--left-mid scribble--md',
       },
       {
-        text: 'PRICE SHOCK',
+        text: 'TRANSFER DUE\n15TH',
         className: 'scribble--top-right scribble--sm',
       },
       {
         text: 'CASCADE\nNO ONE\nMEASURES',
-        className: 'scribble--bottom-right scribble--lg',
+        className: 'scribble--below-copy scribble--lg scribble--accent',
       },
       {
-        text: 'bKash / rice / silence',
+        text: 'REMITTANCE /\nSKIPPED MEAL /\nSILENCE',
         className: 'scribble--bottom-left scribble--xs',
       },
     ],

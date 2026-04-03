@@ -19,6 +19,11 @@
             :alt="story.imageAlt || story.headlineName"
             @error="handleImageError"
           />
+          <div
+            v-if="showImage && story.eyeMarker"
+            class="agent-story__eye-marker"
+            :style="eyeMarkerStyle"
+          />
           <div v-else class="agent-story__placeholder">
             <div class="agent-story__placeholder-note">{{ placeholderNote }}</div>
             <div v-if="placeholderPath" class="agent-story__placeholder-path">{{ placeholderPath }}</div>
@@ -87,6 +92,19 @@ const handleImageError = () => {
 }
 
 const showImage = computed(() => Boolean(props.story.imagePath) && !imageFailed.value)
+const eyeMarkerStyle = computed(() => {
+  if (!props.story.eyeMarker) {
+    return {}
+  }
+
+  return {
+    top: props.story.eyeMarker.top,
+    left: props.story.eyeMarker.left,
+    width: props.story.eyeMarker.width,
+    height: props.story.eyeMarker.height,
+    transform: `rotate(${props.story.eyeMarker.rotate || '0deg'})`,
+  }
+})
 const placeholderNote = computed(() => (
   props.story.imagePath
     ? 'Place portrait here'
@@ -107,7 +125,7 @@ const placeholderPath = computed(() => (
   gap: 56px;
   align-items: start;
   justify-content: center;
-  padding: 40px 0 0;
+  padding: 40px 0 84px;
 }
 
 .agent-story__media {
@@ -116,9 +134,9 @@ const placeholderPath = computed(() => (
 }
 
 .agent-story__frame {
+  position: relative;
   width: 100%;
   background: #f5f5f1;
-  box-shadow: 0 18px 28px rgba(16, 13, 10, 0.14);
   overflow: hidden;
 }
 
@@ -127,6 +145,14 @@ const placeholderPath = computed(() => (
   width: 100%;
   height: auto;
   object-fit: cover;
+  filter: grayscale(1) contrast(1.03);
+}
+
+.agent-story__eye-marker {
+  position: absolute;
+  background: #c0392b;
+  opacity: 0.96;
+  mix-blend-mode: multiply;
 }
 
 .agent-story__placeholder {
@@ -273,6 +299,17 @@ const placeholderPath = computed(() => (
   transform: rotate(3deg);
 }
 
+.scribble--below-copy {
+  left: 420px;
+  bottom: -8px;
+  max-width: 290px;
+  transform: rotate(-5deg);
+}
+
+.scribble--accent {
+  color: #c0392b;
+}
+
 .story-shell-enter-active,
 .story-shell-leave-active {
   transition: opacity 0.45s ease;
@@ -296,6 +333,11 @@ const placeholderPath = computed(() => (
   .scribble--bottom-right {
     right: 0;
     bottom: -30px;
+  }
+
+  .scribble--below-copy {
+    left: 340px;
+    bottom: 0;
   }
 }
 
