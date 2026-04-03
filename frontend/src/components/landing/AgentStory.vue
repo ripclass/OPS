@@ -2,7 +2,7 @@
   <Transition name="story-shell" mode="out-in">
     <article :key="story.key" class="agent-story">
       <div
-        v-for="(scribble, index) in story.scribbles || []"
+        v-for="(scribble, index) in shellScribbles"
         :key="`${story.key}-scribble-${index}`"
         class="agent-story__scribble"
         :class="scribble.className"
@@ -20,6 +20,14 @@
             @error="handleImageError"
           />
           <div
+            v-for="(scribble, index) in mediaScribbles"
+            :key="`${story.key}-media-${index}`"
+            class="agent-story__scribble agent-story__scribble--media"
+            :class="scribble.className"
+          >
+            {{ scribble.text }}
+          </div>
+          <div
             v-if="showImage && story.eyeMarker"
             class="agent-story__eye-marker"
             :style="eyeMarkerStyle"
@@ -29,9 +37,27 @@
             <div v-if="placeholderPath" class="agent-story__placeholder-path">{{ placeholderPath }}</div>
           </div>
         </div>
+
+        <div
+          v-for="(scribble, index) in belowMediaScribbles"
+          :key="`${story.key}-below-media-${index}`"
+          class="agent-story__scribble agent-story__scribble--below-media"
+          :class="scribble.className"
+        >
+          {{ scribble.text }}
+        </div>
       </div>
 
       <div class="agent-story__copy">
+        <div
+          v-for="(scribble, index) in copyScribbles"
+          :key="`${story.key}-copy-${index}`"
+          class="agent-story__scribble agent-story__scribble--copy"
+          :class="scribble.className"
+        >
+          {{ scribble.text }}
+        </div>
+
         <div class="agent-story__label">
           <span v-if="globalMode">South Asia opening story</span>
           <span v-else>{{ story.code }} opening story</span>
@@ -44,11 +70,11 @@
 
         <div class="agent-story__body">
           <p
-            v-for="(line, index) in story.bodyLines"
+            v-for="(paragraph, index) in storyParagraphs"
             :key="`${story.key}-${index}`"
-            class="agent-story__line"
+            class="agent-story__paragraph"
           >
-            {{ line }}
+            {{ paragraph }}
           </p>
         </div>
       </div>
@@ -91,6 +117,11 @@ const handleImageError = () => {
   imageFailed.value = true
 }
 
+const allScribbles = computed(() => props.story.scribbles || [])
+const shellScribbles = computed(() => allScribbles.value.filter(s => (s.target || 'shell') === 'shell'))
+const mediaScribbles = computed(() => allScribbles.value.filter(s => s.target === 'media'))
+const belowMediaScribbles = computed(() => allScribbles.value.filter(s => s.target === 'belowMedia'))
+const copyScribbles = computed(() => allScribbles.value.filter(s => s.target === 'copy'))
 const showImage = computed(() => Boolean(props.story.imagePath) && !imageFailed.value)
 const eyeMarkerStyle = computed(() => {
   if (!props.story.eyeMarker) {
@@ -104,6 +135,12 @@ const eyeMarkerStyle = computed(() => {
     height: props.story.eyeMarker.height,
     transform: `rotate(${props.story.eyeMarker.rotate || '0deg'})`,
   }
+})
+const storyParagraphs = computed(() => {
+  if (Array.isArray(props.story.bodyParagraphs) && props.story.bodyParagraphs.length) {
+    return props.story.bodyParagraphs
+  }
+  return props.story.bodyLines || []
 })
 const placeholderNote = computed(() => (
   props.story.imagePath
@@ -145,7 +182,7 @@ const placeholderPath = computed(() => (
   width: 100%;
   height: auto;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.03);
+  filter: grayscale(1) contrast(1.08) brightness(1.02);
 }
 
 .agent-story__eye-marker {
@@ -223,13 +260,16 @@ const placeholderPath = computed(() => (
   max-width: 30rem;
 }
 
-.agent-story__line {
-  margin: 0 0 4px;
-  color: #090909;
+.agent-story__paragraph {
+  margin: 0 0 12px;
+  color: #000;
   font-family: var(--murmur-font-mono);
   font-size: clamp(15px, 1.22vw, 17px);
-  line-height: 1.08;
+  line-height: 1.22;
   letter-spacing: -0.01em;
+  text-shadow:
+    0.14px 0 rgba(0, 0, 0, 0.85),
+    0 0 0.5px rgba(0, 0, 0, 0.35);
 }
 
 .agent-story__scribble {
@@ -244,6 +284,20 @@ const placeholderPath = computed(() => (
   pointer-events: none;
   transform: rotate(-4deg);
   opacity: 0.97;
+}
+
+.agent-story__scribble--media {
+  position: absolute;
+}
+
+.agent-story__scribble--below-media {
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+}
+
+.agent-story__scribble--copy {
+  position: absolute;
 }
 
 .scribble--xl {
@@ -273,41 +327,29 @@ const placeholderPath = computed(() => (
   transform: rotate(-5deg);
 }
 
-.scribble--left-mid {
-  top: 150px;
-  left: -118px;
-  max-width: 180px;
-  transform: rotate(-7deg);
-}
-
-.scribble--top-right {
-  top: 24px;
-  right: 56px;
-  transform: rotate(5deg);
-}
-
-.scribble--bottom-right {
-  right: 12px;
-  bottom: -12px;
-  max-width: 270px;
-  transform: rotate(-4deg);
-}
-
-.scribble--bottom-left {
-  left: 200px;
-  bottom: 48px;
-  transform: rotate(3deg);
-}
-
-.scribble--below-copy {
-  left: 420px;
-  bottom: -8px;
-  max-width: 290px;
-  transform: rotate(-5deg);
+.scribble--copy-shoulder {
+  top: 52px;
+  right: 10px;
+  max-width: 190px;
+  transform: rotate(4deg);
 }
 
 .scribble--accent {
   color: #c0392b;
+}
+
+.scribble--in-image {
+  left: 18px;
+  bottom: 18px;
+  max-width: 220px;
+  line-height: 0.86;
+  transform: rotate(-3deg);
+}
+
+.scribble--under-image {
+  max-width: 220px;
+  line-height: 0.96;
+  transform: rotate(-2deg);
 }
 
 .story-shell-enter-active,
@@ -325,20 +367,6 @@ const placeholderPath = computed(() => (
     grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
     gap: 38px;
   }
-
-  .scribble--left-mid {
-    left: -72px;
-  }
-
-  .scribble--bottom-right {
-    right: 0;
-    bottom: -30px;
-  }
-
-  .scribble--below-copy {
-    left: 340px;
-    bottom: 0;
-  }
 }
 
 @media (max-width: 820px) {
@@ -352,7 +380,10 @@ const placeholderPath = computed(() => (
     max-width: 360px;
   }
 
-  .agent-story__scribble {
+  .agent-story__scribble,
+  .agent-story__scribble--copy,
+  .agent-story__scribble--media,
+  .agent-story__scribble--below-media {
     display: none;
   }
 }
@@ -366,10 +397,10 @@ const placeholderPath = computed(() => (
     font-size: 18px;
   }
 
-  .agent-story__line {
+  .agent-story__paragraph {
     font-size: 14px;
-    line-height: 1.08;
-    margin-bottom: 4px;
+    line-height: 1.2;
+    margin-bottom: 10px;
   }
 
   .agent-story__placeholder {
