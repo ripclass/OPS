@@ -216,7 +216,7 @@ const inkTitleLines = computed(() => {
 .hero-story__ink-title {
   position: absolute;
   left: 595px;
-  top: 144px;
+  top: 84px;
   width: 383px;
   color: #000;
   font-family: var(--murmur-font-hand);
@@ -232,7 +232,7 @@ const inkTitleLines = computed(() => {
 .hero-story__copy {
   position: absolute;
   left: 616px;
-  top: 505px;
+  top: 580px;
   width: 263px;
   color: #000;
 }
@@ -309,7 +309,7 @@ const inkTitleLines = computed(() => {
 
 .scribble--hero-top-left {
   left: 7px;
-  top: 30px;
+  top: 47px;
   font-size: 36px;
   transform: rotate(-2deg);
 }
@@ -342,7 +342,7 @@ const inkTitleLines = computed(() => {
 
 .scribble--hero-in-image {
   left: 17px;
-  top: 471px;
+  bottom: 10px;
   width: 302px;
   color: #fff;
   font-size: 64px;
@@ -350,7 +350,7 @@ const inkTitleLines = computed(() => {
 }
 
 .scribble--hero-footer-note {
-  font-size: 36px;
+  font-size: 32px;
   transform: rotate(-2deg);
 }
 

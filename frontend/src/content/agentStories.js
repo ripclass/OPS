@@ -22,10 +22,10 @@ export const AGENT_STORIES = {
     imagePath: '/landing/halima-portrait.webp',
     imageAlt: 'Halima portrait',
     eyeMarker: {
-      top: '172px',
-      left: '207px',
-      width: '181px',
-      height: '44px',
+      top: '166px',
+      left: '199px',
+      width: '190px',
+      height: '48px',
       color: 'rgba(0, 72, 255, 0.75)',
       rotate: '0deg',
     },
@@ -36,7 +36,7 @@ export const AGENT_STORIES = {
     footerSubtitle: 'South Asia Behavioral Intelligence',
     scribbles: [
       {
-        text: 'NO POST\nNO PROTESE',
+        text: 'NO POST\nNO PROTEST',
         className: 'scribble--hero-top-left',
         target: 'shell',
       },
