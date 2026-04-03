@@ -11,15 +11,6 @@
       </div>
     </div>
 
-    <div class="audience-figure-block">
-      <div class="audience-figure-stage">
-        <div class="audience-note">HIGH\nCONSEQ\nUENCE\nDECISI\nONS</div>
-        <figure class="audience-figure" aria-label="Who it's for illustration">
-          <img src="/landing/WhoIsItFor.webp" alt="" />
-        </figure>
-      </div>
-    </div>
-
     <div class="audience-cases">
       <article
         v-for="(line, index) in lines"
@@ -125,34 +116,6 @@ const decoratedOutro = computed(() => decorate(
   padding-top: 10px;
 }
 
-.audience-figure-block {
-  margin-top: 46px;
-}
-
-.audience-figure-stage {
-  position: relative;
-  width: min(100%, 760px);
-  margin: 0 auto;
-  min-height: 560px;
-}
-
-.audience-figure {
-  margin: 0;
-  position: absolute;
-  left: 50%;
-  top: 18px;
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-  transform: translateX(-50%);
-}
-
-.audience-figure img {
-  display: block;
-  width: min(100%, 560px);
-  height: auto;
-}
-
 .audience-intro__lead,
 .audience-intro__detail {
   margin: 0;
@@ -174,23 +137,9 @@ const decoratedOutro = computed(() => decorate(
 
 .audience-cases {
   position: relative;
-  margin-top: 30px;
+  margin-top: 40px;
   padding-top: 24px;
   border-top: 1px solid rgba(5, 5, 5, 0.12);
-}
-
-.audience-note {
-  position: absolute;
-  left: 8px;
-  top: 54px;
-  z-index: 1;
-  color: #0048ff;
-  font-family: var(--murmur-font-hand);
-  font-size: clamp(62px, 8.3vw, 88px);
-  line-height: 0.82;
-  text-align: left;
-  transform: rotate(-3deg);
-  white-space: pre-line;
 }
 
 .audience-case {
@@ -290,22 +239,6 @@ const decoratedOutro = computed(() => decorate(
     gap: 22px;
   }
 
-  .audience-figure-block {
-    margin-top: 34px;
-  }
-
-  .audience-figure-stage {
-    min-height: 460px;
-  }
-
-  .audience-figure {
-    top: 26px;
-  }
-
-  .audience-figure img {
-    width: min(100%, 460px);
-  }
-
   .audience-intro {
     padding-top: 0;
   }
@@ -329,12 +262,6 @@ const decoratedOutro = computed(() => decorate(
 
   .audience-case__text {
     font-size: 24px;
-  }
-
-  .audience-note {
-    top: 22px;
-    left: 0;
-    font-size: clamp(42px, 13vw, 64px);
   }
 }
 </style>
