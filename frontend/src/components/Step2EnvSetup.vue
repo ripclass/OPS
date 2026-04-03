@@ -908,7 +908,10 @@ const designCommitted = ref(false)
 const baseScenarioRequirement = ref('')
 
 const pendingState = getPendingUpload()
-const isDemoMode = (import.meta.env.VITE_DEMO_MODE ?? 'true') !== 'false'
+const demoModeEnv = import.meta.env.VITE_DEMO_MODE
+const isDemoMode = import.meta.env.DEV
+  ? (demoModeEnv ?? 'true') !== 'false'
+  : demoModeEnv === 'true'
 const opsConfig = ref(normalizeOpsConfig({
   ...pendingState.opsConfig,
   demoModeBypass: isDemoMode || pendingState.opsConfig?.demoModeBypass,

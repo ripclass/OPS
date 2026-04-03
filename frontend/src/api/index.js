@@ -1,8 +1,15 @@
 import axios from 'axios'
 
+const configuredBaseURL = import.meta.env.VITE_API_BASE_URL
+const resolvedBaseURL = configuredBaseURL || (import.meta.env.DEV ? 'http://localhost:5001' : '')
+
+if (!resolvedBaseURL) {
+  console.error('VITE_API_BASE_URL is required for production builds.')
+}
+
 // Create an axios instance
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
+  baseURL: resolvedBaseURL,
   timeout: 300000, // Set a timeout of 5 minutes (the actual generation may take longer)
   headers: {
     'Content-Type': 'application/json'

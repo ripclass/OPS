@@ -113,5 +113,9 @@ class Config:
         errors = []
         if not cls.LLM_API_KEY:
             errors.append("LLM_API_KEY is not configured")
+        if not cls.DEBUG:
+            if cls.SECRET_KEY == 'ops-secret-key':
+                errors.append("SECRET_KEY must be set to a non-default value in production")
+            if not cls.get_cors_origins():
+                errors.append("FRONTEND_ORIGIN or FRONTEND_ORIGINS must be configured in production")
         return errors
-

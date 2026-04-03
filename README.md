@@ -31,6 +31,8 @@ OPS is designed for India, Bangladesh, and Pakistan first, while keeping the wor
 
 This repository is intended for local or private deployment of OPS.
 
+- Deployment guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
 ## Screenshots
 
 <div align="center">

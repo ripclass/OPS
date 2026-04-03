@@ -20,6 +20,11 @@ def create_app(config_class=Config):
     """Flask application factory function"""
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    config_errors = config_class.validate()
+    if config_errors:
+        error_message = "; ".join(config_errors)
+        raise RuntimeError(f"OPS backend configuration invalid: {error_message}")
     
     # Set JSON encoding: ensure non-ASCII text is displayed directly (instead of \uXXXX format)
     # Flask >= 2.3 uses app.json.ensure_ascii, older versions use JSON_AS_ASCII configuration
@@ -41,14 +46,10 @@ def create_app(config_class=Config):
         if not app.config.get('ZEP_ENABLED'):
             logger.warning("ZEP_API_KEY is not configured, Zep map related functions will be unavailable, but local UI and non-Zep functions can be started normally")
     
-    # Enable CORS. In production, prefer explicit frontend origins.
-    cors_origins = Config.get_cors_origins()
+    # Enable CORS. In production, require explicit frontend origins.
+    cors_origins = config_class.get_cors_origins()
     if app.config.get('DEBUG', False):
         cors_origins = cors_origins or "*"
-    else:
-        if not cors_origins:
-            logger.warning("No FRONTEND_ORIGIN configured; falling back to wildcard CORS")
-            cors_origins = "*"
 
     CORS(app, resources={r"/api/*": {"origins": cors_origins}})
     
