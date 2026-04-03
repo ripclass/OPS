@@ -22,7 +22,7 @@ export const AGENT_STORIES = {
     imagePath: '/landing/halima-portrait.webp',
     imageAlt: 'Halima portrait',
     eyeMarker: {
-      top: '166px',
+      top: '186px',
       left: '199px',
       width: '190px',
       height: '48px',

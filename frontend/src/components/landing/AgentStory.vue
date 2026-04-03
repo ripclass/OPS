@@ -231,7 +231,7 @@ const inkTitleLines = computed(() => {
 
 .hero-story__copy {
   position: absolute;
-  left: 616px;
+  left: 595px;
   top: 580px;
   width: 263px;
   color: #000;
@@ -309,7 +309,7 @@ const inkTitleLines = computed(() => {
 
 .scribble--hero-top-left {
   left: 7px;
-  top: 47px;
+  top: 26px;
   font-size: 36px;
   transform: rotate(-2deg);
 }
@@ -341,7 +341,7 @@ const inkTitleLines = computed(() => {
 }
 
 .scribble--hero-in-image {
-  left: 17px;
+  left: 8px;
   bottom: 10px;
   width: 302px;
   color: #fff;
