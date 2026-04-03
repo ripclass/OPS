@@ -233,7 +233,7 @@ const inkTitleLines = computed(() => {
 .hero-story__copy {
   position: absolute;
   left: 595px;
-  top: 606px;
+  top: 620px;
   width: 263px;
   color: #000;
 }
@@ -248,7 +248,7 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__headline-meta {
-  margin: 6px 0 0;
+  margin: 2px 0 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
   font-size: 18px;
@@ -257,7 +257,7 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__body {
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .hero-story__paragraph {
@@ -274,7 +274,7 @@ const inkTitleLines = computed(() => {
 .hero-story__brand-lockup {
   position: absolute;
   left: 11px;
-  top: 828px;
+  top: 850px;
   width: 271px;
 }
 
@@ -312,7 +312,7 @@ const inkTitleLines = computed(() => {
 .hero-story__scribble--footer {
   position: absolute;
   left: 655px;
-  top: 842px;
+  top: 864px;
   width: 312px;
   text-align: right;
 }

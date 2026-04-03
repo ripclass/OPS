@@ -400,7 +400,7 @@ const scrollToTop = () => {
 }
 
 .opening-shell {
-  min-height: 980px;
+  min-height: 1020px;
   padding-top: 0;
 }
 
