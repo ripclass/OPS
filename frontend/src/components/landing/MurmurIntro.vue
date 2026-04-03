@@ -13,8 +13,8 @@
       </div>
     </div>
 
-    <figure class="intro-illustration" aria-label="Murmur roundtable illustration">
-      <img src="/landing/murmur-roundtable.svg" alt="" />
+    <figure class="intro-illustration" aria-label="Murmur editorial illustration">
+      <img src="/landing/murmur-intro-illustration.webp" alt="" />
     </figure>
 
   </section>
