@@ -244,11 +244,11 @@ const inkTitleLines = computed(() => {
   font-family: var(--murmur-font-display);
   font-size: 24px;
   font-weight: 700;
-  line-height: 1.29;
+  line-height: 1.08;
 }
 
 .hero-story__headline-meta {
-  margin: 0;
+  margin: -1px 0 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
   font-size: 18px;
@@ -257,14 +257,14 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__body {
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .hero-story__paragraph {
   margin: 0 0 10px;
   color: #000;
   font-family: var(--murmur-font-type);
-  font-size: 10px;
+  font-size: 10.6px;
   line-height: 1;
   text-shadow:
     0.15px 0 rgba(0, 0, 0, 0.9),
@@ -274,7 +274,7 @@ const inkTitleLines = computed(() => {
 .hero-story__brand-lockup {
   position: absolute;
   left: 11px;
-  top: 850px;
+  top: 826px;
   width: 271px;
 }
 
@@ -312,7 +312,7 @@ const inkTitleLines = computed(() => {
 .hero-story__scribble--footer {
   position: absolute;
   left: 655px;
-  top: 864px;
+  top: 840px;
   width: 312px;
   text-align: right;
 }
