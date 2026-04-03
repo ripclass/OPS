@@ -45,11 +45,11 @@ const props = defineProps({
 const { targetRef, isVisible } = useRevealOnScroll()
 
 const labels = [
-  'Bangladesh / factory shame',
-  'India / unpaid infrastructure',
-  'Pakistan / concealment as survival',
-  'Nepal / invisible economy',
-  'Sri Lanka / despair, not anger',
+  'Chittagong EPZ / migrant women',
+  'Rangpur / health trust economy',
+  'Noakhali / remittance households',
+  'Dhaka and district youth / not one public',
+  'Barisal to Gazipur / price shock math',
 ]
 
 const decorate = (text, target, replacement) => text.replace(target, replacement)
@@ -73,9 +73,9 @@ const decoratedDetail = computed(() => decorate(
 ))
 
 const decoratedClose = computed(() => decorate(
-  'We know these people because we are from where they are from.',
-  'from where they are from',
-  '<span class="knowledge-underline knowledge-underline--tight">from where they are from</span>'
+  'We know these people because we are from here.',
+  'from here',
+  '<span class="knowledge-underline knowledge-underline--tight">from here</span>'
 ))
 
 const knowledgeEntries = computed(() => props.items.map((text, index) => ({

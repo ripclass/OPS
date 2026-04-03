@@ -236,11 +236,11 @@ export const AGENT_FEED_POSTS = [
 ]
 
 export const WHAT_IT_KNOWS = [
-  'A garments worker in Chittagong EPZ is a migrant from Noakhali - not a local woman. A local middle-class Chatgaayan woman in a garment factory faces social ruin. The migrant does not. Same factory. Same city. Two completely different people. Every other simulation treats them as one.',
-  '3.5 million Indian women classified as volunteers run the public health system on less than minimum wage. They are trained, politically organized, and angry enough to strike for a hundred days. They are the most important node in any health campaign simulation. No other system even has them as a category.',
-  'An Ahmadi engineer in Lahore cannot say Assalamu Alaikum without risking arrest. His entire digital presence is concealment. His silence is not disengagement. It is survival strategy encoded at the identity level. Miss that and your Pakistan simulation is fiction.',
-  "A Nepali wife in Sindhupalchok manages the farm, the goats, the school fees, the mother-in-law's medication, and the moneylender - on Rs 30,000 a month from Qatar that used to cover everything and no longer does. She is not unemployed. She is the economy. No labor survey counts her.",
-  'Selvamani the tea plucker earns Rs 1,350 a day. Rice is Rs 250 a kilo. She has five people in a room built by the British for workers they considered less than permanent. She responds to a price shock with despair. Not anger. Despair is the correct emotion for someone with two hundred years of inherited powerlessness and no political vocabulary for rage.',
+  'A garments worker in Chittagong EPZ is usually a migrant from Noakhali, Bhola, or Lakshmipur, not a local middle-class Chatgaayan woman. A local woman in that factory faces social ruin. The migrant does not. Same floor. Same wage band. Two completely different social worlds. Most simulations collapse them into one.',
+  'A BRAC shasthya shebika in Rangpur is not a salaried health worker. She lives on medicine sales, referrals, and local trust. If a clinic campaign makes her look like the government\'s messenger, she can lose the very women she depends on. Miss that and your Bangladesh health simulation mistakes compliance for credibility.',
+  'A wife in Noakhali with a husband in Saudi Arabia is not economically inactive. She manages remittance timing, bKash cash-outs, school fees, food rationing, and the mother-in-law\'s medicine. She may post nothing, protest nothing, and still be the first place a price shock is absorbed. No labor survey sees her clearly.',
+  'A Dhaka University student activist, a madrasa student in Brahmanbaria, and a private tutor in Mirpur do not receive the same message as the same politics. One frames it as betrayal, one as fitna, one as risk to livelihood. Put them in one youth segment and your Bangladesh model turns into fiction.',
+  'A fish trader in Barisal, a launch worker in Chandpur, and a CNG driver in Gazipur experience the same diesel increase differently: one raises prices, one loses passengers, one cuts meals at home. The public reaction is not one cascade. It is three linked household calculations moving at different speeds.',
 ]
 
 export const WHAT_IT_DOES = [
