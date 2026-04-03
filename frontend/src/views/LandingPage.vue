@@ -30,6 +30,24 @@
 
     <main class="murmur-main">
       <section class="opening-shell">
+        <div class="opening-annotations" aria-hidden="true">
+          <div class="opening-note opening-note--upper">
+            <div class="opening-note__kicker">{{ heroNotes.kicker }}</div>
+            <div class="opening-note__list">
+              <span v-for="note in heroNotes.notes" :key="note">{{ note }}</span>
+            </div>
+          </div>
+
+          <div class="opening-note opening-note--lower">
+            <span class="opening-note__raw">heard in field / not in the survey</span>
+            <span class="opening-note__doodle">{{ heroNotes.doodle }}</span>
+          </div>
+
+          <div class="opening-stroke opening-stroke--top"></div>
+          <div class="opening-stroke opening-stroke--side"></div>
+          <div class="opening-ring"></div>
+        </div>
+
         <div v-if="loading" class="opening-status">Finding where you arrived from.</div>
         <AgentStory
           v-else
@@ -120,6 +138,7 @@ import {
   AGENT_FEED_POSTS,
   AGENT_STORIES,
   GLOBAL_ROTATION_ORDER,
+  HERO_NOTES,
   LEGITIMACY_LINES,
   WHAT_IT_DOES,
   WHAT_IT_KNOWS,
@@ -141,6 +160,7 @@ let rotationTimer = null
 
 const globalStories = GLOBAL_ROTATION_ORDER.map(key => AGENT_STORIES[key])
 const isGlobal = computed(() => countryKey.value === 'global')
+const heroNotes = computed(() => HERO_NOTES[countryKey.value] || HERO_NOTES.global)
 
 const currentStory = computed(() => {
   if (isGlobal.value) {
@@ -286,7 +306,7 @@ const scrollToTop = () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Sinhala:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&family=Permanent+Marker&display=swap');
 
 .murmur-page {
   --murmur-bg-primary: #08080c;
@@ -303,6 +323,8 @@ const scrollToTop = () => {
   --murmur-font-serif: 'DM Serif Display', 'Source Serif 4', serif;
   --murmur-font-body: 'DM Sans', 'Source Sans 3', sans-serif;
   --murmur-font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  --murmur-font-hand: 'Caveat', cursive;
+  --murmur-font-marker: 'Permanent Marker', cursive;
   --murmur-font-script-bengali: 'Noto Sans Bengali', sans-serif;
   --murmur-font-script-devanagari: 'Noto Sans Devanagari', sans-serif;
   --murmur-font-script-arabic: 'Noto Sans Arabic', sans-serif;
@@ -375,7 +397,102 @@ const scrollToTop = () => {
 }
 
 .opening-shell {
+  position: relative;
   min-height: 74vh;
+}
+
+.opening-annotations {
+  position: absolute;
+  inset: -12px -72px auto -86px;
+  pointer-events: none;
+}
+
+.opening-note {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 220px;
+  opacity: 0.78;
+}
+
+.opening-note--upper {
+  top: -10px;
+  right: -8px;
+  transform: rotate(-4deg);
+  align-items: flex-end;
+}
+
+.opening-note--lower {
+  left: -10px;
+  top: 58%;
+  transform: rotate(3deg);
+}
+
+.opening-note__kicker {
+  color: var(--murmur-text-heading);
+  font-family: var(--murmur-font-marker);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+
+.opening-note__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: rgba(232, 232, 236, 0.86);
+  font-family: var(--murmur-font-hand);
+  font-size: 28px;
+  line-height: 0.98;
+}
+
+.opening-note__raw {
+  color: var(--murmur-text-heading);
+  font-family: var(--murmur-font-hand);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.opening-note__doodle {
+  color: var(--murmur-accent);
+  font-family: var(--murmur-font-marker);
+  font-size: 20px;
+  line-height: 1.1;
+  max-width: 220px;
+}
+
+.opening-stroke,
+.opening-ring {
+  position: absolute;
+  border-color: rgba(232, 232, 236, 0.26);
+}
+
+.opening-stroke--top {
+  top: 72px;
+  left: -54px;
+  width: 130px;
+  border-top: 3px solid rgba(232, 232, 236, 0.26);
+  transform: rotate(-7deg);
+}
+
+.opening-stroke--side {
+  right: 46px;
+  top: 46%;
+  width: 84px;
+  border-top: 2px solid rgba(192, 57, 43, 0.38);
+  transform: rotate(12deg);
+}
+
+.opening-ring {
+  top: 146px;
+  right: 72px;
+  width: 92px;
+  height: 44px;
+  border: 2px solid rgba(232, 232, 236, 0.18);
+  border-radius: 999px;
+  transform: rotate(-9deg);
 }
 
 .opening-status {
@@ -403,6 +520,20 @@ const scrollToTop = () => {
   line-height: 0.95;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  position: relative;
+  display: inline-block;
+}
+
+.title-reveal__wordmark::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  right: -16px;
+  bottom: -6px;
+  height: 14px;
+  border-bottom: 3px solid rgba(192, 57, 43, 0.62);
+  border-radius: 999px;
+  transform: rotate(-2deg);
 }
 
 .title-reveal__subtitle {
@@ -477,6 +608,47 @@ const scrollToTop = () => {
 
   .murmur-main {
     padding: 64px 20px 32px;
+  }
+
+  .opening-annotations {
+    inset: -24px 0 auto 0;
+  }
+
+  .opening-note {
+    max-width: 170px;
+  }
+
+  .opening-note--upper {
+    right: 0;
+  }
+
+  .opening-note--lower {
+    top: auto;
+    bottom: 112px;
+    left: 0;
+  }
+
+  .opening-note__list,
+  .opening-note__raw {
+    font-size: 22px;
+  }
+
+  .opening-note__kicker {
+    font-size: 18px;
+  }
+
+  .opening-note__doodle {
+    font-size: 16px;
+  }
+
+  .opening-stroke--top {
+    left: 8px;
+    width: 72px;
+  }
+
+  .opening-stroke--side,
+  .opening-ring {
+    display: none;
   }
 
   .content-section {

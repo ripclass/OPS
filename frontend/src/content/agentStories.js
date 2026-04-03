@@ -102,6 +102,39 @@ export const AGENT_STORIES = {
   },
 }
 
+export const HERO_NOTES = {
+  bangladesh: {
+    kicker: 'field note',
+    notes: ['she never posts', 'remittance house', 'one meal disappears first'],
+    doodle: 'the missing signal',
+  },
+  india: {
+    kicker: 'health system',
+    notes: ['volunteer on paper', 'worker in reality', 'walks before sunrise'],
+    doodle: 'infrastructure with no salary',
+  },
+  pakistan: {
+    kicker: 'household silence',
+    notes: ['WhatsApp first', 'Quran verse second', 'politics stays coded'],
+    doodle: 'patience is not consent',
+  },
+  srilanka: {
+    kicker: 'estate arithmetic',
+    notes: ['Rs 1,350', '5 mouths', 'numbers do not resolve'],
+    doodle: 'despair, not rage',
+  },
+  nepal: {
+    kicker: 'migration debt',
+    notes: ['Qatar transfer', 'roof still leaks', 'medication delayed'],
+    doodle: 'the fifteenth decides the month',
+  },
+  global: {
+    kicker: 'five openings',
+    notes: ['five countries', 'same shock', 'different silences'],
+    doodle: 'none of this is generic',
+  },
+}
+
 export const AGENT_FEED_POSTS = [
   {
     meta: 'BD · Bangla · garments worker · Gazipur',
