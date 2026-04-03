@@ -233,7 +233,7 @@ const inkTitleLines = computed(() => {
 .hero-story__copy {
   position: absolute;
   left: 595px;
-  top: 604px;
+  bottom: 262px;
   width: 263px;
   color: #000;
 }
@@ -248,7 +248,7 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__headline-meta {
-  margin: 2px 0 0;
+  margin: 0;
   color: #0048ff;
   font-family: var(--murmur-font-hand);
   font-size: 18px;
@@ -257,7 +257,7 @@ const inkTitleLines = computed(() => {
 }
 
 .hero-story__body {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .hero-story__paragraph {
