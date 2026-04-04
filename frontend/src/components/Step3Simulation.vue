@@ -27,7 +27,9 @@
             </span>
             <span class="stat">
               <span class="stat-label">ACTS</span>
-              <span class="stat-value mono">{{ runStatus.twitter_actions_count || 0 }}</span>
+              <span class="stat-value mono">
+                {{ runStatus.twitter_actions_count || 0 }}<span v-if="twitterActionsTotal" class="stat-total">/{{ twitterActionsTotal }}</span>
+              </span>
             </span>
           </div>
           <!-- Available action prompts -->
@@ -68,7 +70,9 @@
             </span>
             <span class="stat">
               <span class="stat-label">ACTS</span>
-              <span class="stat-value mono">{{ runStatus.reddit_actions_count || 0 }}</span>
+              <span class="stat-value mono">
+                {{ runStatus.reddit_actions_count || 0 }}<span v-if="redditActionsTotal" class="stat-total">/{{ redditActionsTotal }}</span>
+              </span>
             </span>
           </div>
           <!-- Available action prompts -->
@@ -108,16 +112,16 @@
       <!-- Timeline Header -->
       <div class="timeline-header" v-if="allActions.length > 0">
         <div class="timeline-stats">
-          <span class="total-count">TOTAL EVENTS: <span class="mono">{{ allActions.length }}</span></span>
+          <span class="total-count">TOTAL EVENTS: <span class="mono">{{ totalEventsCount }}</span></span>
           <span class="platform-breakdown">
             <span class="breakdown-item twitter">
               <svg class="mini-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-              <span class="mono">{{ twitterActionsCount }}</span>
+              <span class="mono">{{ twitterActionsTotal }}</span>
             </span>
             <span class="breakdown-divider">/</span>
             <span class="breakdown-item reddit">
               <svg class="mini-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              <span class="mono">{{ redditActionsCount }}</span>
+              <span class="mono">{{ redditActionsTotal }}</span>
             </span>
           </span>
         </div>
@@ -344,6 +348,18 @@ const twitterActionsCount = computed(() => {
 
 const redditActionsCount = computed(() => {
   return allActions.value.filter(a => a.platform === 'reddit').length
+})
+
+const twitterActionsTotal = computed(() => {
+  return runStatus.value.twitter_total_actions || twitterActionsCount.value
+})
+
+const redditActionsTotal = computed(() => {
+  return runStatus.value.reddit_total_actions || redditActionsCount.value
+})
+
+const totalEventsCount = computed(() => {
+  return runStatus.value.total_actions_expected || (twitterActionsTotal.value + redditActionsTotal.value)
 })
 
 // Format simulation elapsed time (calculated based on rounds and minutes per round)

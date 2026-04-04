@@ -1066,18 +1066,11 @@ export function getDemoPrepareStatus({ task_id, simulation_id }) {
 export function getDemoProfiles(simulationId) {
   const pack = getPackForIdentifier(simulationId)
   const profiles = createProfiles(pack)
-  const runtime = getRuntimeState(pack)
-  const elapsed = getPrepareElapsed(runtime)
-
-  let visibleProfiles = profiles
-  if (runtime.prepareStartedAt && !runtime.preparedAt) {
-    visibleProfiles = profiles.slice(0, getVisibleCount(elapsed, PREPARE_DURATION_MS * 0.75, profiles.length))
-  }
 
   return {
     success: true,
     data: {
-      profiles: visibleProfiles,
+      profiles,
       total_expected: profiles.length,
     },
   }
@@ -1129,6 +1122,8 @@ export function getDemoConfig(simulationId) {
 
 export function startDemoSimulation({ simulation_id }) {
   const pack = getPackForIdentifier(simulation_id)
+  const twitterActs = pack.simulation.communityA.acts
+  const redditActs = pack.simulation.communityB.acts
   withRuntime(pack.key, current => ({
     ...current,
     simulationStartedAt: Date.now(),
@@ -1148,6 +1143,9 @@ export function startDemoSimulation({ simulation_id }) {
       reddit_current_round: 1,
       twitter_actions_count: 0,
       reddit_actions_count: 0,
+      twitter_total_actions: twitterActs,
+      reddit_total_actions: redditActs,
+      total_actions_expected: twitterActs + redditActs,
       total_rounds: 40,
       force_restarted: true,
       process_pid: 'DEMO',
@@ -1187,6 +1185,9 @@ export function getDemoRunStatus(simulationId) {
       reddit_current_round: completed ? totalRounds : currentRound,
       twitter_actions_count: Math.round(twitterActs * progress),
       reddit_actions_count: Math.round(redditActs * progress),
+      twitter_total_actions: twitterActs,
+      reddit_total_actions: redditActs,
+      total_actions_expected: twitterActs + redditActs,
       total_rounds: totalRounds,
     },
   }

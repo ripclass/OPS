@@ -889,7 +889,11 @@ const props = defineProps({
   simulationId: String,  // Passed from Parent Component
   projectData: Object,
   graphData: Object,
-  systemLogs: Array
+  systemLogs: Array,
+  demoMode: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
@@ -917,7 +921,7 @@ const demoModeEnv = import.meta.env.VITE_DEMO_MODE
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 const isDemoSimulation = computed(() => String(props.simulationId || '').startsWith('demo_'))
 const isDemoMode = computed(() => {
-  if (isDemoRoute.value || isDemoSimulation.value) {
+  if (props.demoMode || isDemoRoute.value || isDemoSimulation.value) {
     return true
   }
   return import.meta.env.DEV
@@ -1022,7 +1026,7 @@ const billingModeLabel = computed(() => {
 })
 const generatedAgentsCount = computed(() => {
   if (isDemoMode.value) {
-    return expectedTotal.value || profiles.value.length || 0
+    return profiles.value.length || expectedTotal.value || 0
   }
   return profiles.value.length
 })
@@ -1046,10 +1050,15 @@ const previewSubtitle = computed(() => {
   return `Showing ${displayProfiles.value.length} of ${generatedAgentsCount.value}`
 })
 const targetPopulationCount = computed(() => {
+  const normalizedTarget = Number.parseInt(String(opsConfig.value.targetAgents || '').replace(/,/g, ''), 10)
+
+  if (isDemoMode.value) {
+    return Number.isFinite(normalizedTarget) ? normalizedTarget : (expectedTotal.value || '-')
+  }
+
   if (expectedTotal.value) {
     return expectedTotal.value
   }
-  const normalizedTarget = Number.parseInt(String(opsConfig.value.targetAgents || '').replace(/,/g, ''), 10)
   return Number.isFinite(normalizedTarget) ? normalizedTarget : '-'
 })
 const scenarioTopicsCount = computed(() => {

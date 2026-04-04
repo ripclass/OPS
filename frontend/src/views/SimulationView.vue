@@ -53,6 +53,7 @@
           :projectData="projectData"
           :graphData="graphData"
           :systemLogs="systemLogs"
+          :demoMode="isDemoRoute"
           @go-back="handleGoBack"
           @next-step="handleNextStep"
           @add-log="addLog"
