@@ -701,10 +701,20 @@ watch(() => props.systemLogs?.length, () => {
 
 onMounted(() => {
   addLog('Step 3: Simulation Run Initialization')
-  if (props.simulationId) {
-    doStartSimulation()
-  }
 })
+
+watch(
+  () => props.simulationId,
+  (newSimulationId, previousSimulationId) => {
+    if (!newSimulationId || newSimulationId === previousSimulationId) {
+      return
+    }
+
+    addLog(`Simulation context ready: ${newSimulationId}`)
+    doStartSimulation()
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
   stopPolling()
