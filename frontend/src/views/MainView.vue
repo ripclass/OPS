@@ -321,7 +321,7 @@ const startBuildGraph = async () => {
 const startGraphPolling = () => {
   addLog('Started polling for graph data...')
   fetchGraphData()
-  graphPollTimer = setInterval(fetchGraphData, 10000)
+  graphPollTimer = setInterval(fetchGraphData, isDemoRoute.value ? 2500 : 10000)
 }
 
 const fetchGraphData = async () => {

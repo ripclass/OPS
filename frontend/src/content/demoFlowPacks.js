@@ -268,7 +268,7 @@ function createPack({
       logs: [
         `Load country priors for ${countryLabel}.`,
         `Assemble audience clusters for ${city}.`,
-        `Generate persona seeds for ${personas.length} anchor agents.`,
+        'Generate persona seeds for the full demo population.',
         `Lock environment configuration for static demo playback.`,
       ],
     },

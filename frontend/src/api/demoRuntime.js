@@ -6,7 +6,160 @@ const RUNTIME_STORAGE_KEY = 'murmur_demo_runtime_v2'
 const REPORT_TIMELINE_DURATION_MS = 9000
 const SIMULATION_DURATION_MS = 12000
 const PREPARE_DURATION_MS = 7000
+const GRAPH_BUILD_DURATION_MS = 9000
 const DEMO_MIN_AGENT_COUNT = 100
+
+const SEGMENT_KEY_ALIASES = {
+  rural: 'rural',
+  'urban working class': 'urban_working',
+  urban_working: 'urban_working',
+  'middle class': 'middle_class',
+  middle_class: 'middle_class',
+  corporate: 'corporate',
+  'migration workers': 'migration_workers',
+  migration_workers: 'migration_workers',
+  students: 'students',
+  women: 'women',
+  elderly: 'elderly',
+}
+
+const COUNTRY_AGENT_POOLS = {
+  bangladesh: {
+    defaultSegments: ['urban_working', 'students', 'women', 'migration_workers'],
+    segmentWeights: {
+      rural: 0.35,
+      urban_working: 0.24,
+      middle_class: 0.15,
+      corporate: 0.05,
+      migration_workers: 0.09,
+      students: 0.07,
+      women: 0.03,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Halima', 'Shila', 'Rokeya', 'Munni', 'Nasima', 'Jannat', 'Rashida', 'Farzana', 'Sufia', 'Aklima', 'Momena', 'Shahnaz', 'Dilruba', 'Parvin'],
+    maleFirst: ['Rafi', 'Harun', 'Sohel', 'Imran', 'Masud', 'Jahid', 'Rasel', 'Shakib', 'Monir', 'Babul', 'Kamal', 'Anis', 'Selim', 'Naeem'],
+    surnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed'],
+    locations: ['Noakhali', 'Gazipur', 'Mirpur, Dhaka', 'Keraniganj', 'Savar', 'Narayanganj', 'Mohammadpur', 'Jatrabari', 'Mugda', 'Demra'],
+    occupations: {
+      rural: ['Fish drying worker', 'Shrimp peeling worker', 'Agricultural day laborer', 'Homestead poultry farmer', 'Vegetable seller'],
+      urban_working: ['Garment worker', 'Market porter', 'Neighbourhood grocer helper', 'Food delivery rider', 'Construction helper'],
+      middle_class: ['Government school teacher', 'Nurse', 'NGO program officer', 'Bank clerk', 'Journalist'],
+      corporate: ['Software associate', 'Corporate communications officer', 'Private bank officer', 'Policy researcher', 'University lecturer'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee driver', 'Migrant wife running the household', 'Recruiting-agency caller', 'Overseas worker family bookkeeper'],
+      students: ['Campus page admin', 'Private university student', 'Public university student', 'Coaching student', 'Freelance student organizer'],
+      women: ['Queue manager for the household', 'Domestic worker', 'Beauty parlor worker', 'Microcredit field collector', 'Clinic support worker'],
+      elderly: ['Retired madrasa teacher', 'Retired school clerk', 'Elderly shopkeeper', 'Village elder', 'Household pensioner'],
+    },
+  },
+  india: {
+    defaultSegments: ['urban_working', 'students', 'women', 'middle_class'],
+    segmentWeights: {
+      rural: 0.32,
+      urban_working: 0.24,
+      middle_class: 0.17,
+      corporate: 0.08,
+      migration_workers: 0.07,
+      students: 0.07,
+      women: 0.03,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Phulwanti', 'Sunita', 'Asha', 'Meena', 'Kavita', 'Pooja', 'Ruksana', 'Shabnam'],
+    maleFirst: ['Rahul', 'Vikas', 'Imran', 'Arjun', 'Suresh', 'Rohit', 'Prakash', 'Amit'],
+    surnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Devi', 'Khan', 'Paswan'],
+    locations: ['Delhi', 'Gaya', 'Noida', 'Surat', 'Lucknow', 'Patna', 'Mumbai', 'Kanpur'],
+    occupations: {
+      rural: ['NREGA worker', 'Bidi roller', 'ASHA volunteer', 'Agricultural laborer', 'Dairy farmer'],
+      urban_working: ['Delivery rider', 'Construction worker', 'Domestic worker', 'Garment worker', 'Security guard'],
+      middle_class: ['Government teacher', 'Clinic receptionist', 'Bank assistant', 'Journalist', 'Tutor'],
+      corporate: ['Software engineer', 'Operations analyst', 'Law associate', 'Consultant', 'HR manager'],
+      migration_workers: ['Surat construction migrant', 'Gulf returnee', 'Interstate factory worker', 'Driver', 'Warehouse loader'],
+      students: ['Campus organizer', 'Civil service aspirant', 'Engineering student', 'Student page editor', 'Law student'],
+      women: ['ASHA worker', 'Anganwadi worker', 'Tailor', 'Beauty worker', 'Nurse trainee'],
+      elderly: ['Retired clerk', 'Retired teacher', 'Small shopkeeper', 'Temple committee elder', 'Pensioner'],
+    },
+  },
+  pakistan: {
+    defaultSegments: ['urban_working', 'women', 'migration_workers', 'students'],
+    segmentWeights: {
+      rural: 0.33,
+      urban_working: 0.23,
+      middle_class: 0.16,
+      corporate: 0.06,
+      migration_workers: 0.09,
+      students: 0.07,
+      women: 0.04,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Nasreen', 'Rabia', 'Farzana', 'Shazia', 'Nida', 'Rukhsar', 'Amina', 'Hina'],
+    maleFirst: ['Bilal', 'Imran', 'Usman', 'Adnan', 'Salman', 'Hamza', 'Faisal', 'Adeel'],
+    surnames: ['Khan', 'Butt', 'Ahmed', 'Siddiqui', 'Ansari', 'Malik', 'Chaudhry', 'Sheikh'],
+    locations: ['Faisalabad', 'Lahore', 'Karachi', 'Rawalpindi', 'Multan', 'Sialkot', 'Peshawar', 'Hyderabad'],
+    occupations: {
+      rural: ['Cotton picker', 'Brick kiln worker', 'Agricultural laborer', 'Canal-irrigation farmer', 'Livestock caretaker'],
+      urban_working: ['Power loom worker', 'Delivery rider', 'Factory loader', 'Workshop mechanic', 'Security guard'],
+      middle_class: ['School teacher', 'Bank assistant', 'Clinic admin', 'Reporter', 'Pharmacist'],
+      corporate: ['Software developer', 'Compliance officer', 'Media producer', 'Corporate lawyer', 'NGO coordinator'],
+      migration_workers: ['Gulf household manager', 'Saudi construction worker family contact', 'Remittance-dependent spouse', 'Visa processing helper', 'Return migrant driver'],
+      students: ['Student union poster', 'Campus debater', 'Exam prep student', 'WhatsApp admin', 'Law student'],
+      women: ['Home-based embroidery worker', 'Tailor', 'LHW volunteer', 'Quran tutor', 'Beauty worker'],
+      elderly: ['Retired trader', 'Mohalla elder', 'Retired government clerk', 'Mosque committee elder', 'Pensioner'],
+    },
+  },
+  srilanka: {
+    defaultSegments: ['urban_working', 'women', 'middle_class', 'students'],
+    segmentWeights: {
+      rural: 0.28,
+      urban_working: 0.25,
+      middle_class: 0.18,
+      corporate: 0.08,
+      migration_workers: 0.09,
+      students: 0.06,
+      women: 0.04,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Selvamani', 'Tharshi', 'Nadeesha', 'Shanika', 'Fathima', 'Kumari', 'Ruwani', 'Dilani'],
+    maleFirst: ['Suren', 'Kasun', 'Nimal', 'Arun', 'Rizwan', 'Pradeep', 'Thilak', 'Sajith'],
+    surnames: ['Perera', 'Fernando', 'Silva', 'Rajapaksa', 'Nadarajah', 'Subramaniam', 'Mendis', 'Ismail'],
+    locations: ['Nuwara Eliya', 'Colombo', 'Kandy', 'Jaffna', 'Batticaloa', 'Galle', 'Negombo', 'Ratnapura'],
+    occupations: {
+      rural: ['Tea plucker', 'Smallholder farmer', 'Fishing worker', 'Gem pit laborer', 'Rubber tapper'],
+      urban_working: ['FTZ garment worker', 'Bus conductor', 'Shop cashier', 'Delivery rider', 'Port helper'],
+      middle_class: ['School teacher', 'Nurse', 'Bank officer', 'Local journalist', 'Account assistant'],
+      corporate: ['IT analyst', 'Tourism manager', 'Law associate', 'Corporate planner', 'Private hospital executive'],
+      migration_workers: ['Gulf remittance wife', 'Abroad domestic worker family contact', 'Return migrant technician', 'Transfer-dependent parent', 'Recruitment desk caller'],
+      students: ['Campus activist', 'Tuition student', 'University society editor', 'Student page moderator', 'A-level candidate'],
+      women: ['Tea estate household manager', 'Clinic attendant', 'Garment dormitory worker', 'School canteen worker', 'Union volunteer'],
+      elderly: ['Retired public servant', 'Temple elder', 'Estate elder', 'Small trader', 'Pensioner'],
+    },
+  },
+  nepal: {
+    defaultSegments: ['migration_workers', 'women', 'rural', 'students'],
+    segmentWeights: {
+      rural: 0.35,
+      urban_working: 0.2,
+      middle_class: 0.15,
+      corporate: 0.05,
+      migration_workers: 0.13,
+      students: 0.06,
+      women: 0.04,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Kalpana', 'Sita', 'Asha', 'Mina', 'Laxmi', 'Pabitra', 'Sunita', 'Gita'],
+    maleFirst: ['Milan', 'Suresh', 'Dinesh', 'Bikash', 'Rajesh', 'Kiran', 'Ram', 'Arjun'],
+    surnames: ['Tamang', 'Sharma', 'Thapa', 'Magar', 'Yadav', 'Rai', 'Sherpa', 'Chaudhary'],
+    locations: ['Sindhupalchok', 'Kathmandu', 'Pokhara', 'Biratnagar', 'Janakpur', 'Dang', 'Butwal', 'Dhading'],
+    occupations: {
+      rural: ['Farmer', 'Goat keeper', 'Village shopkeeper', 'Terrace cultivator', 'Vegetable seller'],
+      urban_working: ['Delivery rider', 'Construction worker', 'Market helper', 'Bus helper', 'Factory hand'],
+      middle_class: ['Teacher', 'Bank assistant', 'NGO officer', 'Clinic worker', 'Journalist'],
+      corporate: ['IT associate', 'Project officer', 'Travel company analyst', 'Policy assistant', 'Private bank officer'],
+      migration_workers: ['Remittance household manager', 'Qatar worker family contact', 'Malaysia returnee', 'Visa processing clerk', 'Transfer-dependent spouse'],
+      students: ['Campus organizer', 'Exam student', 'Messenger group admin', 'Nursing student', 'Law student'],
+      women: ['FCHV volunteer', 'Household manager', 'Tailor', 'School meal worker', 'Clinic attendant'],
+      elderly: ['Retired teacher', 'Ward elder', 'Small landowner', 'Temple helper', 'Pensioner'],
+    },
+  },
+}
 
 function getStorage() {
   if (typeof window === 'undefined') {
@@ -46,6 +199,9 @@ function saveRuntime(runtime) {
 function withRuntime(packKey, updater) {
   const runtime = loadRuntime()
   const nextPackState = updater({
+    graphBuildTaskId: null,
+    buildStartedAt: null,
+    graphCompletedAt: null,
     prepareTaskId: null,
     prepareStartedAt: null,
     preparedAt: null,
@@ -61,7 +217,7 @@ function withRuntime(packKey, updater) {
 }
 
 function getPackKeyFromIdentifier(value) {
-  const match = String(value || '').match(/^demo_([^_]+)_(project|graph|sim|report|prepare)$/)
+  const match = String(value || '').match(/^demo_([^_]+)_(project|graph|sim|report|prepare|graphbuild)$/)
   return match?.[1] || null
 }
 
@@ -78,6 +234,7 @@ function getIdsForPack(pack) {
   return {
     projectId: `demo_${pack.key}_project`,
     graphId: `demo_${pack.key}_graph`,
+    graphBuildTaskId: `demo_${pack.key}_graphbuild`,
     simulationId: pack.population.simulationId || `demo_${pack.key}_sim`,
     reportId: `demo_${pack.key}_report`,
     prepareTaskId: `demo_${pack.key}_prepare`,
@@ -119,16 +276,101 @@ function createProjectData(pack) {
   }
 }
 
-function resolveDemoAgentCount() {
-  const pending = getPendingUpload()
-  const rawTarget = String(pending.opsConfig?.targetAgents || DEMO_MIN_AGENT_COUNT).replace(/,/g, '').trim()
-  const parsed = Number.parseInt(rawTarget, 10)
-
+function normalizeDemoAgentCount(value) {
+  const parsed = Number.parseInt(String(value || '').replace(/,/g, '').trim(), 10)
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return DEMO_MIN_AGENT_COUNT
   }
-
   return parsed
+}
+
+function normalizeSegmentKey(value) {
+  const normalized = String(value || '').trim().toLowerCase()
+  return SEGMENT_KEY_ALIASES[normalized] || null
+}
+
+function resolveDemoRuntimeConfig(pack) {
+  const runtime = getRuntimeState(pack)
+  const pending = getPendingUpload()
+  const selectedSegments = Array.isArray(runtime.selectedSegments) && runtime.selectedSegments.length
+    ? runtime.selectedSegments.map(normalizeSegmentKey).filter(Boolean)
+    : Array.isArray(pending.opsConfig?.segments)
+      ? pending.opsConfig.segments.map(normalizeSegmentKey).filter(Boolean)
+      : []
+
+  return {
+    selectedAgentCount: normalizeDemoAgentCount(runtime.selectedAgentCount || pending.opsConfig?.targetAgents),
+    selectedSegments,
+  }
+}
+
+function resolveDemoAgentCount(pack) {
+  return resolveDemoRuntimeConfig(pack).selectedAgentCount
+}
+
+function resolveDemoSegments(pack) {
+  const config = resolveDemoRuntimeConfig(pack)
+  const pools = COUNTRY_AGENT_POOLS[pack.key] || COUNTRY_AGENT_POOLS.bangladesh
+  return config.selectedSegments.length ? config.selectedSegments : pools.defaultSegments
+}
+
+function normalizeWeightSubset(weights) {
+  const total = Object.values(weights).reduce((sum, weight) => sum + Math.max(weight || 0, 0), 0)
+  if (total <= 0) {
+    const keys = Object.keys(weights)
+    const even = keys.length ? 1 / keys.length : 1
+    return Object.fromEntries(keys.map(key => [key, even]))
+  }
+  return Object.fromEntries(
+    Object.entries(weights).map(([key, weight]) => [key, Math.max(weight || 0, 0) / total])
+  )
+}
+
+function allocateWeightedCounts(totalCount, weights) {
+  const allocations = {}
+  const remainders = []
+  let assigned = 0
+
+  Object.entries(weights).forEach(([key, weight]) => {
+    const raw = totalCount * weight
+    const count = Math.floor(raw)
+    allocations[key] = count
+    assigned += count
+    remainders.push({ key, remainder: raw - count })
+  })
+
+  let remaining = totalCount - assigned
+  remainders
+    .sort((left, right) => right.remainder - left.remainder)
+    .forEach(({ key }) => {
+      if (remaining <= 0) {
+        return
+      }
+      allocations[key] += 1
+      remaining -= 1
+    })
+
+  return allocations
+}
+
+function buildSegmentAssignments(pack, totalAgents) {
+  const pools = COUNTRY_AGENT_POOLS[pack.key] || COUNTRY_AGENT_POOLS.bangladesh
+  const selectedSegments = resolveDemoSegments(pack)
+  const availableWeights = pools.segmentWeights || {}
+  const selectedWeights = normalizeWeightSubset(
+    Object.fromEntries(selectedSegments.map(segment => [segment, availableWeights[segment] ?? 1]))
+  )
+  const allocations = allocateWeightedCounts(totalAgents, selectedWeights)
+  const assignments = []
+
+  Object.entries(allocations).forEach(([segment, count]) => {
+    for (let index = 0; index < count; index += 1) {
+      assignments.push(segment)
+    }
+  })
+
+  assignments.sort((left, right) => selectedSegments.indexOf(left) - selectedSegments.indexOf(right))
+  return assignments
 }
 
 function buildTopicPool(pack) {
@@ -161,29 +403,82 @@ function buildTopicPool(pack) {
   return Array.from(new Set([...seedTopics, ...dynamicTopics]))
 }
 
+function buildUniqueAgentName(pools, gender, index) {
+  const firstNames = gender === 'female' ? pools.femaleFirst : pools.maleFirst
+  const first = firstNames[index % firstNames.length]
+  const surname = pools.surnames[Math.floor(index / firstNames.length) % pools.surnames.length]
+  const cycle = Math.floor(index / (firstNames.length * pools.surnames.length))
+  return cycle > 0 ? `${first} ${surname} ${cycle + 1}` : `${first} ${surname}`
+}
+
+function buildAgentProfession(pack, pools, segmentKey, index) {
+  const pool = pools.occupations[segmentKey] || [pack.population.personas[index % pack.population.personas.length]?.role || 'Community member']
+  return pool[index % pool.length]
+}
+
+function buildAgentLocation(pools, index) {
+  return pools.locations[index % pools.locations.length]
+}
+
+function createDemoBio(pack, anchor, profession, location, segmentKey, detailNote) {
+  const segmentNotes = {
+    rural: 'Feels the shock first through food, transport, and local market exposure.',
+    urban_working: 'Reads the crisis through wages, rent, and the next market visit.',
+    middle_class: 'Balances household dignity with growing institutional distrust.',
+    corporate: 'Interprets the issue through reputational risk and formal messaging gaps.',
+    migration_workers: 'Measures every change against remittance timing and household duty.',
+    students: 'Moves quickly between grievance, screenshots, and peer amplification.',
+    women: 'Carries the household burden before the complaint becomes public.',
+    elderly: 'Responds slowly, but remembers previous shocks and shortages clearly.',
+  }
+
+  return `${location}. ${profession}. ${detailNote} ${anchor.trait}. ${segmentNotes[segmentKey] || 'Tracks public change through local networks.'}`
+}
+
+function resolveAgentGender(segmentKey, index) {
+  if (segmentKey === 'women') {
+    return 'female'
+  }
+  if (segmentKey === 'elderly') {
+    return index % 3 === 0 ? 'female' : 'male'
+  }
+  return index % 2 === 0 ? 'female' : 'male'
+}
+
+function createHandle(name, index) {
+  const slug = String(name || 'murmur_agent')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+  return `${slug}_${String(index + 1).padStart(3, '0')}`
+}
+
 function createProfiles(pack) {
   const topicPool = buildTopicPool(pack)
   const anchors = pack.population.personas
-  const totalAgents = resolveDemoAgentCount()
+  const pools = COUNTRY_AGENT_POOLS[pack.key] || COUNTRY_AGENT_POOLS.bangladesh
+  const totalAgents = resolveDemoAgentCount(pack)
+  const segmentAssignments = buildSegmentAssignments(pack, totalAgents)
 
   return Array.from({ length: totalAgents }, (_, index) => {
     const anchor = anchors[index % anchors.length]
-    const clusterIndex = Math.floor(index / anchors.length)
-    const username = clusterIndex === 0
-      ? anchor.name
-      : `${anchor.name} ${String(clusterIndex + 1).padStart(2, '0')}`
-    const handleBase = username.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+    const segmentKey = segmentAssignments[index] || pools.defaultSegments[index % pools.defaultSegments.length]
+    const gender = resolveAgentGender(segmentKey, index)
+    const username = buildUniqueAgentName(pools, gender, index)
+    const profession = buildAgentProfession(pack, pools, segmentKey, index)
+    const location = buildAgentLocation(pools, index)
+    const detailNote = pack.population.notes[index % pack.population.notes.length]
     const interested_topics = Array.from({ length: 4 }, (_unused, topicIndex) => {
-      return topicPool[(index + topicIndex * 3) % topicPool.length]
+      return topicPool[(index + topicIndex * 5) % topicPool.length]
     })
 
     return {
       id: index,
       agent_id: index,
       username,
-      name: `${handleBase}_${String(index + 1).padStart(3, '0')}`,
-      profession: anchor.role,
-      bio: `${anchor.detail}. ${anchor.trait}. Cluster ${clusterIndex + 1} follows the ${pack.countryLabel} ${pack.key} shock pattern.`,
+      name: createHandle(username, index),
+      profession,
+      bio: createDemoBio(pack, anchor, profession, location, segmentKey, detailNote),
       interested_topics,
       entity_type: 'Person',
     }
@@ -192,6 +487,7 @@ function createProfiles(pack) {
 
 function createSimulationConfig(pack) {
   const profiles = createProfiles(pack)
+  const previewProfiles = profiles.slice(0, Math.min(profiles.length, 24))
 
   return {
     time_config: {
@@ -208,7 +504,7 @@ function createSimulationConfig(pack) {
       off_peak_hours: [1, 2, 3, 4],
       off_peak_activity_multiplier: 0.45,
     },
-    agent_configs: profiles.map((profile, index) => ({
+    agent_configs: previewProfiles.map((profile, index) => ({
       agent_id: index,
       entity_name: profile.username,
       entity_type: profile.entity_type,
@@ -448,6 +744,49 @@ function getRuntimeState(pack) {
   return runtime[pack.key] || {}
 }
 
+function getGraphBuildElapsed(pack) {
+  const runtime = getRuntimeState(pack)
+  if (!runtime.buildStartedAt) {
+    return 0
+  }
+  return Date.now() - runtime.buildStartedAt
+}
+
+function getGraphBuildProgress(pack) {
+  const runtime = getRuntimeState(pack)
+  if (runtime.graphCompletedAt) {
+    return 1
+  }
+  if (!runtime.buildStartedAt) {
+    return 0
+  }
+  return Math.max(0, Math.min(1, getGraphBuildElapsed(pack) / GRAPH_BUILD_DURATION_MS))
+}
+
+function createVisibleGraphData(pack) {
+  const fullGraph = pack.graph.graphData
+  const progress = getGraphBuildProgress(pack)
+
+  if (progress >= 1) {
+    return fullGraph
+  }
+
+  const visibleNodeCount = progress <= 0 ? 0 : Math.max(1, Math.floor(fullGraph.nodes.length * progress))
+  const visibleNodes = fullGraph.nodes.slice(0, visibleNodeCount)
+  const visibleNodeIds = new Set(visibleNodes.map(node => node.uuid))
+  const edgeBudget = progress <= 0 ? 0 : Math.max(0, Math.floor(fullGraph.edges.length * progress))
+  const visibleEdges = fullGraph.edges
+    .filter(edge => visibleNodeIds.has(edge.source_node_uuid) && visibleNodeIds.has(edge.target_node_uuid))
+    .slice(0, edgeBudget)
+
+  return {
+    nodes: visibleNodes,
+    edges: visibleEdges,
+    node_count: visibleNodes.length,
+    edge_count: visibleEdges.length,
+  }
+}
+
 function getPrepareElapsed(runtime) {
   if (!runtime.prepareStartedAt) {
     return 0
@@ -471,9 +810,41 @@ export function isDemoRequest(value) {
 
 export function getDemoProject(projectId) {
   const pack = getPackForIdentifier(projectId)
+  const ids = getIdsForPack(pack)
+  const runtime = getRuntimeState(pack)
+  const baseProject = createProjectData(pack)
+
+  if (runtime.graphCompletedAt) {
+    return {
+      success: true,
+      data: {
+        ...baseProject,
+        status: 'graph_completed',
+        graph_id: ids.graphId,
+      },
+    }
+  }
+
+  if (runtime.buildStartedAt) {
+    return {
+      success: true,
+      data: {
+        ...baseProject,
+        status: 'graph_building',
+        graph_id: ids.graphId,
+        graph_build_task_id: ids.graphBuildTaskId,
+      },
+    }
+  }
+
   return {
     success: true,
-    data: createProjectData(pack),
+    data: {
+      ...baseProject,
+      status: 'ontology_generated',
+      graph_id: null,
+      graph_build_task_id: null,
+    },
   }
 }
 
@@ -481,7 +852,66 @@ export function getDemoGraphData(graphId) {
   const pack = getPackForIdentifier(graphId)
   return {
     success: true,
-    data: pack.graph.graphData,
+    data: createVisibleGraphData(pack),
+  }
+}
+
+export function buildDemoGraph({ project_id }) {
+  const pack = getPackForIdentifier(project_id)
+  const ids = getIdsForPack(pack)
+
+  withRuntime(pack.key, current => ({
+    ...current,
+    graphBuildTaskId: ids.graphBuildTaskId,
+    buildStartedAt: Date.now(),
+    graphCompletedAt: null,
+  }))
+
+  return {
+    success: true,
+    data: {
+      task_id: ids.graphBuildTaskId,
+    },
+  }
+}
+
+export function getDemoTaskStatus(taskId) {
+  const pack = getPackForIdentifier(taskId)
+  const progress = getGraphBuildProgress(pack)
+  const completed = progress >= 1
+
+  if (completed) {
+    withRuntime(pack.key, current => ({
+      ...current,
+      graphCompletedAt: current.graphCompletedAt || Date.now(),
+    }))
+
+    return {
+      success: true,
+      data: {
+        status: 'completed',
+        progress: 100,
+        message: 'GraphRAG build complete. Knowledge graph, memory traces, and community summaries are ready.',
+      },
+    }
+  }
+
+  let message = 'Initializing graph build...'
+  if (progress >= 0.75) {
+    message = 'Forming temporal memory and community summaries...'
+  } else if (progress >= 0.5) {
+    message = 'Extracting entities and relations from staged chunks...'
+  } else if (progress >= 0.25) {
+    message = 'Chunking source material and preparing GraphRAG build...'
+  }
+
+  return {
+    success: true,
+    data: {
+      status: 'running',
+      progress: Math.max(5, Math.round(progress * 100)),
+      message,
+    },
   }
 }
 
@@ -521,17 +951,24 @@ export function getDemoSimulation(simulationId) {
   }
 }
 
-export function prepareDemoSimulation({ simulation_id }) {
+export function prepareDemoSimulation({ simulation_id, ops_population_params }) {
   const pack = getPackForIdentifier(simulation_id)
   const ids = getIdsForPack(pack)
-  const profiles = createProfiles(pack)
+  const normalizedAgentCount = normalizeDemoAgentCount(ops_population_params?.n_agents)
+  const normalizedSegments = Array.isArray(ops_population_params?.segments)
+    ? ops_population_params.segments.map(normalizeSegmentKey).filter(Boolean)
+    : []
 
   withRuntime(pack.key, current => ({
     ...current,
     prepareTaskId: ids.prepareTaskId,
     prepareStartedAt: Date.now(),
     preparedAt: null,
+    selectedAgentCount: normalizedAgentCount,
+    selectedSegments: normalizedSegments,
   }))
+
+  const profiles = createProfiles(pack)
 
   return {
     success: true,
@@ -650,6 +1087,7 @@ export function getDemoConfig(simulationId) {
   const pack = getPackForIdentifier(simulationId)
   const runtime = getRuntimeState(pack)
   const config = createSimulationConfig(pack)
+  const profiles = createProfiles(pack)
 
   if (!runtime.prepareStartedAt || runtime.preparedAt) {
     return {
@@ -658,7 +1096,7 @@ export function getDemoConfig(simulationId) {
         config_generated: true,
         config,
         summary: {
-          total_agents: config.agent_configs.length,
+          total_agents: profiles.length,
           simulation_hours: config.time_config.total_simulation_hours,
           initial_posts_count: config.event_config.initial_posts.length,
           hot_topics_count: config.event_config.hot_topics.length,

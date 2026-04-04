@@ -57,7 +57,7 @@
         <div class="card-content">
           <p class="api-note">OPS INPUT MODEL</p>
           <p class="description">
-            Define geography, audience mode, scale, and outputs before persona generation begins.
+            {{ isDemoMode ? 'Define geography, audience mode, and scale before persona generation begins.' : 'Define geography, audience mode, scale, and outputs before persona generation begins.' }}
           </p>
 
           <div class="ops-design-layout">
@@ -181,7 +181,7 @@
               </div>
             </div>
 
-            <div v-if="!isDemoRoute" class="design-block">
+            <div v-if="!isDemoMode" class="design-block">
               <span class="design-block-title">Requested Outputs</span>
               <div class="choice-grid compact-grid">
                 <label
@@ -229,7 +229,7 @@
                 <span class="info-label">Target Scale</span>
                 <span class="info-value">{{ targetAgentsSummary }}</span>
               </div>
-              <div class="review-item">
+              <div v-if="!isDemoMode" class="review-item">
                 <span class="info-label">Outputs</span>
                 <span class="info-value">{{ outputsSummary }}</span>
               </div>
@@ -304,7 +304,7 @@
           <div v-if="profiles.length > 0" class="profiles-preview">
             <div class="preview-header">
               <span class="preview-title">Generated OPS Personas</span>
-              <span v-if="isDemoRoute" class="preview-subtitle">Showing {{ displayProfiles.length }} of {{ generatedAgentsCount }}</span>
+              <span v-if="isDemoMode" class="preview-subtitle">Showing {{ displayProfiles.length }} of {{ generatedAgentsCount }}</span>
             </div>
             <div class="profiles-list">
               <div 
@@ -913,8 +913,9 @@ const baseScenarioRequirement = ref('')
 const pendingState = getPendingUpload()
 const demoModeEnv = import.meta.env.VITE_DEMO_MODE
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const isDemoSimulation = computed(() => String(props.simulationId || '').startsWith('demo_'))
 const isDemoMode = computed(() => {
-  if (isDemoRoute.value) {
+  if (isDemoRoute.value || isDemoSimulation.value) {
     return true
   }
   return import.meta.env.DEV
@@ -997,16 +998,18 @@ const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'N
 const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
 const outputsSummary = computed(() => opsConfig.value.requestedOutputs.join(', ') || 'None selected')
 const displayAgentCountOptions = computed(() => {
-  if (!isDemoRoute.value) {
+  if (!isDemoMode.value) {
     return agentCountOptions.map(option => ({
       ...option,
       meta: option.estimateLabel,
     }))
   }
 
-  return agentCountOptions.map(option => ({
+  return agentCountOptions
+    .filter(option => option.value !== 'custom')
+    .map(option => ({
     ...option,
-    meta: option.description,
+    meta: '',
   }))
 })
 const reviewBadgeLabel = computed(() => {
@@ -1016,7 +1019,7 @@ const billingModeLabel = computed(() => {
   return (isDemoMode.value || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
 })
 const generatedAgentsCount = computed(() => {
-  if (isDemoRoute.value) {
+  if (isDemoMode.value) {
     return expectedTotal.value || profiles.value.length || 0
   }
   return profiles.value.length

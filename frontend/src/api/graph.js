@@ -1,7 +1,9 @@
 import service, { requestWithRetry } from './index'
 import {
+  buildDemoGraph,
   getDemoGraphData,
   getDemoProject,
+  getDemoTaskStatus,
   isDemoRequest,
 } from './demoRuntime'
 
@@ -29,6 +31,10 @@ export function generateOntology(formData) {
  * @returns {Promise}
  */
 export function buildGraph(data) {
+  if (isDemoRequest(data?.project_id)) {
+    return Promise.resolve(buildDemoGraph(data))
+  }
+
   return requestWithRetry(() =>
     service({
       url: '/api/graph/build',
@@ -44,6 +50,10 @@ export function buildGraph(data) {
  * @returns {Promise}
  */
 export function getTaskStatus(taskId) {
+  if (isDemoRequest(taskId)) {
+    return Promise.resolve(getDemoTaskStatus(taskId))
+  }
+
   return service({
     url: `/api/graph/task/${taskId}`,
     method: 'get'
