@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step1GraphBuild from '../components/Step1GraphBuild.vue'
@@ -115,6 +115,7 @@ const systemLogs = ref([])
 // Polling timers
 let pollTimer = null
 let graphPollTimer = null
+let missingTaskRecoveryLogged = false
 
 // --- Computed Layout Styles ---
 const leftPanelStyle = computed(() => {
@@ -198,6 +199,19 @@ const initProject = async () => {
   }
 }
 
+const resetProjectViewState = () => {
+  loading.value = false
+  graphLoading.value = false
+  error.value = ''
+  projectData.value = null
+  graphData.value = null
+  currentPhase.value = -1
+  ontologyProgress.value = null
+  buildProgress.value = null
+  systemLogs.value = []
+  missingTaskRecoveryLogged = false
+}
+
 const initDemoProject = async () => {
   const pack = await initializeDemoFlow({
     scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
@@ -260,6 +274,7 @@ const handleNewProject = async () => {
 const loadProject = async () => {
   try {
     loading.value = true
+    error.value = ''
     addLog(`Loading project ${currentProjectId.value}...`)
     const res = await getProject(currentProjectId.value)
     if (res.success) {
@@ -272,6 +287,14 @@ const loadProject = async () => {
       } else if (res.data.status === 'graph_building' && res.data.graph_build_task_id) {
         currentPhase.value = 1
         startPollingTask(res.data.graph_build_task_id)
+        startGraphPolling()
+      } else if (res.data.status === 'graph_building') {
+        currentPhase.value = 1
+        buildProgress.value = {
+          progress: buildProgress.value?.progress || 0,
+          message: 'Graph build is in progress. Waiting for project state updates...',
+        }
+        addLog('Graph build is active, but no task handle was found. Recovering from project state...')
         startGraphPolling()
       } else if (res.data.status === 'graph_completed' && res.data.graph_id) {
         currentPhase.value = 2
@@ -349,6 +372,49 @@ const startPollingTask = (taskId) => {
   pollTimer = setInterval(() => pollTaskStatus(taskId), 2000)
 }
 
+const recoverGraphBuildState = async () => {
+  try {
+    const projRes = await getProject(currentProjectId.value)
+    if (!projRes.success || !projRes.data) {
+      return
+    }
+
+    projectData.value = projRes.data
+    updatePhaseByStatus(projRes.data.status)
+
+    if (projRes.data.status === 'graph_completed' && projRes.data.graph_id) {
+      stopPolling()
+      stopGraphPolling()
+      currentPhase.value = 2
+      buildProgress.value = { progress: 100, message: 'Graph build recovered from project state.' }
+      addLog('Graph build recovered from project state.')
+      await loadGraph(projRes.data.graph_id)
+      return
+    }
+
+    if (projRes.data.status === 'failed') {
+      stopPolling()
+      stopGraphPolling()
+      error.value = projRes.data.error || 'Project failed'
+      addLog(`Graph build failed: ${error.value}`)
+      return
+    }
+
+    if (projRes.data.status === 'graph_building') {
+      currentPhase.value = 1
+      if (!missingTaskRecoveryLogged) {
+        addLog('Task handle unavailable; continuing to watch project graph state...')
+        missingTaskRecoveryLogged = true
+      }
+      if (!graphPollTimer) {
+        startGraphPolling()
+      }
+    }
+  } catch (err) {
+    console.warn('Graph recovery error:', err)
+  }
+}
+
 const pollTaskStatus = async (taskId) => {
   try {
     const res = await getTaskStatus(taskId)
@@ -379,8 +445,14 @@ const pollTaskStatus = async (taskId) => {
         error.value = task.error
         addLog(`Graph build task failed: ${task.error}`)
       }
+    } else {
+      await recoverGraphBuildState()
     }
   } catch (e) {
+    if (e?.response?.status === 404) {
+      await recoverGraphBuildState()
+      return
+    }
     console.error(e)
   }
 }
@@ -428,6 +500,22 @@ const stopGraphPolling = () => {
 onMounted(() => {
   initProject()
 })
+
+watch(
+  () => route.params.projectId,
+  async (newProjectId, previousProjectId) => {
+    if (!newProjectId || newProjectId === previousProjectId) {
+      return
+    }
+
+    stopPolling()
+    stopGraphPolling()
+    currentProjectId.value = newProjectId
+    resetProjectViewState()
+    await nextTick()
+    initProject()
+  }
+)
 
 onUnmounted(() => {
   stopPolling()
