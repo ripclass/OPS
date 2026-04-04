@@ -8,7 +8,7 @@
           <!-- Report Header -->
           <div class="report-header-block">
             <div class="report-meta">
-              <span class="report-tag">OPS Insight Report</span>
+              <span class="report-tag">{{ insightReportLabel }}</span>
               <span class="report-id">ID: {{ reportId || 'REF-2024-X92' }}</span>
             </div>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
@@ -72,7 +72,7 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">Waiting for the OPS report agent...</span>
+          <span class="waiting-text">Waiting for the {{ reportAgentLabel }}...</span>
         </div>
       </div>
 
@@ -393,8 +393,10 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, h, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAgentLog, getConsoleLog, getReport, getReportProgress, getReportSections } from '../api/report'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const router = useRouter()
+const { insightReportLabel, reportAgentLabel } = useDemoBrand()
 
 const props = defineProps({
   reportId: String,
@@ -2124,7 +2126,7 @@ const stopPolling = () => {
 // Lifecycle
 onMounted(() => {
   if (props.reportId) {
-    addLog(`OPS report agent initialized: ${props.reportId}`)
+    addLog(`${reportAgentLabel.value} initialized: ${props.reportId}`)
     startPolling()
   }
 })

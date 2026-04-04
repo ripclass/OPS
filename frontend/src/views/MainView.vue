@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">OPS</div>
+        <div class="brand" @click="router.push('/')">{{ brandLabel }}</div>
       </div>
       
       <div class="header-center">
@@ -85,11 +85,13 @@ import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const route = useRoute()
 const router = useRouter()
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 const demoQuery = computed(() => buildDemoQuery())
+const { brandLabel } = useDemoBrand()
 
 // Layout State
 const viewMode = ref('split') // graph | split | workbench

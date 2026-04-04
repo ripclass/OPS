@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">OPS</div>
+        <div class="brand" @click="router.push('/')">{{ brandLabel }}</div>
       </div>
       
       <div class="header-center">
@@ -79,10 +79,12 @@ import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
 import { authState } from '../store/auth'
 import { demoState, initializeDemoFlow } from '../store/demoFlow'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const route = useRoute()
 const router = useRouter()
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const { brandLabel } = useDemoBrand()
 
 // Props
 const props = defineProps({

@@ -6,7 +6,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">01</span>
-            <span class="step-title">Initialize OPS Run</span>
+            <span class="step-title">Initialize {{ brandLabel }} Run</span>
           </div>
           <div class="step-status">
             <span v-if="phase > 0" class="badge success">Completed</span>
@@ -17,7 +17,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/simulation/create</p>
           <p class="description">
-            Create a new OPS run and load the population and world parameter templates.
+            Create a new {{ runNoun }} and load the population and world parameter templates.
           </p>
 
           <div v-if="simulationId" class="info-card">
@@ -46,7 +46,7 @@
         <div class="card-header">
           <div class="step-info">
             <span class="step-num">02</span>
-            <span class="step-title">Configure OPS Run</span>
+            <span class="step-title">Configure {{ brandLabel }} Run</span>
           </div>
           <div class="step-status">
             <span v-if="designCommitted" class="badge success">Applied</span>
@@ -55,7 +55,7 @@
         </div>
 
         <div class="card-content">
-          <p class="api-note">OPS INPUT MODEL</p>
+          <p class="api-note">{{ inputModelLabel }}</p>
           <p class="description">
             {{ isDemoMode ? 'Define geography, audience mode, and scale before persona generation begins.' : 'Define geography, audience mode, scale, and outputs before persona generation begins.' }}
           </p>
@@ -240,7 +240,7 @@
             </div>
 
             <div v-if="designErrors.length" class="validation-box">
-              <div class="validation-title">Complete the OPS run design before preparing the environment.</div>
+              <div class="validation-title">Complete the {{ runNoun }} design before preparing the environment.</div>
               <div v-for="error in designErrors" :key="error" class="validation-line">{{ error }}</div>
             </div>
 
@@ -301,9 +301,9 @@
           </div>
 
           <!-- Profiles List Preview -->
-          <div v-if="profiles.length > 0" class="profiles-preview">
-            <div class="preview-header">
-              <span class="preview-title">Generated OPS Personas</span>
+            <div v-if="profiles.length > 0" class="profiles-preview">
+              <div class="preview-header">
+              <span class="preview-title">{{ personasLabel }}</span>
               <span v-if="isDemoMode" class="preview-subtitle">Showing {{ displayProfiles.length }} of {{ generatedAgentsCount }}</span>
             </div>
             <div class="profiles-list">
@@ -664,7 +664,7 @@
             <div class="rounds-header">
               <div class="header-left">
                 <span class="section-title">Round Settings</span>
-                <span class="section-desc">OPS recommends a run lasting <span class="desc-highlight">{{ simulationConfig?.time_config?.total_simulation_hours || '-' }}</span> hours. Each round represents <span class="desc-highlight">{{ simulationConfig?.time_config?.minutes_per_round || '-' }}</span> minutes of simulated time.</span>
+                <span class="section-desc">{{ brandLabel }} recommends a run lasting <span class="desc-highlight">{{ simulationConfig?.time_config?.total_simulation_hours || '-' }}</span> hours. Each round represents <span class="desc-highlight">{{ simulationConfig?.time_config?.minutes_per_round || '-' }}</span> minutes of simulated time.</span>
               </div>
               <label class="switch-control">
                 <input type="checkbox" v-model="useCustomRounds">
@@ -745,7 +745,7 @@
               :disabled="phase < 4"
               @click="handleStartSimulation"
             >
-              Start OPS Simulation ->
+              Start {{ brandLabel }} Simulation ->
             </button>
           </div>
         </div>
@@ -858,6 +858,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { useDemoBrand } from '../composables/useDemoBrand'
 import {
   prepareSimulation,
   getPrepareStatus,
@@ -893,6 +894,7 @@ const props = defineProps({
 
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
 const route = useRoute()
+const { brandLabel, runNoun, personasLabel, inputModelLabel } = useDemoBrand()
 
 // State
 const phase = ref(0) // 0: Initialization, 1: Personas, 2: Configuration, 3: Orchestration, 4: Ready

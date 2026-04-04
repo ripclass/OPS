@@ -18,7 +18,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/graph/ontology/generate</p>
           <p class="description">
-            OPS extracts actors, institutions, locations, and event structure from the scenario brief and supporting material.
+            {{ brandLabel }} extracts actors, institutions, locations, and event structure from the scenario brief and supporting material.
           </p>
 
           <!-- Loading / Progress -->
@@ -122,7 +122,7 @@
         <div class="card-content">
           <p class="api-note">POST /api/graph/build</p>
           <p class="description">
-            Using the extracted ontology, OPS segments the source material, builds the knowledge graph, and assembles memory traces and community summaries.
+            Using the extracted ontology, {{ brandLabel }} segments the source material, builds the knowledge graph, and assembles memory traces and community summaries.
           </p>
           
           <!-- Stats Cards -->
@@ -173,7 +173,7 @@
     <!-- Bottom Info / Logs -->
     <div class="system-logs">
       <div class="log-header">
-        <span class="log-title">OPS WORKBENCH</span>
+        <span class="log-title">{{ workbenchLabel }}</span>
         <span class="log-id">{{ projectData?.project_id || 'NO_PROJECT' }}</span>
       </div>
       <div class="log-content" ref="logContent">
@@ -190,8 +190,10 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { createSimulation } from '../api/simulation'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const router = useRouter()
+const { brandLabel, workbenchLabel } = useDemoBrand()
 
 const props = defineProps({
   currentPhase: { type: Number, default: 0 },

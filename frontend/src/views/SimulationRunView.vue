@@ -2,7 +2,7 @@
   <div class="main-view">
     <header class="app-header">
       <div class="header-left">
-        <div class="brand" @click="router.push('/')">OPS</div>
+        <div class="brand" @click="router.push('/')">{{ brandLabel }}</div>
       </div>
 
       <div class="header-center">
@@ -70,11 +70,13 @@ import Step3Simulation from '../components/Step3Simulation.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const route = useRoute()
 const router = useRouter()
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 const demoQuery = computed(() => buildDemoQuery())
+const { brandLabel } = useDemoBrand()
 
 const props = defineProps({
   simulationId: String,

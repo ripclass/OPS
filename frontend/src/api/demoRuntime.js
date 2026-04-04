@@ -526,7 +526,7 @@ function createSimulationConfig(pack) {
       echo_chamber_strength: 0.64,
     },
     generation_reasoning:
-      'OPS selected anchor agents who absorb shocks privately, amplify them publicly, and mediate trust through local networks.|The configuration emphasizes household arithmetic, rumor relays, institutional delay, and public narrative escalation.',
+      'Murmur selected anchor agents who absorb shocks privately, amplify them publicly, and mediate trust through local networks.|The configuration emphasizes household arithmetic, rumor relays, institutional delay, and public narrative escalation.',
     event_config: {
       narrative_direction: pack.report.summary,
       hot_topics: ['food prices', 'queues', 'trust', 'relief'],

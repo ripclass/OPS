@@ -8,7 +8,7 @@
           <!-- Report Header -->
           <div class="report-header-block">
             <div class="report-meta">
-              <span class="report-tag">OPS Insight Report</span>
+              <span class="report-tag">{{ insightReportLabel }}</span>
               <span class="report-id">ID: {{ reportId || 'REF-2024-X92' }}</span>
             </div>
             <h1 class="main-title">{{ reportOutline.title }}</h1>
@@ -72,7 +72,7 @@
             <div class="waiting-ring"></div>
             <div class="waiting-ring"></div>
           </div>
-          <span class="waiting-text">Waiting for the OPS report agent...</span>
+          <span class="waiting-text">Waiting for the {{ reportAgentLabel }}...</span>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
           <div class="action-bar-text">
-            <span class="action-bar-title">OPS Interaction Tools</span>
+            <span class="action-bar-title">{{ interactionToolsLabel }}</span>
             <span class="action-bar-subtitle mono">{{ profiles.length }} agents available</span>
           </div>
         </div>
@@ -98,7 +98,7 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
               </svg>
-              <span>Chat with the OPS Report Agent</span>
+              <span>Chat with the {{ reportAgentTitle }}</span>
             </button>
             <div class="agent-dropdown" v-if="profiles.length > 0">
               <button 
@@ -154,8 +154,8 @@
             <div class="tools-card-header">
               <div class="tools-card-avatar">R</div>
               <div class="tools-card-info">
-                <div class="tools-card-name">OPS Report Agent</div>
-                <div class="tools-card-subtitle">A lightweight dialogue interface for the reporting agent, with four analysis tools and memory of the active OPS run.</div>
+                <div class="tools-card-name">{{ reportAgentTitle }}</div>
+                <div class="tools-card-subtitle">A lightweight dialogue interface for the reporting agent, with four analysis tools and memory of the active {{ runNoun }}.</div>
               </div>
               <button class="tools-card-toggle" @click="showToolsDetail = !showToolsDetail">
                 <svg :class="{ 'is-expanded': showToolsDetail }" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -250,7 +250,7 @@
                 </svg>
               </div>
               <p class="empty-text">
-                {{ chatTarget === 'report_agent' ? 'Chat with the OPS report agent to explore the report in more depth' : 'Interview a simulated person to understand their perspective' }}
+                {{ chatTarget === 'report_agent' ? `Chat with the ${reportAgentLabel} to explore the report in more depth` : 'Interview a simulated person to understand their perspective' }}
               </p>
             </div>
             <div 
@@ -266,7 +266,7 @@
               <div class="message-content">
                 <div class="message-header">
                   <span class="sender-name">
-                    {{ msg.role === 'user' ? 'You' : (chatTarget === 'report_agent' ? 'OPS Report Agent' : (selectedAgent?.username || 'Agent')) }}
+                    {{ msg.role === 'user' ? 'You' : (chatTarget === 'report_agent' ? reportAgentTitle : (selectedAgent?.username || 'Agent')) }}
                   </span>
                   <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
                 </div>
@@ -412,6 +412,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useDemoBrand } from '../composables/useDemoBrand'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime } from '../api/simulation'
 
@@ -421,6 +422,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['add-log', 'update-status'])
+const {
+  insightReportLabel,
+  reportAgentLabel,
+  interactionToolsLabel,
+  runNoun,
+} = useDemoBrand()
 
 // State
 const activeTab = ref('chat')
@@ -451,6 +458,7 @@ const generatedSections = ref({})
 const collapsedSections = ref(new Set())
 const currentSectionIndex = ref(null)
 const profiles = ref([])
+const reportAgentTitle = computed(() => reportAgentLabel.value.replace(/\breport agent\b/i, 'Report Agent'))
 
 // Helper Methods
 const isSectionCompleted = (sectionIndex) => {
@@ -677,7 +685,7 @@ const sendMessage = async () => {
 }
 
 const sendToReportAgent = async (message) => {
-  addLog(`Sent to OPS report agent: ${message.substring(0, 50)}...`)
+  addLog(`Sent to ${reportAgentLabel.value}: ${message.substring(0, 50)}...`)
   
   // Build chat history for API
   const historyForApi = chatHistory.value
@@ -700,7 +708,7 @@ const sendToReportAgent = async (message) => {
       content: res.data.response || res.data.answer || 'No response',
       timestamp: new Date().toISOString()
     })
-    addLog('OPS report agent responded')
+    addLog(`${reportAgentLabel.value} responded`)
   } else {
     throw new Error(res.error || 'Request failed')
   }
