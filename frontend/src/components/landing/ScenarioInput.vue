@@ -14,12 +14,22 @@
     <div class="scenario-scribble">before it leaves your desk</div>
 
     <form class="scenario-form" @submit.prevent="handleSubmit">
-      <textarea
-        v-model.trim="scenario"
-        class="scenario-input"
-        rows="4"
-        :placeholder="placeholder"
-      />
+      <div class="scenario-console">
+        <div class="scenario-console__header">
+          <span class="scenario-console__label">&gt;_ 02 / Scenario Brief</span>
+          <span class="scenario-console__meta">Direct input to the simulation engine</span>
+        </div>
+
+        <div class="scenario-input-wrapper">
+          <textarea
+            v-model.trim="scenario"
+            class="scenario-input"
+            rows="6"
+            :placeholder="placeholder"
+          />
+          <div class="scenario-engine-badge">Engine: OPS / OASIS</div>
+        </div>
+      </div>
 
       <div class="scenario-actions">
         <button class="scenario-button" type="submit">Run scenario -></button>
@@ -145,27 +155,73 @@ const handleSubmit = () => {
   border-top: 1px solid rgba(5, 5, 5, 0.12);
 }
 
+.scenario-console {
+  border: 1px solid #cccccc;
+  background: #ffffff;
+  padding: 8px;
+}
+
+.scenario-console__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 12px 14px 0;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 12px;
+  line-height: 1.2;
+  color: #666666;
+}
+
+.scenario-console__label {
+  color: #050505;
+}
+
+.scenario-console__meta {
+  color: #8a8a8a;
+  text-align: right;
+}
+
+.scenario-input-wrapper {
+  position: relative;
+  border: 1px solid #dddddd;
+  background: #fafafa;
+}
+
 .scenario-input {
   width: 100%;
-  min-height: 188px;
-  border: 1px solid rgba(5, 5, 5, 0.16);
-  background: #fcfcfb;
+  min-height: 180px;
+  border: none;
+  background: transparent;
   color: #050505;
-  padding: 24px 24px 22px;
+  padding: 20px 20px 40px;
   resize: vertical;
   font-family: 'Mom´sTypewriter', var(--murmur-font-type);
-  font-size: 20px;
-  line-height: 1.42;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .scenario-input::placeholder {
-  color: rgba(5, 5, 5, 0.46);
+  color: #8f8f8f;
 }
 
 .scenario-input:focus {
   outline: none;
-  border-color: rgba(0, 72, 255, 0.42);
-  box-shadow: 0 0 0 4px rgba(0, 72, 255, 0.08);
+}
+
+.scenario-input-wrapper:focus-within {
+  border-color: #a8a8a8;
+  background: #f5f5f5;
+}
+
+.scenario-engine-badge {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  color: #aaaaaa;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .scenario-actions {
@@ -262,8 +318,8 @@ const handleSubmit = () => {
 
   .scenario-input {
     min-height: 160px;
-    padding: 20px;
-    font-size: 18px;
+    padding: 18px 18px 36px;
+    font-size: 14px;
   }
 
   .scenario-button {
