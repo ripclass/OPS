@@ -1,10 +1,24 @@
 import service, { requestWithRetry } from './index'
+import {
+  chatWithDemoReport,
+  generateDemoReport,
+  getDemoAgentLog,
+  getDemoConsoleLog,
+  getDemoReport,
+  getDemoReportProgress,
+  getDemoReportSections,
+  isDemoRequest,
+} from './demoRuntime'
 
 /**
  * Start report generation
  * @param {Object} data - { simulation_id, force_regenerate? }
  */
 export const generateReport = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(generateDemoReport(data))
+  }
+
   return requestWithRetry(() => service.post('/api/report/generate', data), 3, 1000)
 }
 
@@ -22,6 +36,10 @@ export const getReportStatus = (reportId) => {
  * @param {number} fromLine - start line for fetching logs
  */
 export const getAgentLog = (reportId, fromLine = 0) => {
+  if (isDemoRequest(reportId)) {
+    return Promise.resolve(getDemoAgentLog(reportId, fromLine))
+  }
+
   return service.get(`/api/report/${reportId}/agent-log`, { params: { from_line: fromLine } })
 }
 
@@ -31,6 +49,10 @@ export const getAgentLog = (reportId, fromLine = 0) => {
  * @param {number} fromLine - start line for fetching logs
  */
 export const getConsoleLog = (reportId, fromLine = 0) => {
+  if (isDemoRequest(reportId)) {
+    return Promise.resolve(getDemoConsoleLog(reportId, fromLine))
+  }
+
   return service.get(`/api/report/${reportId}/console-log`, { params: { from_line: fromLine } })
 }
 
@@ -39,6 +61,10 @@ export const getConsoleLog = (reportId, fromLine = 0) => {
  * @param {string} reportId
  */
 export const getReport = (reportId) => {
+  if (isDemoRequest(reportId)) {
+    return Promise.resolve(getDemoReport(reportId))
+  }
+
   return service.get(`/api/report/${reportId}`)
 }
 
@@ -47,6 +73,10 @@ export const getReport = (reportId) => {
  * @param {string} reportId
  */
 export const getReportProgress = (reportId) => {
+  if (isDemoRequest(reportId)) {
+    return Promise.resolve(getDemoReportProgress(reportId))
+  }
+
   return service.get(`/api/report/${reportId}/progress`)
 }
 
@@ -55,6 +85,10 @@ export const getReportProgress = (reportId) => {
  * @param {string} reportId
  */
 export const getReportSections = (reportId) => {
+  if (isDemoRequest(reportId)) {
+    return Promise.resolve(getDemoReportSections(reportId))
+  }
+
   return service.get(`/api/report/${reportId}/sections`)
 }
 
@@ -63,5 +97,9 @@ export const getReportSections = (reportId) => {
  * @param {Object} data - { simulation_id, message, chat_history? }
  */
 export const chatWithReport = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(chatWithDemoReport(data))
+  }
+
   return requestWithRetry(() => service.post('/api/report/chat', data), 3, 1000)
 }

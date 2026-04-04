@@ -69,9 +69,11 @@ import Step5Interaction from '../components/Step5Interaction.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
+import { initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 
 // Props
 const props = defineProps({
@@ -208,8 +210,19 @@ watch(() => route.params.reportId, (newId) => {
 }, { immediate: true })
 
 onMounted(() => {
-  addLog('Interaction View Initialized')
-  loadReportData()
+  const bootstrap = async () => {
+    addLog('Interaction View Initialized')
+    if (isDemoRoute.value) {
+      const pack = await initializeDemoFlow({
+        scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
+        country: typeof route.query.country === 'string' ? route.query.country : '',
+      })
+      currentReportId.value = `demo_${pack.key}_report`
+    }
+    loadReportData()
+  }
+
+  bootstrap()
 })
 </script>
 

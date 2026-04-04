@@ -7,12 +7,6 @@ import SimulationView from '../views/SimulationView.vue'
 import SimulationRunView from '../views/SimulationRunView.vue'
 import ReportView from '../views/ReportView.vue'
 import InteractionView from '../views/InteractionView.vue'
-import DemoIntakeView from '../views/demo/DemoIntakeView.vue'
-import DemoGraphView from '../views/demo/DemoGraphView.vue'
-import DemoPopulationView from '../views/demo/DemoPopulationView.vue'
-import DemoSimulationView from '../views/demo/DemoSimulationView.vue'
-import DemoReportView from '../views/demo/DemoReportView.vue'
-import DemoInteractionView from '../views/demo/DemoInteractionView.vue'
 
 const routes = [
   {
@@ -39,37 +33,37 @@ const routes = [
   {
     path: '/demo',
     name: 'DemoIntake',
-    component: DemoIntakeView,
+    component: ConsoleStartView,
     meta: { public: true }
   },
   {
     path: '/demo/graph',
     name: 'DemoGraph',
-    component: DemoGraphView,
+    component: Process,
     meta: { public: true }
   },
   {
     path: '/demo/population',
     name: 'DemoPopulation',
-    component: DemoPopulationView,
+    component: SimulationView,
     meta: { public: true }
   },
   {
     path: '/demo/simulation',
     name: 'DemoSimulation',
-    component: DemoSimulationView,
+    component: SimulationRunView,
     meta: { public: true }
   },
   {
     path: '/demo/report',
     name: 'DemoReport',
-    component: DemoReportView,
+    component: ReportView,
     meta: { public: true }
   },
   {
     path: '/demo/interaction',
     name: 'DemoInteraction',
-    component: DemoInteractionView,
+    component: InteractionView,
     meta: { public: true }
   },
   {

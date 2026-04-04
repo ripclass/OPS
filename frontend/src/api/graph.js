@@ -1,4 +1,9 @@
 import service, { requestWithRetry } from './index'
+import {
+  getDemoGraphData,
+  getDemoProject,
+  isDemoRequest,
+} from './demoRuntime'
 
 /**
  * Generate the ontology (upload documents and simulated requirements)
@@ -51,6 +56,10 @@ export function getTaskStatus(taskId) {
  * @returns {Promise}
  */
 export function getGraphData(graphId) {
+  if (isDemoRequest(graphId)) {
+    return Promise.resolve(getDemoGraphData(graphId))
+  }
+
   return service({
     url: `/api/graph/data/${graphId}`,
     method: 'get'
@@ -63,6 +72,10 @@ export function getGraphData(graphId) {
  * @returns {Promise}
  */
 export function getProject(projectId) {
+  if (isDemoRequest(projectId)) {
+    return Promise.resolve(getDemoProject(projectId))
+  }
+
   return service({
     url: `/api/graph/project/${projectId}`,
     method: 'get'

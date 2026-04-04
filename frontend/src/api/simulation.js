@@ -1,10 +1,28 @@
 import service, { requestWithRetry } from './index'
+import {
+  createDemoSimulation,
+  getDemoConfig,
+  getDemoPrepareStatus,
+  getDemoProfiles,
+  getDemoRunStatus,
+  getDemoRunStatusDetail,
+  getDemoSimulation,
+  interviewDemoAgents,
+  isDemoRequest,
+  prepareDemoSimulation,
+  startDemoSimulation,
+  stopDemoSimulation,
+} from './demoRuntime'
 
 /**
  * Create simulation
  * @param {Object} data - { project_id, graph_id?, enable_twitter?, enable_reddit? }
  */
 export const createSimulation = (data) => {
+  if (isDemoRequest(data?.project_id) || isDemoRequest(data?.graph_id)) {
+    return Promise.resolve(createDemoSimulation(data?.project_id || data?.graph_id))
+  }
+
   return requestWithRetry(() => service.post('/api/simulation/create', data), 3, 1000)
 }
 
@@ -13,6 +31,10 @@ export const createSimulation = (data) => {
  * @param {Object} data - { simulation_id, entity_types?, use_llm_for_profiles?, parallel_profile_count?, force_regenerate? }
  */
 export const prepareSimulation = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(prepareDemoSimulation(data))
+  }
+
   return requestWithRetry(() => service.post('/api/simulation/prepare', data), 3, 1000)
 }
 
@@ -21,6 +43,10 @@ export const prepareSimulation = (data) => {
  * @param {Object} data - { task_id?, simulation_id? }
  */
 export const getPrepareStatus = (data) => {
+  if (isDemoRequest(data?.simulation_id) || isDemoRequest(data?.task_id)) {
+    return Promise.resolve(getDemoPrepareStatus(data))
+  }
+
   return service.post('/api/simulation/prepare/status', data)
 }
 
@@ -29,6 +55,10 @@ export const getPrepareStatus = (data) => {
  * @param {string} simulationId
  */
 export const getSimulation = (simulationId) => {
+  if (isDemoRequest(simulationId)) {
+    return Promise.resolve(getDemoSimulation(simulationId))
+  }
+
   return service.get(`/api/simulation/${simulationId}`)
 }
 
@@ -47,6 +77,10 @@ export const getSimulationProfiles = (simulationId, platform = 'reddit') => {
  * @param {string} platform - 'reddit' | 'twitter'
  */
 export const getSimulationProfilesRealtime = (simulationId, platform = 'reddit') => {
+  if (isDemoRequest(simulationId)) {
+    return Promise.resolve(getDemoProfiles(simulationId))
+  }
+
   return service.get(`/api/simulation/${simulationId}/profiles/realtime`, { params: { platform } })
 }
 
@@ -64,6 +98,10 @@ export const getSimulationConfig = (simulationId) => {
  * @returns {Promise} Returns configuration information, including metadata and configuration content
  */
 export const getSimulationConfigRealtime = (simulationId) => {
+  if (isDemoRequest(simulationId)) {
+    return Promise.resolve(getDemoConfig(simulationId))
+  }
+
   return service.get(`/api/simulation/${simulationId}/config/realtime`)
 }
 
@@ -81,6 +119,10 @@ export const listSimulations = (projectId) => {
  * @param {Object} data - { simulation_id, platform?, max_rounds?, enable_graph_memory_update? }
  */
 export const startSimulation = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(startDemoSimulation(data))
+  }
+
   return requestWithRetry(() => service.post('/api/simulation/start', data), 3, 1000)
 }
 
@@ -89,6 +131,10 @@ export const startSimulation = (data) => {
  * @param {Object} data - { simulation_id }
  */
 export const stopSimulation = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(stopDemoSimulation(data))
+  }
+
   return service.post('/api/simulation/stop', data)
 }
 
@@ -97,6 +143,10 @@ export const stopSimulation = (data) => {
  * @param {string} simulationId
  */
 export const getRunStatus = (simulationId) => {
+  if (isDemoRequest(simulationId)) {
+    return Promise.resolve(getDemoRunStatus(simulationId))
+  }
+
   return service.get(`/api/simulation/${simulationId}/run-status`)
 }
 
@@ -105,6 +155,10 @@ export const getRunStatus = (simulationId) => {
  * @param {string} simulationId
  */
 export const getRunStatusDetail = (simulationId) => {
+  if (isDemoRequest(simulationId)) {
+    return Promise.resolve(getDemoRunStatusDetail(simulationId))
+  }
+
   return service.get(`/api/simulation/${simulationId}/run-status/detail`)
 }
 
@@ -157,6 +211,15 @@ export const getSimulationActions = (simulationId, params = {}) => {
  * @param {Object} data - { simulation_id, timeout? }
  */
 export const closeSimulationEnv = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve({
+      success: true,
+      data: {
+        closed: true,
+      },
+    })
+  }
+
   return service.post('/api/simulation/close-env', data)
 }
 
@@ -165,6 +228,15 @@ export const closeSimulationEnv = (data) => {
  * @param {Object} data - { simulation_id }
  */
 export const getEnvStatus = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve({
+      success: true,
+      data: {
+        env_alive: false,
+      },
+    })
+  }
+
   return service.post('/api/simulation/env-status', data)
 }
 
@@ -173,6 +245,10 @@ export const getEnvStatus = (data) => {
  * @param {Object} data - { simulation_id, interviews: [{ agent_id, prompt }] }
  */
 export const interviewAgents = (data) => {
+  if (isDemoRequest(data?.simulation_id)) {
+    return Promise.resolve(interviewDemoAgents(data))
+  }
+
   return requestWithRetry(() => service.post('/api/simulation/interview/batch', data), 3, 1000)
 }
 

@@ -399,7 +399,15 @@ const router = useRouter()
 const props = defineProps({
   reportId: String,
   simulationId: String,
-  systemLogs: Array
+  systemLogs: Array,
+  nextRouteName: {
+    type: String,
+    default: ''
+  },
+  nextRouteQuery: {
+    type: Object,
+    default: () => ({})
+  },
 })
 
 const emit = defineEmits(['add-log', 'update-status'])
@@ -407,7 +415,14 @@ const emit = defineEmits(['add-log', 'update-status'])
 // Navigation
 const goToInteraction = () => {
   if (props.reportId) {
-    router.push({ name: 'Interaction', params: { reportId: props.reportId } })
+    if (props.nextRouteName) {
+      router.push({
+        name: props.nextRouteName,
+        query: props.nextRouteQuery
+      })
+    } else {
+      router.push({ name: 'Interaction', params: { reportId: props.reportId } })
+    }
   }
 }
 

@@ -49,6 +49,8 @@
           :reportId="currentReportId"
           :simulationId="simulationId"
           :systemLogs="systemLogs"
+          :next-route-name="isDemoRoute ? 'DemoInteraction' : ''"
+          :next-route-query="isDemoRoute ? demoQuery : {}"
           @add-log="addLog"
           @update-status="updateStatus"
         />
@@ -65,9 +67,12 @@ import Step4Report from '../components/Step4Report.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
+import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const demoQuery = computed(() => buildDemoQuery())
 
 const props = defineProps({
   reportId: String,
@@ -207,8 +212,19 @@ watch(
 )
 
 onMounted(() => {
-  addLog('Report view initialized')
-  loadReportData()
+  const bootstrap = async () => {
+    addLog('Report view initialized')
+    if (isDemoRoute.value) {
+      const pack = await initializeDemoFlow({
+        scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
+        country: typeof route.query.country === 'string' ? route.query.country : '',
+      })
+      currentReportId.value = `demo_${pack.key}_report`
+    }
+    loadReportData()
+  }
+
+  bootstrap()
 })
 </script>
 

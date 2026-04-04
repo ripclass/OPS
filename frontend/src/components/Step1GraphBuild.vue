@@ -199,7 +199,9 @@ const props = defineProps({
   ontologyProgress: Object,
   buildProgress: Object,
   graphData: Object,
-  systemLogs: { type: Array, default: () => [] }
+  systemLogs: { type: Array, default: () => [] },
+  nextRouteName: { type: String, default: '' },
+  nextRouteQuery: { type: Object, default: () => ({}) },
 })
 
 defineEmits(['next-step'])
@@ -210,6 +212,14 @@ const creatingSimulation = ref(false)
 
 // Enter environment setup - Create simulation and navigate
 const handleEnterEnvSetup = async () => {
+  if (props.nextRouteName) {
+    router.push({
+      name: props.nextRouteName,
+      query: props.nextRouteQuery,
+    })
+    return
+  }
+
   if (!props.projectData?.project_id || !props.projectData?.graph_id) {
     console.error('Missing Project or Ontology Information')
     return

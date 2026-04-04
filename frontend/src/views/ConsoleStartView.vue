@@ -4,7 +4,8 @@
       <div class="nav-brand" @click="router.push('/')">OPS</div>
       <div class="nav-links">
         <span class="session-email" v-if="authState.user?.email">{{ authState.user.email }}</span>
-        <button class="nav-action" type="button" @click="handleSignOut">Sign out</button>
+        <button v-if="authState.user" class="nav-action" type="button" @click="handleSignOut">Sign out</button>
+        <button v-else class="nav-action" type="button" @click="router.push({ path: '/', query: { auth: 'signin', redirect: route.fullPath } })">Sign in</button>
         <a href="https://github.com/ripclass/OPS" target="_blank" rel="noreferrer" class="github-link">
           GitHub <span class="arrow">&gt;</span>
         </a>
@@ -142,7 +143,7 @@
         </div>
       </section>
 
-      <HistoryDatabase />
+      <HistoryDatabase v-if="!isDemoRoute" />
     </div>
   </div>
 </template>
@@ -152,6 +153,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
+import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
 
 const router = useRouter()
 const route = useRoute()
@@ -194,6 +196,7 @@ const files = ref([])
 const loading = ref(false)
 const isDragOver = ref(false)
 const fileInput = ref(null)
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 
 const canSubmit = computed(() => formData.value.simulationRequirement.trim() !== '')
 const heroSectionStyle = computed(() => ({
@@ -259,6 +262,22 @@ const removeFile = (index) => {
 
 const startSimulation = () => {
   if (!canSubmit.value || loading.value) {
+    return
+  }
+
+  if (isDemoRoute.value) {
+    initializeDemoFlow({
+      scenario: formData.value.simulationRequirement,
+      country: typeof route.query.country === 'string' ? route.query.country : '',
+    }).then(() => {
+      setDemoScenario(formData.value.simulationRequirement)
+      router.push({
+        name: 'DemoGraph',
+        query: buildDemoQuery({
+          scenario: formData.value.simulationRequirement,
+        }),
+      })
+    })
     return
   }
 

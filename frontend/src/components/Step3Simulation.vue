@@ -299,6 +299,14 @@ import { generateReport } from '../api/report'
 const props = defineProps({
   simulationId: String,
   maxRounds: Number, // Passed from Step2 as the maximum number of rounds
+  nextRouteName: {
+    type: String,
+    default: ''
+  },
+  nextRouteQuery: {
+    type: Object,
+    default: () => ({})
+  },
   minutesPerRound: {
     type: Number,
     default: 30 // Default: 30 minutes per round
@@ -663,7 +671,14 @@ const handleNextStep = async () => {
       addLog(`✓ Report generation task started: ${reportId}`)
       
       // Navigate to the report page
-      router.push({ name: 'Report', params: { reportId } })
+      if (props.nextRouteName) {
+        router.push({
+          name: props.nextRouteName,
+          query: props.nextRouteQuery
+        })
+      } else {
+        router.push({ name: 'Report', params: { reportId } })
+      }
     } else {
       addLog(`✗ Failed to start report generation: ${res.error || 'Unknown error'}`)
       isGeneratingReport.value = false

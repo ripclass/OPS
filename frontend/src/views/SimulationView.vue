@@ -70,9 +70,12 @@ import GraphPanel from '../components/GraphPanel.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation, stopSimulation, getEnvStatus, closeSimulationEnv } from '../api/simulation'
+import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const demoQuery = computed(() => buildDemoQuery())
 
 // Props
 const props = defineProps({
@@ -137,6 +140,11 @@ const toggleMaximize = (target) => {
 }
 
 const handleGoBack = () => {
+  if (isDemoRoute.value) {
+    router.push({ name: 'DemoGraph', query: demoQuery.value })
+    return
+  }
+
   // Return to the process page
   if (projectData.value?.project_id) {
     router.push({ name: 'Process', params: { projectId: projectData.value.project_id } })
@@ -157,13 +165,16 @@ const handleNextStep = (params = {}) => {
   
   // Build route parameters
   const routeParams = {
-    name: 'SimulationRun',
-    params: { simulationId: currentSimulationId.value }
+    name: isDemoRoute.value ? 'DemoSimulation' : 'SimulationRun',
+    ...(isDemoRoute.value ? { query: demoQuery.value } : { params: { simulationId: currentSimulationId.value } })
   }
   
   // If custom round numbers are defined, pass them through query parameters
   if (params.maxRounds) {
-    routeParams.query = { maxRounds: params.maxRounds }
+    routeParams.query = {
+      ...(routeParams.query || {}),
+      maxRounds: params.maxRounds,
+    }
   }
   
   // Navigate to Step 3 page
@@ -288,6 +299,14 @@ const refreshGraph = () => {
 
 onMounted(async () => {
   addLog('SimulationView Initialized')
+
+  if (isDemoRoute.value) {
+    const pack = await initializeDemoFlow({
+      scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
+      country: typeof route.query.country === 'string' ? route.query.country : '',
+    })
+    currentSimulationId.value = pack.population.simulationId
+  }
   
   // Check and terminate running simulations (when the user returns from Step 3)
   await checkAndStopRunningSimulation()

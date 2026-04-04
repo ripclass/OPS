@@ -51,6 +51,8 @@
           :projectData="projectData"
           :graphData="graphData"
           :systemLogs="systemLogs"
+          :next-route-name="isDemoRoute ? 'DemoReport' : ''"
+          :next-route-query="isDemoRoute ? demoQuery : {}"
           @go-back="handleGoBack"
           @add-log="addLog"
           @update-status="updateStatus"
@@ -67,9 +69,12 @@ import GraphPanel from '../components/GraphPanel.vue'
 import Step3Simulation from '../components/Step3Simulation.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
+import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const demoQuery = computed(() => buildDemoQuery())
 
 const props = defineProps({
   simulationId: String,
@@ -146,6 +151,11 @@ const toggleMaximize = (target) => {
 }
 
 const handleGoBack = () => {
+  if (isDemoRoute.value) {
+    router.push({ name: 'DemoPopulation', query: demoQuery.value })
+    return
+  }
+
   router.push({ name: 'Simulation', params: { simulationId: currentSimulationId.value } })
 }
 
@@ -217,8 +227,19 @@ watch(
 )
 
 onMounted(() => {
-  addLog('Simulation run view initialized')
-  loadSimulationData()
+  const bootstrap = async () => {
+    addLog('Simulation run view initialized')
+    if (isDemoRoute.value) {
+      const pack = await initializeDemoFlow({
+        scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
+        country: typeof route.query.country === 'string' ? route.query.country : '',
+      })
+      currentSimulationId.value = pack.population.simulationId
+    }
+    loadSimulationData()
+  }
+
+  bootstrap()
 })
 </script>
 

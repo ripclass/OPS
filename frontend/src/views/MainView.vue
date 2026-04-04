@@ -57,6 +57,8 @@
           :buildProgress="buildProgress"
           :graphData="graphData"
           :systemLogs="systemLogs"
+          :next-route-name="isDemoRoute ? 'DemoPopulation' : ''"
+          :next-route-query="isDemoRoute ? demoQuery : {}"
           @next-step="handleNextStep"
         />
         <!-- Step 2: Population Setup -->
@@ -82,9 +84,12 @@ import Step1GraphBuild from '../components/Step1GraphBuild.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
+import { buildDemoQuery, initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const demoQuery = computed(() => buildDemoQuery())
 
 // Layout State
 const viewMode = ref('split') // graph | split | workbench
@@ -179,11 +184,27 @@ const handleGoBack = () => {
 
 const initProject = async () => {
   addLog('Project view initialized.')
+  if (isDemoRoute.value) {
+    await initDemoProject()
+    return
+  }
+
   if (currentProjectId.value === 'new') {
     await handleNewProject()
   } else {
     await loadProject()
   }
+}
+
+const initDemoProject = async () => {
+  const pack = await initializeDemoFlow({
+    scenario: typeof route.query.scenario === 'string' ? route.query.scenario : '',
+    country: typeof route.query.country === 'string' ? route.query.country : '',
+  })
+
+  currentProjectId.value = `demo_${pack.key}_project`
+  addLog(`Demo pack loaded: ${pack.countryLabel}`)
+  await loadProject()
 }
 
 const handleNewProject = async () => {
