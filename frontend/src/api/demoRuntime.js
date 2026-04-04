@@ -1,5 +1,6 @@
 import { DEMO_DEFAULT_PACK_KEY, DEMO_PACKS, getDemoPack, resolveDemoPackKey } from '../content/demoFlowPacks'
 import { demoState } from '../store/demoFlow'
+import { getPendingUpload } from '../store/pendingUpload'
 
 const RUNTIME_STORAGE_KEY = 'murmur_demo_runtime_v2'
 const REPORT_TIMELINE_DURATION_MS = 9000
@@ -118,6 +119,18 @@ function createProjectData(pack) {
   }
 }
 
+function resolveDemoAgentCount() {
+  const pending = getPendingUpload()
+  const rawTarget = String(pending.opsConfig?.targetAgents || DEMO_MIN_AGENT_COUNT).replace(/,/g, '').trim()
+  const parsed = Number.parseInt(rawTarget, 10)
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEMO_MIN_AGENT_COUNT
+  }
+
+  return parsed
+}
+
 function buildTopicPool(pack) {
   const seedTopics = [
     'food prices',
@@ -151,8 +164,9 @@ function buildTopicPool(pack) {
 function createProfiles(pack) {
   const topicPool = buildTopicPool(pack)
   const anchors = pack.population.personas
+  const totalAgents = resolveDemoAgentCount()
 
-  return Array.from({ length: DEMO_MIN_AGENT_COUNT }, (_, index) => {
+  return Array.from({ length: totalAgents }, (_, index) => {
     const anchor = anchors[index % anchors.length]
     const clusterIndex = Math.floor(index / anchors.length)
     const username = clusterIndex === 0

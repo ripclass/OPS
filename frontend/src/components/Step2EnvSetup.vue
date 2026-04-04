@@ -168,7 +168,7 @@
               <span class="design-block-title">Target Agents</span>
               <div class="choice-grid compact-grid">
                 <button
-                  v-for="option in agentCountOptions"
+                  v-for="option in displayAgentCountOptions"
                   :key="option.value"
                   type="button"
                   class="choice-card compact"
@@ -176,12 +176,12 @@
                   @click="opsConfig.targetAgents = option.value"
                 >
                   <span class="choice-label">{{ option.label }}</span>
-                  <span v-if="!isDemoMode" class="choice-desc">{{ option.estimateLabel }}</span>
+                  <span v-if="option.meta" class="choice-desc">{{ option.meta }}</span>
                 </button>
               </div>
             </div>
 
-            <div class="design-block">
+            <div v-if="!isDemoRoute" class="design-block">
               <span class="design-block-title">Requested Outputs</span>
               <div class="choice-grid compact-grid">
                 <label
@@ -304,6 +304,7 @@
           <div v-if="profiles.length > 0" class="profiles-preview">
             <div class="preview-header">
               <span class="preview-title">Generated OPS Personas</span>
+              <span v-if="isDemoRoute" class="preview-subtitle">Showing {{ displayProfiles.length }} of {{ generatedAgentsCount }}</span>
             </div>
             <div class="profiles-list">
               <div 
@@ -995,6 +996,19 @@ const geographySummary = computed(() => getOpsGeographySummary(opsConfig.value))
 const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'None selected')
 const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
 const outputsSummary = computed(() => opsConfig.value.requestedOutputs.join(', ') || 'None selected')
+const displayAgentCountOptions = computed(() => {
+  if (!isDemoRoute.value) {
+    return agentCountOptions.map(option => ({
+      ...option,
+      meta: option.estimateLabel,
+    }))
+  }
+
+  return agentCountOptions.map(option => ({
+    ...option,
+    meta: option.description,
+  }))
+})
 const reviewBadgeLabel = computed(() => {
   return isDemoMode.value ? targetAgentsSummary.value : opsEstimateLabel.value
 })
@@ -2011,6 +2025,12 @@ onUnmounted(() => {
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.preview-subtitle {
+  font-size: 11px;
+  color: #999;
+  letter-spacing: 0.04em;
 }
 
 .profiles-list {
