@@ -75,7 +75,10 @@
       </section>
 
       <section class="content-section content-section--wide content-section--scenario">
-        <ScenarioInput @submit="handleScenarioSubmit" @request-access="openAuth('signup')" />
+        <ScenarioInput
+          :is-authenticated="Boolean(authState.user)"
+          @submit="handleScenarioSubmit"
+        />
       </section>
 
       <section id="privacy" class="content-section content-section--wide content-section--privacy">

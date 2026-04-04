@@ -7,20 +7,39 @@
 
       <div class="scenario-standfirst">
         <p class="scenario-standfirst__lead" v-html="decoratedLead" />
-        <p class="scenario-standfirst__detail">Private, paid, and reviewed by hand before anything goes live.</p>
+        <p class="scenario-standfirst__detail">This is a public static demo of the simulation experience.</p>
       </div>
     </div>
 
     <div class="scenario-scribble">before it leaves your desk</div>
 
-    <form class="scenario-form" @submit.prevent="handleSubmit">
-      <div class="scenario-console">
+    <section class="scenario-console" aria-label="Landing demo console">
+      <div class="scenario-console__section">
         <div class="scenario-console__header">
-          <span class="scenario-console__label">&gt;_ 02 / Scenario Brief</span>
-          <span class="scenario-console__meta">Direct input to the simulation engine</span>
+          <span class="scenario-console__label">01 / Reality Seeds</span>
+          <span class="scenario-console__meta">PDF</span>
         </div>
 
-        <div class="scenario-input-wrapper">
+        <div class="scenario-seed-row" aria-hidden="true">
+          <div class="scenario-seed-row__left">
+            <span class="scenario-seed-row__icon">DOC</span>
+            <span class="scenario-seed-row__name">Bangladesh Rice Price Shock Brief.pdf</span>
+          </div>
+          <span class="scenario-seed-row__action">DL</span>
+        </div>
+      </div>
+
+      <div class="scenario-console__divider">
+        <span>Input Parameters</span>
+      </div>
+
+      <form class="scenario-console__section scenario-console__section--brief" @submit.prevent="handleSubmit">
+        <div class="scenario-console__header">
+          <span class="scenario-console__label">&gt;_ 02 / Simulation Requirement</span>
+          <span class="scenario-console__meta">Static demo input</span>
+        </div>
+
+        <div v-if="demoState === 'idle'" class="scenario-input-wrapper">
           <textarea
             v-model.trim="scenario"
             class="scenario-input"
@@ -29,26 +48,125 @@
           />
           <div class="scenario-engine-badge">Engine: OPS / OASIS</div>
         </div>
-      </div>
 
-      <div class="scenario-actions">
-        <button class="scenario-button" type="submit">Run scenario -></button>
-        <button class="scenario-link" type="button" @click="$emit('request-access')">
-          Or request full platform access for your team ->
-        </button>
+        <div v-else class="scenario-preview">
+          <p class="scenario-preview__text">{{ scenario }}</p>
+          <div class="scenario-engine-badge">Engine: OPS / OASIS</div>
+        </div>
+
+        <div class="scenario-action-panel">
+          <template v-if="demoState === 'idle'">
+            <button class="scenario-primary" type="submit">
+              <span>Run scenario</span>
+              <span class="scenario-primary__arrow">-&gt;</span>
+            </button>
+          </template>
+
+          <template v-else-if="demoState === 'running'">
+            <div class="scenario-status-block" aria-live="polite">
+              <div class="scenario-status-list">
+                <div
+                  v-for="(step, index) in demoSteps"
+                  :key="step"
+                  class="scenario-status-row"
+                  :class="statusClass(index)"
+                >
+                  <span class="scenario-status-row__dot" />
+                  <span class="scenario-status-row__text">{{ step }}</span>
+                </div>
+              </div>
+
+              <button class="scenario-primary scenario-primary--disabled" type="button" disabled>
+                <span>{{ currentStageLabel }}</span>
+                <span class="scenario-primary__arrow">...</span>
+              </button>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="scenario-result-block">
+              <div class="scenario-console__header scenario-console__header--result">
+                <span class="scenario-console__label">03 / Demo Output</span>
+                <span class="scenario-console__meta">Bangladesh static sequence</span>
+              </div>
+
+              <div class="scenario-result-list">
+                <article
+                  v-for="result in demoResults"
+                  :key="result.label"
+                  class="scenario-result-row"
+                >
+                  <div class="scenario-result-row__label">{{ result.label }}</div>
+                  <p class="scenario-result-row__text">{{ result.text }}</p>
+                </article>
+              </div>
+
+              <div class="scenario-complete-actions">
+                <button class="scenario-primary" type="button" @click="handleRealAction">
+                  <span>{{ realCtaLabel }}</span>
+                  <span class="scenario-primary__arrow">-&gt;</span>
+                </button>
+
+                <button class="scenario-secondary" type="button" @click="resetDemo">
+                  Edit the brief -&gt;
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </form>
+
+      <div class="scenario-disclaimer">
+        <span class="scenario-disclaimer__icon">!</span>
+        <span>This page is a static demo only. Results shown here are illustrative and are not generated by the live engine.</span>
       </div>
-    </form>
+    </section>
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRevealOnScroll } from '../../composables/useRevealOnScroll'
 
-const emit = defineEmits(['submit', 'request-access'])
+const props = defineProps({
+  isAuthenticated: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const emit = defineEmits(['submit'])
 
 const placeholder = "Tell us what you're about to announce. We'll show you what happens next."
+const demoSteps = [
+  'Building scenario graph...',
+  'Generating population agents...',
+  'Running response cascade...',
+  'Revealing result snapshot...',
+]
+const demoResults = [
+  {
+    label: 'First response',
+    text: 'Household rationing begins before public complaint.',
+  },
+  {
+    label: 'Fastest spread path',
+    text: 'Student Facebook clusters and bazaar rumor chains move first.',
+  },
+  {
+    label: 'Quiet impact',
+    text: 'Remittance households absorb the shock before they speak about it.',
+  },
+  {
+    label: 'Institutional risk',
+    text: 'Delayed relief messaging hardens distrust and makes later reassurance less credible.',
+  },
+]
+
 const scenario = ref('')
+const demoState = ref('idle')
+const stageIndex = ref(-1)
+const activeTimers = []
 const { targetRef, isVisible } = useRevealOnScroll()
 
 const decorate = (text, target, replacement) => text.replace(target, replacement)
@@ -65,15 +183,84 @@ const decoratedLead = computed(() => decorate(
   '<span class="scenario-underline">what happens next</span>'
 ))
 
+const currentStageLabel = computed(() => (
+  stageIndex.value >= 0 ? demoSteps[stageIndex.value] : 'Preparing demo...'
+))
+
+const realCtaLabel = computed(() => (
+  props.isAuthenticated ? 'Open console with this brief' : 'Sign up to run the real scenario'
+))
+
+const clearTimers = () => {
+  while (activeTimers.length) {
+    window.clearTimeout(activeTimers.pop())
+  }
+}
+
+const statusClass = (index) => {
+  if (demoState.value === 'complete') {
+    return 'scenario-status-row--done'
+  }
+
+  if (index < stageIndex.value) {
+    return 'scenario-status-row--done'
+  }
+
+  if (index === stageIndex.value) {
+    return 'scenario-status-row--active'
+  }
+
+  return 'scenario-status-row--pending'
+}
+
+const startDemo = () => {
+  if (!scenario.value || demoState.value === 'running') {
+    return
+  }
+
+  clearTimers()
+  demoState.value = 'running'
+  stageIndex.value = 0
+
+  demoSteps.forEach((_, index) => {
+    const timer = window.setTimeout(() => {
+      stageIndex.value = index
+    }, index * 900)
+    activeTimers.push(timer)
+  })
+
+  const completeTimer = window.setTimeout(() => {
+    demoState.value = 'complete'
+    stageIndex.value = demoSteps.length - 1
+  }, demoSteps.length * 900)
+  activeTimers.push(completeTimer)
+}
+
+const resetDemo = () => {
+  clearTimers()
+  demoState.value = 'idle'
+  stageIndex.value = -1
+}
+
 const handleSubmit = () => {
   if (!scenario.value) {
     return
   }
 
-  const value = scenario.value
-  scenario.value = ''
+  startDemo()
+}
+
+const handleRealAction = () => {
+  const value = scenario.value.trim()
+  if (!value) {
+    return
+  }
   emit('submit', value)
 }
+
+onBeforeUnmount(() => {
+  clearTimers()
+})
 </script>
 
 <style scoped>
@@ -149,16 +336,19 @@ const handleSubmit = () => {
   transform: rotate(-2deg);
 }
 
-.scenario-form {
-  margin-top: 30px;
-  padding-top: 26px;
-  border-top: 1px solid rgba(5, 5, 5, 0.12);
-}
-
 .scenario-console {
+  margin-top: 30px;
   border: 1px solid #cccccc;
   background: #ffffff;
-  padding: 8px;
+}
+
+.scenario-console__section {
+  padding: 18px 18px 0;
+}
+
+.scenario-console__section--brief {
+  padding-top: 22px;
+  margin: 0;
 }
 
 .scenario-console__header {
@@ -166,11 +356,14 @@ const handleSubmit = () => {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
-  padding: 12px 14px 0;
   font-family: 'Mom´sTypewriter', var(--murmur-font-type);
   font-size: 12px;
   line-height: 1.2;
   color: #666666;
+}
+
+.scenario-console__header--result {
+  margin-bottom: 18px;
 }
 
 .scenario-console__label {
@@ -182,7 +375,66 @@ const handleSubmit = () => {
   text-align: right;
 }
 
-.scenario-input-wrapper {
+.scenario-seed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #e3e3e3;
+  background: #fafafa;
+  padding: 14px 16px;
+}
+
+.scenario-seed-row__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.scenario-seed-row__icon,
+.scenario-seed-row__action {
+  color: #7f7f7f;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.scenario-seed-row__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #050505;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.scenario-console__divider {
+  display: flex;
+  align-items: center;
+  margin: 18px 18px 0;
+}
+
+.scenario-console__divider::before,
+.scenario-console__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8e8e8;
+}
+
+.scenario-console__divider span {
+  padding: 0 16px;
+  color: #b2b2b2;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.scenario-input-wrapper,
+.scenario-preview {
   position: relative;
   border: 1px solid #dddddd;
   background: #fafafa;
@@ -190,7 +442,8 @@ const handleSubmit = () => {
 
 .scenario-input {
   width: 100%;
-  min-height: 180px;
+  min-height: 168px;
+  max-height: 260px;
   border: none;
   background: transparent;
   color: #050505;
@@ -199,6 +452,23 @@ const handleSubmit = () => {
   font-family: 'Mom´sTypewriter', var(--murmur-font-type);
   font-size: 15px;
   line-height: 1.6;
+}
+
+.scenario-preview {
+  min-height: 168px;
+  padding: 20px 20px 40px;
+}
+
+.scenario-preview__text {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #050505;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
 }
 
 .scenario-input::placeholder {
@@ -224,37 +494,151 @@ const handleSubmit = () => {
   line-height: 1;
 }
 
-.scenario-actions {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 18px;
-  flex-wrap: wrap;
+.scenario-action-panel {
+  margin-top: 16px;
 }
 
-.scenario-button,
-.scenario-link {
+.scenario-primary,
+.scenario-secondary {
   border: none;
   background: transparent;
   cursor: pointer;
   padding: 0;
 }
 
-.scenario-button {
+.scenario-primary {
+  width: 100%;
+  border: 1px solid #e3e3e3;
+  background: #ffffff;
   color: #050505;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-family: var(--murmur-font-ui);
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 0.02em;
 }
 
-.scenario-link {
+.scenario-primary--disabled {
+  cursor: not-allowed;
+  color: #7c7c7c;
+  background: #f6f6f6;
+}
+
+.scenario-primary__arrow {
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+}
+
+.scenario-status-block {
+  display: grid;
+  gap: 14px;
+}
+
+.scenario-status-list {
+  display: grid;
+  gap: 10px;
+}
+
+.scenario-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8b8b8b;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 13px;
+}
+
+.scenario-status-row__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d6d6d6;
+}
+
+.scenario-status-row--active {
+  color: #050505;
+}
+
+.scenario-status-row--active .scenario-status-row__dot {
+  background: #0048ff;
+}
+
+.scenario-status-row--done {
+  color: #050505;
+}
+
+.scenario-status-row--done .scenario-status-row__dot {
+  background: #050505;
+}
+
+.scenario-result-block {
+  display: grid;
+  gap: 18px;
+  padding: 8px 0 0;
+}
+
+.scenario-result-list {
+  display: grid;
+  gap: 14px;
+}
+
+.scenario-result-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.scenario-result-row__label {
+  color: #0048ff;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 14px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.scenario-result-row__text {
+  margin: 0;
+  color: #050505;
+  font-family: var(--murmur-font-ui);
+  font-size: 17px;
+  line-height: 1.42;
+}
+
+.scenario-complete-actions {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.scenario-secondary {
   color: #5a7692;
   font-family: 'Mom´sTypewriter', var(--murmur-font-type);
   font-size: 16px;
   line-height: 1.25;
   text-align: right;
+}
+
+.scenario-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-top: 1px solid rgba(205, 180, 98, 0.45);
+  background: #f8f4e6;
+  color: #8a6f14;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.scenario-disclaimer__icon {
+  line-height: 1;
 }
 
 :deep(.scenario-underline),
@@ -304,6 +688,11 @@ const handleSubmit = () => {
   .scenario-standfirst {
     padding-top: 0;
   }
+
+  .scenario-result-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -312,17 +701,25 @@ const handleSubmit = () => {
   }
 
   .scenario-standfirst__detail,
-  .scenario-link {
+  .scenario-secondary,
+  .scenario-seed-row__name,
+  .scenario-result-row__text {
     font-size: 16px;
   }
 
-  .scenario-input {
-    min-height: 160px;
+  .scenario-console__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .scenario-input,
+  .scenario-preview {
+    min-height: 152px;
     padding: 18px 18px 36px;
     font-size: 14px;
   }
 
-  .scenario-button {
+  .scenario-primary {
     font-size: 16px;
   }
 
