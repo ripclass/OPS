@@ -233,10 +233,6 @@
                 <span class="info-label">Outputs</span>
                 <span class="info-value">{{ outputsSummary }}</span>
               </div>
-              <div v-if="!isDemoMode" class="review-item">
-                <span class="info-label">Launch Mode</span>
-                <span class="info-value">{{ billingModeLabel }}</span>
-              </div>
             </div>
 
             <div v-if="designErrors.length" class="validation-box">
@@ -288,7 +284,7 @@
           <div v-if="profiles.length > 0" class="stats-grid">
             <div class="stat-card">
               <span class="stat-value">{{ generatedAgentsCount }}</span>
-              <span class="stat-label">Generated Agents</span>
+              <span class="stat-label">{{ generatedAgentsLabel }}</span>
             </div>
             <div class="stat-card">
               <span class="stat-value">{{ targetPopulationCount }}</span>
@@ -304,7 +300,7 @@
             <div v-if="profiles.length > 0" class="profiles-preview">
               <div class="preview-header">
               <span class="preview-title">{{ personasLabel }}</span>
-              <span v-if="isDemoMode" class="preview-subtitle">Showing {{ displayProfiles.length }} of {{ generatedAgentsCount }}</span>
+              <span v-if="previewSubtitle" class="preview-subtitle">{{ previewSubtitle }}</span>
             </div>
             <div class="profiles-list">
               <div 
@@ -873,7 +869,6 @@ import {
   REGION_OPTIONS,
   OUTPUT_OPTIONS,
   AGENT_COUNT_OPTIONS,
-  getAgentEstimateLabel,
   getTargetAgentsLabel
 } from '../constants/opsWizard'
 import {
@@ -994,7 +989,6 @@ const designErrors = computed(() => designValidation.value.errors)
 const canApplyDesign = computed(() => {
   return Boolean(props.simulationId && baseScenarioRequirement.value.trim() && designValidation.value.valid)
 })
-const opsEstimateLabel = computed(() => getAgentEstimateLabel(opsConfig.value.targetAgents))
 const geographySummary = computed(() => getOpsGeographySummary(opsConfig.value))
 const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'None selected')
 const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
@@ -1003,7 +997,7 @@ const displayAgentCountOptions = computed(() => {
   if (!isDemoMode.value) {
     return agentCountOptions.map(option => ({
       ...option,
-      meta: option.estimateLabel,
+      meta: '',
     }))
   }
 
@@ -1015,16 +1009,32 @@ const displayAgentCountOptions = computed(() => {
   }))
 })
 const reviewBadgeLabel = computed(() => {
-  return isDemoMode.value ? targetAgentsSummary.value : opsEstimateLabel.value
-})
-const billingModeLabel = computed(() => {
-  return (isDemoMode.value || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
+  return targetAgentsSummary.value
 })
 const generatedAgentsCount = computed(() => {
   if (isDemoMode.value) {
     return expectedTotal.value || profiles.value.length || 0
   }
   return profiles.value.length
+})
+const targetPopulationNumeric = computed(() => {
+  const value = Number.parseInt(String(targetPopulationCount.value).replace(/,/g, ''), 10)
+  return Number.isFinite(value) ? value : null
+})
+const generatedAgentsLabel = computed(() => {
+  if (phase.value === 1 && targetPopulationNumeric.value && generatedAgentsCount.value < targetPopulationNumeric.value) {
+    return 'Generated So Far'
+  }
+  return 'Generated Agents'
+})
+const previewSubtitle = computed(() => {
+  if (!profiles.value.length) {
+    return ''
+  }
+  if (phase.value === 1 && targetPopulationNumeric.value && generatedAgentsCount.value < targetPopulationNumeric.value) {
+    return `${generatedAgentsCount.value} generated so far / target ${targetPopulationCount.value}`
+  }
+  return `Showing ${displayProfiles.value.length} of ${generatedAgentsCount.value}`
 })
 const targetPopulationCount = computed(() => {
   if (expectedTotal.value) {
