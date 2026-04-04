@@ -1,7 +1,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { COUNTRY_MAP } from '../content/agentStories'
 
-async function detectCountryCode() {
+export async function detectCountryCode() {
   if (typeof window === 'undefined') {
     return 'GLOBAL'
   }

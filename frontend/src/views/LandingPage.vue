@@ -75,10 +75,7 @@
       </section>
 
       <section class="content-section content-section--wide content-section--scenario">
-        <ScenarioInput
-          :is-authenticated="Boolean(authState.user)"
-          @submit="handleScenarioSubmit"
-        />
+        <ScenarioInput @submit="handleScenarioSubmit" />
       </section>
 
       <section id="privacy" class="content-section content-section--wide content-section--privacy">
@@ -134,7 +131,7 @@ import { authState, signOut } from '../store/auth'
 
 const router = useRouter()
 const route = useRoute()
-const { countryKey, loading } = useGeolocation()
+const { countryCode, countryKey, loading } = useGeolocation()
 
 const activeGlobalIndex = ref(0)
 const brandVisible = ref(false)
@@ -246,11 +243,15 @@ const openConsole = (scenario = '') => {
 }
 
 const handleScenarioSubmit = (scenario) => {
-  if (authState.user) {
-    router.push(buildConsolePath(scenario))
-    return
+  const nextQuery = {
+    scenario,
+    country: countryCode.value || 'BD',
   }
-  openAuth('signup', buildConsolePath(scenario))
+
+  router.push({
+    path: '/demo',
+    query: nextQuery,
+  })
 }
 
 const handleAuthenticated = () => {

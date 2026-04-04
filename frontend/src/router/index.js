@@ -7,6 +7,12 @@ import SimulationView from '../views/SimulationView.vue'
 import SimulationRunView from '../views/SimulationRunView.vue'
 import ReportView from '../views/ReportView.vue'
 import InteractionView from '../views/InteractionView.vue'
+import DemoIntakeView from '../views/demo/DemoIntakeView.vue'
+import DemoGraphView from '../views/demo/DemoGraphView.vue'
+import DemoPopulationView from '../views/demo/DemoPopulationView.vue'
+import DemoSimulationView from '../views/demo/DemoSimulationView.vue'
+import DemoReportView from '../views/demo/DemoReportView.vue'
+import DemoInteractionView from '../views/demo/DemoInteractionView.vue'
 
 const routes = [
   {
@@ -29,6 +35,42 @@ const routes = [
     path: '/console',
     name: 'ConsoleStart',
     component: ConsoleStartView
+  },
+  {
+    path: '/demo',
+    name: 'DemoIntake',
+    component: DemoIntakeView,
+    meta: { public: true }
+  },
+  {
+    path: '/demo/graph',
+    name: 'DemoGraph',
+    component: DemoGraphView,
+    meta: { public: true }
+  },
+  {
+    path: '/demo/population',
+    name: 'DemoPopulation',
+    component: DemoPopulationView,
+    meta: { public: true }
+  },
+  {
+    path: '/demo/simulation',
+    name: 'DemoSimulation',
+    component: DemoSimulationView,
+    meta: { public: true }
+  },
+  {
+    path: '/demo/report',
+    name: 'DemoReport',
+    component: DemoReportView,
+    meta: { public: true }
+  },
+  {
+    path: '/demo/interaction',
+    name: 'DemoInteraction',
+    component: DemoInteractionView,
+    meta: { public: true }
   },
   {
     path: '/process/:projectId',
@@ -70,7 +112,7 @@ const router = createRouter({
 router.beforeEach(async to => {
   await initAuth()
 
-  if (to.name === 'Home' || to.name === 'Login') {
+  if (to.name === 'Home' || to.name === 'Login' || to.meta.public || to.path.startsWith('/demo')) {
     return true
   }
 
