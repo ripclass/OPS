@@ -386,6 +386,31 @@ const addLog = (msg) => {
   emit('add-log', msg)
 }
 
+const setExistingActions = (actions = []) => {
+  const seen = new Set()
+  allActions.value = []
+
+  actions.forEach((action) => {
+    const actionId = action.id || `${action.timestamp}-${action.platform}-${action.agent_id}-${action.action_type}`
+    if (seen.has(actionId)) {
+      return
+    }
+    seen.add(actionId)
+    allActions.value.push({
+      ...action,
+      _uniqueId: actionId,
+    })
+  })
+
+  actionIds.value = seen
+}
+
+const hydrateRunState = (data = {}) => {
+  runStatus.value = data
+  prevTwitterRound.value = data.twitter_current_round || 0
+  prevRedditRound.value = data.reddit_current_round || 0
+}
+
 // Reset all states (for restarting the simulation)
 const resetAllState = () => {
   phase.value = 0
@@ -455,6 +480,78 @@ const doStartSimulation = async () => {
     emit('update-status', 'error')
   } finally {
     isStarting.value = false
+  }
+}
+
+const resumeExistingSimulation = async (simulationId) => {
+  addLog(`Existing simulation run detected: ${simulationId}`)
+
+  try {
+    const detailRes = await getRunStatusDetail(simulationId)
+    if (detailRes.success && detailRes.data) {
+      setExistingActions(detailRes.data.all_actions || [])
+    }
+  } catch (err) {
+    console.warn('Failed to hydrate existing simulation detail:', err)
+  }
+
+  phase.value = 1
+  emit('update-status', 'processing')
+  startStatusPolling()
+  startDetailPolling()
+}
+
+const useCompletedSimulation = async (simulationId, data = {}) => {
+  hydrateRunState(data)
+
+  try {
+    const detailRes = await getRunStatusDetail(simulationId)
+    if (detailRes.success && detailRes.data) {
+      setExistingActions(detailRes.data.all_actions || [])
+      hydrateRunState(detailRes.data)
+    }
+  } catch (err) {
+    console.warn('Failed to hydrate completed simulation detail:', err)
+  }
+
+  phase.value = 2
+  addLog('Existing simulation run already completed')
+  emit('update-status', 'completed')
+}
+
+const bootstrapSimulationRun = async (simulationId) => {
+  if (!simulationId) {
+    return
+  }
+
+  resetAllState()
+  addLog(`Simulation context ready: ${simulationId}`)
+
+  try {
+    const res = await getRunStatus(simulationId)
+    if (!res.success || !res.data) {
+      await doStartSimulation()
+      return
+    }
+
+    const data = res.data
+    const runnerStatus = data.runner_status
+    hydrateRunState(data)
+
+    if (runnerStatus === 'completed' || runnerStatus === 'stopped') {
+      await useCompletedSimulation(simulationId, data)
+      return
+    }
+
+    if (runnerStatus === 'running' || runnerStatus === 'starting' || runnerStatus === 'stopping' || runnerStatus === 'paused') {
+      await resumeExistingSimulation(simulationId)
+      return
+    }
+
+    await doStartSimulation()
+  } catch (err) {
+    console.warn('Failed to bootstrap simulation run state:', err)
+    await doStartSimulation()
   }
 }
 
@@ -726,8 +823,7 @@ watch(
       return
     }
 
-    addLog(`Simulation context ready: ${newSimulationId}`)
-    doStartSimulation()
+    bootstrapSimulationRun(newSimulationId)
   },
   { immediate: true }
 )
