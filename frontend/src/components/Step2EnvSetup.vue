@@ -287,15 +287,15 @@
           <!-- Profiles Stats -->
           <div v-if="profiles.length > 0" class="stats-grid">
             <div class="stat-card">
-              <span class="stat-value">{{ profiles.length }}</span>
+              <span class="stat-value">{{ generatedAgentsCount }}</span>
               <span class="stat-label">Generated Agents</span>
             </div>
             <div class="stat-card">
-              <span class="stat-value">{{ expectedTotal || '-' }}</span>
+              <span class="stat-value">{{ targetPopulationCount }}</span>
               <span class="stat-label">Target Population Size</span>
             </div>
             <div class="stat-card">
-              <span class="stat-value">{{ totalTopicsCount }}</span>
+              <span class="stat-value">{{ scenarioTopicsCount }}</span>
               <span class="stat-label">Scenario-linked Topics</span>
             </div>
           </div>
@@ -307,7 +307,7 @@
             </div>
             <div class="profiles-list">
               <div 
-                v-for="(profile, idx) in profiles" 
+                v-for="(profile, idx) in displayProfiles" 
                 :key="idx" 
                 class="profile-card"
                 @click="selectProfile(profile)"
@@ -856,6 +856,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   prepareSimulation,
   getPrepareStatus,
@@ -890,6 +891,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['go-back', 'next-step', 'add-log', 'update-status'])
+const route = useRoute()
 
 // State
 const phase = ref(0) // 0: Initialization, 1: Personas, 2: Configuration, 3: Orchestration, 4: Ready
@@ -909,12 +911,18 @@ const baseScenarioRequirement = ref('')
 
 const pendingState = getPendingUpload()
 const demoModeEnv = import.meta.env.VITE_DEMO_MODE
-const isDemoMode = import.meta.env.DEV
-  ? (demoModeEnv ?? 'true') !== 'false'
-  : demoModeEnv === 'true'
+const isDemoRoute = computed(() => route.path.startsWith('/demo'))
+const isDemoMode = computed(() => {
+  if (isDemoRoute.value) {
+    return true
+  }
+  return import.meta.env.DEV
+    ? (demoModeEnv ?? 'true') !== 'false'
+    : demoModeEnv === 'true'
+})
 const opsConfig = ref(normalizeOpsConfig({
   ...pendingState.opsConfig,
-  demoModeBypass: isDemoMode || pendingState.opsConfig?.demoModeBypass,
+  demoModeBypass: isDemoMode.value || pendingState.opsConfig?.demoModeBypass,
 }))
 
 const runTypeOptions = RUN_TYPE_OPTIONS
@@ -971,7 +979,7 @@ let configTimer = null
 
 // Computed
 const displayProfiles = computed(() => {
-  if (showProfilesDetail.value) {
+  if (showProfilesDetail.value && !isDemoRoute.value) {
     return profiles.value
   }
   return profiles.value.slice(0, 6)
@@ -988,10 +996,33 @@ const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'N
 const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
 const outputsSummary = computed(() => opsConfig.value.requestedOutputs.join(', ') || 'None selected')
 const reviewBadgeLabel = computed(() => {
-  return isDemoMode ? targetAgentsSummary.value : opsEstimateLabel.value
+  return isDemoMode.value ? targetAgentsSummary.value : opsEstimateLabel.value
 })
 const billingModeLabel = computed(() => {
-  return (isDemoMode || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
+  return (isDemoMode.value || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
+})
+const generatedAgentsCount = computed(() => {
+  if (isDemoRoute.value) {
+    return expectedTotal.value || profiles.value.length || 0
+  }
+  return profiles.value.length
+})
+const targetPopulationCount = computed(() => {
+  if (expectedTotal.value) {
+    return expectedTotal.value
+  }
+  const normalizedTarget = Number.parseInt(String(opsConfig.value.targetAgents || '').replace(/,/g, ''), 10)
+  return Number.isFinite(normalizedTarget) ? normalizedTarget : '-'
+})
+const scenarioTopicsCount = computed(() => {
+  if (simulationConfig.value?.summary?.hot_topics_count) {
+    return simulationConfig.value.summary.hot_topics_count
+  }
+  const uniqueTopics = new Set()
+  profiles.value.forEach((profile) => {
+    ;(profile.interested_topics || []).forEach(topic => uniqueTopics.add(topic))
+  })
+  return uniqueTopics.size
 })
 
 // Look up the username for a given agent id.
@@ -1116,13 +1147,13 @@ const syncOpsConfigFromProject = () => {
   if (parsed.hasMetadata) {
     opsConfig.value = normalizeOpsConfig({
       ...parsed.opsConfig,
-      demoModeBypass: isDemoMode || parsed.opsConfig.demoModeBypass,
+      demoModeBypass: isDemoMode.value || parsed.opsConfig.demoModeBypass,
     })
     designCommitted.value = true
   } else {
     opsConfig.value = normalizeOpsConfig({
       ...opsConfig.value,
-      demoModeBypass: isDemoMode || opsConfig.value.demoModeBypass,
+      demoModeBypass: isDemoMode.value || opsConfig.value.demoModeBypass,
     })
   }
 
@@ -1222,7 +1253,7 @@ const handleApplyDesignAndPrepare = async () => {
 
   const committedConfig = normalizeOpsConfig({
     ...validation.normalized,
-    demoModeBypass: isDemoMode || validation.normalized.demoModeBypass,
+    demoModeBypass: isDemoMode.value || validation.normalized.demoModeBypass,
   })
 
   opsConfig.value = committedConfig

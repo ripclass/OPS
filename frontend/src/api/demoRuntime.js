@@ -5,6 +5,7 @@ const RUNTIME_STORAGE_KEY = 'murmur_demo_runtime_v2'
 const REPORT_TIMELINE_DURATION_MS = 9000
 const SIMULATION_DURATION_MS = 12000
 const PREPARE_DURATION_MS = 7000
+const DEMO_MIN_AGENT_COUNT = 100
 
 function getStorage() {
   if (typeof window === 'undefined') {
@@ -117,21 +118,62 @@ function createProjectData(pack) {
   }
 }
 
+function buildTopicPool(pack) {
+  const seedTopics = [
+    'food prices',
+    'household budgeting',
+    'relief queues',
+    'rumor chains',
+    'student pages',
+    'institutional trust',
+    'market signals',
+    'community pressure',
+    'household silence',
+    'remittance timing',
+    'public complaint',
+    'delayed relief',
+    'queue photos',
+    'price board updates',
+    'local media framing',
+    'neighborhood calls',
+    'voice note circulation',
+    'festival timing',
+  ]
+
+  const dynamicTopics = [
+    ...pack.population.notes,
+    ...pack.report.sections.map(section => section.title),
+  ].map(value => String(value || '').trim()).filter(Boolean)
+
+  return Array.from(new Set([...seedTopics, ...dynamicTopics]))
+}
+
 function createProfiles(pack) {
-  return pack.population.personas.map((persona, index) => ({
-    id: index,
-    agent_id: index,
-    username: persona.name,
-    name: persona.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-    profession: persona.role,
-    bio: `${persona.detail}. ${persona.trait}.`,
-    interested_topics: [
-      'food prices',
-      'household budgeting',
-      'local trust',
-    ],
-    entity_type: 'Person',
-  }))
+  const topicPool = buildTopicPool(pack)
+  const anchors = pack.population.personas
+
+  return Array.from({ length: DEMO_MIN_AGENT_COUNT }, (_, index) => {
+    const anchor = anchors[index % anchors.length]
+    const clusterIndex = Math.floor(index / anchors.length)
+    const username = clusterIndex === 0
+      ? anchor.name
+      : `${anchor.name} ${String(clusterIndex + 1).padStart(2, '0')}`
+    const handleBase = username.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+    const interested_topics = Array.from({ length: 4 }, (_unused, topicIndex) => {
+      return topicPool[(index + topicIndex * 3) % topicPool.length]
+    })
+
+    return {
+      id: index,
+      agent_id: index,
+      username,
+      name: `${handleBase}_${String(index + 1).padStart(3, '0')}`,
+      profession: anchor.role,
+      bio: `${anchor.detail}. ${anchor.trait}. Cluster ${clusterIndex + 1} follows the ${pack.countryLabel} ${pack.key} shock pattern.`,
+      interested_topics,
+      entity_type: 'Person',
+    }
+  })
 }
 
 function createSimulationConfig(pack) {
@@ -189,19 +231,87 @@ function createSimulationConfig(pack) {
 
 function createSimulationActions(pack) {
   const baseTime = new Date('2026-04-04T10:45:00.000+06:00')
+  const profiles = createProfiles(pack)
+  const plazaSeeds = pack.simulation.actions.filter(action => action.platform === 'plaza')
+  const communitySeeds = pack.simulation.actions.filter(action => action.platform === 'community')
+  const tails = [
+    'Queue photos begin circulating before the official explanation lands.',
+    'Neighbors compare prices by voice note and assume the worst first.',
+    'Screenshots move faster than relief language.',
+    'Quiet household arithmetic becomes public talk by the evening.',
+    'People ask whether the next transfer will still be enough.',
+    'Market boards make the shock visible before policy copy does.',
+  ]
 
-  return pack.simulation.actions.map((action, index) => ({
-    id: `${pack.key}_action_${index + 1}`,
-    platform: action.platform === 'community' ? 'reddit' : 'twitter',
-    agent_id: index % Math.max(1, pack.population.personas.length),
-    agent_name: action.actor,
-    action_type: 'CREATE_POST',
-    action_args: {
-      content: action.text,
-    },
-    round_num: Number.parseInt(String(action.round).replace(/\D/g, ''), 10) || index + 1,
-    timestamp: createTimestamp(baseTime, index * 82000),
-  }))
+  const buildPlatformActions = (platform, totalCount, seeds, actionTypeCycle) => {
+    return Array.from({ length: totalCount }, (_unused, index) => {
+      const seed = seeds[index % seeds.length]
+      const profile = profiles[(index * 7 + (platform === 'twitter' ? 3 : 11)) % profiles.length]
+      const round_num = Math.min(40, Math.floor((index / totalCount) * 40) + 1)
+      const tail = tails[index % tails.length]
+      const content = `${seed.text} ${tail}`
+      const action_type = actionTypeCycle[index % actionTypeCycle.length]
+      const actionId = `${pack.key}_${platform}_action_${index + 1}`
+      const actionArgs = {
+        content,
+        original_content: seed.text,
+        original_author_name: seed.actor,
+        post_author_name: seed.actor,
+      }
+
+      return {
+        id: actionId,
+        platform,
+        agent_id: profile.agent_id,
+        agent_name: profile.username,
+        action_type,
+        action_args: action_type === 'CREATE_POST'
+          ? { content }
+          : action_type === 'REPOST'
+            ? {
+                original_content: seed.text,
+                original_author_name: seed.actor,
+              }
+            : action_type === 'QUOTE_POST'
+              ? {
+                  quote_content: content,
+                  original_content: seed.text,
+                  original_author_name: seed.actor,
+                }
+              : action_type === 'CREATE_COMMENT'
+                ? {
+                    content,
+                    post_id: `${pack.key}_thread_${(index % 18) + 1}`,
+                  }
+                : action_type === 'LIKE_POST'
+                  ? {
+                      post_content: seed.text,
+                      post_author_name: seed.actor,
+                    }
+                  : actionArgs,
+        round_num,
+        timestamp: createTimestamp(baseTime, (platform === 'twitter' ? index : index + pack.simulation.communityA.acts) * 2300),
+      }
+    })
+  }
+
+  const twitterActions = buildPlatformActions(
+    'twitter',
+    pack.simulation.communityA.acts,
+    plazaSeeds,
+    ['CREATE_POST', 'QUOTE_POST', 'REPOST', 'CREATE_POST', 'LIKE_POST']
+  )
+
+  const redditActions = buildPlatformActions(
+    'reddit',
+    pack.simulation.communityB.acts,
+    communitySeeds,
+    ['CREATE_POST', 'CREATE_COMMENT', 'CREATE_POST', 'LIKE_POST', 'CREATE_COMMENT']
+  )
+
+  return [...twitterActions, ...redditActions].sort((left, right) => {
+    return new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()
+  })
 }
 
 function createReportOutline(pack) {

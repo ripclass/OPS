@@ -22,7 +22,7 @@
 
       <div class="header-right">
         <div class="workflow-step">
-          <span class="step-num">Step 5/5</span>
+          <span class="step-num">{{ workflowStepLabel }}</span>
           <span class="step-name">Live Interactions</span>
         </div>
         <div class="step-divider"></div>
@@ -30,6 +30,14 @@
           <span class="dot"></span>
           {{ statusText }}
         </span>
+        <button
+          v-if="isDemoRoute"
+          class="demo-continue-btn"
+          type="button"
+          @click="handleDemoContinue"
+        >
+          {{ demoContinueLabel }} →
+        </button>
       </div>
     </header>
 
@@ -69,7 +77,8 @@ import Step5Interaction from '../components/Step5Interaction.vue'
 import { getProject, getGraphData } from '../api/graph'
 import { getSimulation } from '../api/simulation'
 import { getReport } from '../api/report'
-import { initializeDemoFlow } from '../store/demoFlow'
+import { authState } from '../store/auth'
+import { demoState, initializeDemoFlow } from '../store/demoFlow'
 
 const route = useRoute()
 const router = useRouter()
@@ -116,6 +125,17 @@ const statusText = computed(() => {
   if (currentStatus.value === 'processing') return 'Processing'
   return 'Ready'
 })
+const workflowStepLabel = computed(() => (isDemoRoute.value ? 'Step 5/6' : 'Step 5/5'))
+const demoContinueLabel = computed(() => {
+  return authState.user ? 'Open console with this brief' : 'Sign up to run the real scenario'
+})
+
+const buildConsolePath = (scenario = '') => {
+  if (!scenario) {
+    return '/console'
+  }
+  return `/console?scenario=${encodeURIComponent(scenario)}`
+}
 
 // --- Helpers ---
 const addLog = (msg) => {
@@ -199,6 +219,22 @@ const refreshGraph = () => {
   if (projectData.value?.graph_id) {
     loadGraph(projectData.value.graph_id)
   }
+}
+
+const handleDemoContinue = () => {
+  const redirect = buildConsolePath(demoState.scenario)
+  if (authState.user) {
+    router.push(redirect)
+    return
+  }
+
+  router.push({
+    name: 'Home',
+    query: {
+      auth: 'signup',
+      redirect,
+    },
+  })
 }
 
 // Watch route params
@@ -293,6 +329,23 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.demo-continue-btn {
+  border: none;
+  background: #000;
+  color: #FFF;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-continue-btn:hover {
+  background: #222;
 }
 
 .workflow-step {
