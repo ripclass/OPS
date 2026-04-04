@@ -1906,6 +1906,12 @@ const applyReportCompletionState = () => {
   emit('update-status', 'completed')
 }
 
+const applyReportProcessingState = () => {
+  if (isComplete.value) return
+  reportStatus.value = reportStatus.value === 'completed' ? reportStatus.value : 'processing'
+  emit('update-status', 'processing')
+}
+
 const mergeGeneratedSections = (sections = []) => {
   if (!Array.isArray(sections) || sections.length === 0) return
   const nextSections = { ...generatedSections.value }
@@ -1934,12 +1940,15 @@ const fetchReportState = async () => {
       }
       if (report.error) {
         reportError.value = report.error
+        emit('update-status', 'error')
       }
       if (report.outline) {
         reportOutline.value = report.outline
       }
       if (report.status === 'completed') {
         applyReportCompletionState()
+      } else {
+        applyReportProcessingState()
       }
     }
 
@@ -1950,6 +1959,8 @@ const fetchReportState = async () => {
       }
       if (progress.status === 'completed') {
         applyReportCompletionState()
+      } else if (progress.status) {
+        applyReportProcessingState()
       }
     }
 
@@ -1958,6 +1969,8 @@ const fetchReportState = async () => {
       mergeGeneratedSections(sectionsData.sections)
       if (sectionsData.is_complete) {
         applyReportCompletionState()
+      } else if (Array.isArray(sectionsData.sections) && sectionsData.sections.length > 0) {
+        applyReportProcessingState()
       }
     }
   } catch (err) {
@@ -1975,6 +1988,7 @@ const fetchAgentLog = async () => {
       const newLogs = res.data.logs || []
       
       if (newLogs.length > 0) {
+        applyReportProcessingState()
         newLogs.forEach(log => {
           agentLogs.value.push(log)
           
@@ -2098,7 +2112,8 @@ const fetchConsoleLog = async () => {
 
 const startPolling = () => {
   if (agentLogTimer || consoleLogTimer || reportStateTimer) return
-  
+
+  applyReportProcessingState()
   fetchReportState()
   fetchAgentLog()
   fetchConsoleLog()

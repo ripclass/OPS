@@ -133,6 +133,12 @@ const updateStatus = (status) => {
   currentStatus.value = status
 }
 
+const isPendingReportLoad = (result, error) => {
+  const message = String(result?.error || error?.response?.data?.error || error?.message || '').toLowerCase()
+  const statusCode = error?.response?.status
+  return statusCode === 404 || message.includes('report does not exist')
+}
+
 const toggleMaximize = (target) => {
   if (viewMode.value === target) {
     viewMode.value = 'split'
@@ -166,6 +172,7 @@ const loadReportData = async () => {
 
   try {
     addLog(`Loading report data: ${currentReportId.value}`)
+    currentStatus.value = 'processing'
     const reportRes = await getReport(currentReportId.value)
     if (reportRes.success && reportRes.data) {
       simulationId.value = reportRes.data.simulation_id
@@ -187,10 +194,19 @@ const loadReportData = async () => {
         }
       }
     } else {
+      if (isPendingReportLoad(reportRes)) {
+        addLog('Report record not ready yet, waiting for generation state...')
+        return
+      }
       addLog(`Failed to get report data: ${reportRes.error || 'Unknown error'}`)
       currentStatus.value = 'error'
     }
   } catch (error) {
+    if (isPendingReportLoad(null, error)) {
+      addLog('Report record not ready yet, waiting for generation state...')
+      currentStatus.value = 'processing'
+      return
+    }
     addLog(`Report load error: ${error.message}`)
     currentStatus.value = 'error'
   }
