@@ -24,7 +24,8 @@
       <section class="demo-intake__status">
         <div class="demo-intake__eyebrow">System Status</div>
         <h1 class="demo-intake__title">System Ready</h1>
-        <p class="demo-intake__lead">{{ currentPack.intake.readinessLine }}</p>
+        <p class="demo-intake__lead">System is ready to use</p>
+        <p class="demo-intake__detail">{{ currentPack.intake.readinessLine }}</p>
 
         <div class="demo-intake__steps">
           <div class="demo-intake__steps-label">Workflow Steps</div>
@@ -79,7 +80,7 @@
 
           <button class="demo-intake__cta" type="submit">
             <span>Try Now</span>
-            <span>→</span>
+            <span>-></span>
           </button>
         </form>
 
@@ -142,15 +143,16 @@ const startDemo = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 28px;
+  padding: 16px 30px;
+  border-bottom: 1px solid #efefef;
 }
 
 .demo-intake__brand {
   border: none;
   background: none;
   color: #050505;
-  font-size: 30px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 800;
   cursor: pointer;
 }
 
@@ -173,65 +175,74 @@ const startDemo = () => {
 
 .demo-intake__body {
   display: grid;
-  grid-template-columns: minmax(280px, 0.85fr) minmax(520px, 1.15fr);
-  gap: 48px;
-  padding: 40px 36px 56px;
+  grid-template-columns: minmax(300px, 0.78fr) minmax(560px, 1.22fr);
+  gap: 56px;
+  padding: 54px 38px 64px;
 }
 
 .demo-intake__status {
-  padding: 24px 8px 0 4px;
+  padding: 42px 8px 0 4px;
 }
 
 .demo-intake__eyebrow,
 .demo-intake__steps-label {
   color: #9b9b9b;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .demo-intake__title {
   margin: 28px 0 16px;
-  font-size: clamp(42px, 5vw, 68px);
-  line-height: 0.94;
-  letter-spacing: -0.04em;
+  font-size: clamp(40px, 4.8vw, 62px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
 }
 
 .demo-intake__lead {
   margin: 0;
   max-width: 360px;
-  font-size: 25px;
-  line-height: 1.28;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.demo-intake__detail {
+  margin: 14px 0 0;
+  max-width: 390px;
+  color: #5b5b5b;
+  font-size: 18px;
+  line-height: 1.55;
 }
 
 .demo-intake__steps {
-  margin-top: 72px;
+  margin-top: 64px;
 }
 
 .demo-intake__step {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 28px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 26px;
 }
 
 .demo-intake__step-number {
   color: #b6b6b6;
-  font-size: 28px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1;
 }
 
 .demo-intake__step-title {
   margin: 0;
-  font-size: 31px;
-  line-height: 1.05;
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 800;
 }
 
 .demo-intake__step-description {
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   color: #333;
-  font-size: 20px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .demo-intake__console {
@@ -250,7 +261,7 @@ const startDemo = () => {
   gap: 12px;
   color: #6d6d6d;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .demo-intake__seed-row {
@@ -268,7 +279,7 @@ const startDemo = () => {
   align-items: center;
   gap: 12px;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .demo-intake__seed-icon,
@@ -318,15 +329,15 @@ const startDemo = () => {
 
 .demo-intake__textarea {
   width: 100%;
-  min-height: 162px;
+  min-height: 138px;
   border: none;
   resize: vertical;
-  padding: 24px 22px 46px;
+  padding: 22px 20px 42px;
   background: transparent;
   color: #050505;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 22px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .demo-intake__textarea:focus {
@@ -348,11 +359,11 @@ const startDemo = () => {
   align-items: center;
   justify-content: space-between;
   margin-top: 22px;
-  padding: 20px 22px;
+  padding: 18px 20px;
   border: 1px solid #e2e2e2;
   background: #fff;
   color: #050505;
-  font-size: 28px;
+  font-size: 16px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -367,7 +378,7 @@ const startDemo = () => {
   background: #fffdf3;
   color: #89724a;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .demo-intake__disclaimer-icon {
@@ -382,6 +393,10 @@ const startDemo = () => {
 @media (max-width: 1120px) {
   .demo-intake__body {
     grid-template-columns: 1fr;
+  }
+
+  .demo-intake__status {
+    padding-top: 12px;
   }
 }
 </style>
