@@ -46,7 +46,7 @@
             rows="6"
             :placeholder="placeholder"
           />
-          <div class="scenario-engine-badge">Engine: OPS / OASIS</div>
+          <div class="scenario-engine-badge">Engine: Murmur / OASIS</div>
         </div>
 
         <button class="scenario-primary" type="submit">

@@ -1,8 +1,8 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <div class="login-meta">OPS Access</div>
-      <h1 class="login-title">Sign in to OPS</h1>
+      <div class="login-meta">Murmur Access</div>
+      <h1 class="login-title">Sign in to Murmur</h1>
       <p class="login-copy">
         This environment is restricted to invited customers and internal operators.
       </p>

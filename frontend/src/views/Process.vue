@@ -2,7 +2,7 @@
   <div class="process-page">
     <!-- Top navigation bar -->
     <nav class="navbar">
-      <div class="nav-brand" @click="goHome">OPS</div>
+      <div class="nav-brand" @click="goHome">Murmur</div>
       
       <!-- Middle step indicator -->
       <div class="nav-center">

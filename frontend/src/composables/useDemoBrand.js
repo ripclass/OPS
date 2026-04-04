@@ -5,15 +5,15 @@ export function useDemoBrand() {
   const route = useRoute()
   const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 
-  const brandLabel = computed(() => (isDemoRoute.value ? 'Murmur' : 'OPS'))
-  const reportAgentLabel = computed(() => (isDemoRoute.value ? 'Murmur report agent' : 'OPS report agent'))
-  const insightReportLabel = computed(() => (isDemoRoute.value ? 'Murmur Insight Report' : 'OPS Insight Report'))
-  const interactionToolsLabel = computed(() => (isDemoRoute.value ? 'Murmur Interaction Tools' : 'OPS Interaction Tools'))
-  const workbenchLabel = computed(() => (isDemoRoute.value ? 'Murmur Workbench' : 'OPS WORKBENCH'))
-  const runNoun = computed(() => (isDemoRoute.value ? 'Murmur run' : 'OPS run'))
-  const personasLabel = computed(() => (isDemoRoute.value ? 'Generated Murmur Personas' : 'Generated OPS Personas'))
-  const inputModelLabel = computed(() => (isDemoRoute.value ? 'MURMUR INPUT MODEL' : 'OPS INPUT MODEL'))
-  const engineLabel = computed(() => (isDemoRoute.value ? 'Engine: Murmur / OASIS' : 'Engine: OPS / OASIS'))
+  const brandLabel = computed(() => 'Murmur')
+  const reportAgentLabel = computed(() => 'Murmur report agent')
+  const insightReportLabel = computed(() => 'Murmur Insight Report')
+  const interactionToolsLabel = computed(() => 'Murmur Interaction Tools')
+  const workbenchLabel = computed(() => 'Murmur Workbench')
+  const runNoun = computed(() => 'Murmur run')
+  const personasLabel = computed(() => 'Generated Murmur Personas')
+  const inputModelLabel = computed(() => 'MURMUR INPUT MODEL')
+  const engineLabel = computed(() => 'Engine: Murmur / OASIS')
 
   return {
     isDemoRoute,

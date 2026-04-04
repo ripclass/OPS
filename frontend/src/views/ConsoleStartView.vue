@@ -1,7 +1,7 @@
 <template>
   <div class="console-start-container">
     <nav class="navbar">
-      <div class="nav-brand" @click="router.push('/')">OPS</div>
+      <div class="nav-brand" @click="router.push('/')">{{ brandLabel }}</div>
       <div class="nav-links">
         <span class="session-email" v-if="authState.user?.email">{{ authState.user.email }}</span>
         <button v-if="authState.user" class="nav-action" type="button" @click="handleSignOut">Sign out</button>
@@ -16,7 +16,7 @@
       <section class="hero-section" :style="heroSectionStyle">
         <div class="hero-left hero-copy-card">
           <div class="tag-row">
-            <span class="orange-tag">OPS Console</span>
+            <span class="orange-tag">{{ brandLabel }} Console</span>
             <span class="version-text">/ Scenario Intake</span>
           </div>
 
@@ -124,7 +124,7 @@
                   :disabled="loading"
                   placeholder="Describe the trigger you want to test. Example: The government announces a 40% rice price increase before Eid. How do low-income households in Dhaka respond?"
                 ></textarea>
-                <div class="model-badge">Engine: OPS / OASIS</div>
+                <div class="model-badge">{{ engineLabel }}</div>
               </div>
             </div>
 
@@ -154,10 +154,12 @@ import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
 import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
+import { useDemoBrand } from '../composables/useDemoBrand'
 
 const router = useRouter()
 const route = useRoute()
 const heroImageUrl = new URL('../assets/logo/ops_logo_left.png', import.meta.url).href
+const { brandLabel, engineLabel } = useDemoBrand()
 
 const steps = [
   {

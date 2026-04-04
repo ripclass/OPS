@@ -2,11 +2,11 @@
   <header class="ops-product-header">
     <div class="ops-product-top">
       <div class="ops-product-brand">
-        <RouterLink to="/" class="brand-home-link" aria-label="Go to OPS wizard">
-          <span class="brand-mark">OPS</span>
+        <RouterLink to="/" class="brand-home-link" aria-label="Go to Murmur wizard">
+          <span class="brand-mark">Murmur</span>
         </RouterLink>
         <div class="brand-copy">
-          <span class="brand-name">Organic Population Simulation</span>
+          <span class="brand-name">Behavioral Scenario Intelligence</span>
           <span class="brand-tagline">How South Asia actually responds</span>
         </div>
       </div>
@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <nav class="flow-nav" aria-label="OPS flow">
+    <nav class="flow-nav" aria-label="Murmur flow">
       <RouterLink to="/" class="flow-pill" :class="{ active: activeView === 'wizard' }">
         <span class="flow-pill-index">01</span>
         <span class="flow-pill-copy">
