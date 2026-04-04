@@ -98,7 +98,7 @@
         </section>
 
         <button class="demo-workbench__cta" type="button" @click="goNext">
-          Open Deep Interaction ->
+          Continue to Deep Interaction ->
         </button>
       </div>
     </template>

@@ -16,7 +16,7 @@
         type="button"
         @click="router.push({ path: '/', query: { auth: 'signin', redirect: '/console' } })"
       >
-        Login
+        Sign in
       </button>
     </header>
 
@@ -79,7 +79,7 @@
           </div>
 
           <button class="demo-intake__cta" type="submit">
-            <span>Try Now</span>
+            <span>Start Demo</span>
             <span>-></span>
           </button>
         </form>

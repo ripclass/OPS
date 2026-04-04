@@ -85,7 +85,7 @@
             The scenario graph is ready. Continue to population setup to stage Murmur's country-grounded agents and environment scaffolding.
           </p>
           <button class="demo-card__button" type="button" @click="goNext">
-            Go to Population Setup ->
+            Continue to Population Setup ->
           </button>
         </article>
       </div>

@@ -62,7 +62,7 @@
         </section>
 
         <button class="demo-population__cta" type="button" @click="goNext">
-          Go to Simulation ->
+          Continue to Simulation ->
         </button>
       </div>
     </template>

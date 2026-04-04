@@ -49,7 +49,7 @@
           type="button"
           @click="openLogin"
         >
-          Login
+          Sign in
         </button>
       </div>
     </header>
@@ -331,8 +331,12 @@ const openLogin = () => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f4f4f4;
   font-size: 13px;
   color: #6f6f6f;
+  font-weight: 700;
 }
 
 .demo-shell__status-dot {
@@ -349,6 +353,17 @@ const openLogin = () => {
 .demo-shell__status--completed .demo-shell__status-dot,
 .demo-shell__status--ready .demo-shell__status-dot {
   background: #5fb36a;
+}
+
+.demo-shell__status--processing {
+  background: #fff2eb;
+  color: #a54a1d;
+}
+
+.demo-shell__status--completed,
+.demo-shell__status--ready {
+  background: #eef8ef;
+  color: #2f7d3e;
 }
 
 .demo-shell__action {
