@@ -8,7 +8,8 @@
     :logs="currentPack.population.logs"
     :scenario="scenario"
     back-path="/demo/graph"
-    default-mode="split"
+    initial-mode="split"
+    initial-layout-mode="split"
     console-id="demo_population"
   >
     <template #left>
@@ -26,6 +27,7 @@
             <div>
               <div class="demo-population__kicker">01 / Runtime Context</div>
               <h2 class="demo-population__title">Static Demo Initialization</h2>
+              <div class="demo-population__meta-line">PACK / {{ currentPack.countryLabel.toUpperCase() }} / {{ currentPack.population.simulationId }}</div>
             </div>
             <span class="demo-population__status">Ready</span>
           </div>
@@ -60,7 +62,7 @@
         </section>
 
         <button class="demo-population__cta" type="button" @click="goNext">
-          Go to Simulation →
+          Go to Simulation ->
         </button>
       </div>
     </template>
@@ -92,6 +94,7 @@ const goNext = () => {
   height: 100%;
   overflow: auto;
   padding: 24px;
+  background: #fbfbfb;
 }
 
 .demo-population__card {
@@ -112,10 +115,15 @@ const goNext = () => {
   gap: 12px;
 }
 
-.demo-population__kicker {
+.demo-population__kicker,
+.demo-population__meta-line {
   color: #888;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
   font-size: 13px;
+}
+
+.demo-population__meta-line {
+  margin-top: 10px;
 }
 
 .demo-population__title {

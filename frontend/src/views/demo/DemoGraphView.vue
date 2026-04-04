@@ -8,7 +8,8 @@
     :logs="currentPack.graph.logs"
     :scenario="scenario"
     back-path="/demo"
-    default-mode="split"
+    initial-mode="split"
+    initial-layout-mode="split"
     console-id="demo_graph"
   >
     <template #left>
@@ -26,11 +27,12 @@
             <div>
               <div class="demo-card__number">01</div>
               <h2 class="demo-card__title">Ontology Generation</h2>
+              <div class="demo-card__meta">POST /api/graph/ontology/generate</div>
             </div>
             <span class="demo-card__status">Build Complete</span>
           </div>
           <p class="demo-card__body">
-            Murmur reads the scenario brief, extracts public actors, locations, institutions, and narrative structure, then assembles an ontology ready for simulation.
+            Murmur reads the scenario brief, extracts public actors, locations, institutions, and pressure points, then stages an ontology for the simulated public sphere.
           </p>
           <div class="demo-pill-list">
             <span v-for="type in currentPack.graph.entityTypes" :key="type" class="demo-pill">{{ type }}</span>
@@ -42,11 +44,12 @@
             <div>
               <div class="demo-card__number">02</div>
               <h2 class="demo-card__title">GraphRAG Build</h2>
+              <div class="demo-card__meta">POST /api/graph/build</div>
             </div>
             <span class="demo-card__status">Build Complete</span>
           </div>
           <p class="demo-card__body">
-            Country priors, community summaries, and relation paths are linked into a navigable graph that the downstream simulation will use as memory.
+            Country priors, community summaries, and relation paths are assembled into a graph memory layer that the downstream simulation will query in motion.
           </p>
           <div class="demo-stats">
             <div class="demo-stat">
@@ -68,12 +71,13 @@
           <div>
             <div class="demo-card__number">03</div>
             <h2 class="demo-card__title">Build Complete</h2>
+            <div class="demo-card__meta">POST /api/simulation/create</div>
           </div>
           <p class="demo-card__body">
-            The scenario graph is ready. Continue to population setup to stage Murmur’s country-grounded agents and environment scaffolding.
+            The scenario graph is ready. Continue to population setup to stage Murmur's country-grounded agents and environment scaffolding.
           </p>
           <button class="demo-card__button" type="button" @click="goNext">
-            Go to Population Setup →
+            Go to Population Setup ->
           </button>
         </article>
       </div>
@@ -104,6 +108,7 @@ const goNext = () => {
   height: 100%;
   overflow: auto;
   padding: 24px;
+  background: #fbfbfb;
 }
 
 .demo-card {
@@ -137,6 +142,13 @@ const goNext = () => {
   line-height: 1.02;
 }
 
+.demo-card__meta {
+  margin-top: 10px;
+  color: #a1a1a1;
+  font-family: var(--murmur-font-type, 'Special Elite', monospace);
+  font-size: 12px;
+}
+
 .demo-card__status {
   padding: 6px 10px;
   border-radius: 999px;
@@ -150,8 +162,8 @@ const goNext = () => {
 .demo-card__body {
   margin: 18px 0 0;
   color: #444;
-  font-size: 19px;
-  line-height: 1.55;
+  font-size: 18px;
+  line-height: 1.58;
 }
 
 .demo-pill-list {

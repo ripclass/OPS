@@ -8,7 +8,8 @@
     :logs="currentPack.report.logs"
     :scenario="scenario"
     back-path="/demo/simulation"
-    default-mode="split"
+    initial-mode="workbench"
+    initial-layout-mode="split"
     console-label="CONSOLE OUTPUT"
     console-id="demo_report"
   >
@@ -41,17 +42,17 @@
     <template #right>
       <div class="demo-workbench">
         <article
-          v-for="item in currentPack.report.workbench"
+          v-for="(item, index) in currentPack.report.workbench"
           :key="item.title"
           class="demo-workbench__item"
         >
-          <div class="demo-workbench__label">{{ item.label }}</div>
+          <div class="demo-workbench__label">{{ String(index + 1).padStart(2, '0') }} / {{ item.label }}</div>
           <h2 class="demo-workbench__title">{{ item.title }}</h2>
           <p class="demo-workbench__detail">{{ item.detail }}</p>
         </article>
 
         <button class="demo-workbench__cta" type="button" @click="goNext">
-          Open Deep Interaction →
+          Open Deep Interaction ->
         </button>
       </div>
     </template>

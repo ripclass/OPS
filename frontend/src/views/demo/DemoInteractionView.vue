@@ -8,7 +8,8 @@
     :logs="currentPack.interaction.logs"
     :scenario="scenario"
     back-path="/demo/report"
-    default-mode="split"
+    initial-mode="workbench"
+    initial-layout-mode="split"
     console-label="INTERACTION LOG"
     console-id="demo_interaction"
   >
@@ -49,7 +50,7 @@
         </section>
 
         <button class="demo-interaction__cta" type="button" @click="handleFinalAction">
-          {{ finalCtaLabel }} →
+          {{ finalCtaLabel }} ->
         </button>
       </div>
     </template>

@@ -2,8 +2,8 @@
   <div class="demo-shell">
     <header class="demo-shell__header">
       <div class="demo-shell__header-left">
-        <button class="demo-shell__back" type="button" @click="handleBack">
-          <span aria-hidden="true">←</span>
+        <button class="demo-shell__back" type="button" @click="handleBack" aria-label="Back">
+          <span aria-hidden="true">&larr;</span>
         </button>
         <button class="demo-shell__brand" type="button" @click="router.push('/')">
           Murmur
@@ -18,7 +18,7 @@
             class="demo-shell__switch"
             :class="{ 'demo-shell__switch--active': localMode === mode.key }"
             type="button"
-            @click="localMode = mode.key"
+            @click="handleModeSelect(mode.key)"
           >
             {{ mode.label }}
           </button>
@@ -30,6 +30,7 @@
           <span class="demo-shell__step-count">Step {{ stepNumber }}/5</span>
           <span class="demo-shell__step-name">{{ stepName }}</span>
         </div>
+        <span class="demo-shell__divider" />
         <div class="demo-shell__status" :class="`demo-shell__status--${statusTone}`">
           <span class="demo-shell__status-dot" />
           {{ statusText }}
@@ -55,7 +56,7 @@
 
     <main class="demo-shell__body">
       <section
-        v-if="localMode !== 'workbench'"
+        v-if="localLayoutMode !== 'workbench'"
         class="demo-shell__panel demo-shell__panel--left"
         :style="leftPanelStyle"
       >
@@ -63,7 +64,7 @@
       </section>
 
       <section
-        v-if="localMode !== 'graph'"
+        v-if="localLayoutMode !== 'graph'"
         class="demo-shell__panel demo-shell__panel--right"
         :style="rightPanelStyle"
       >
@@ -77,7 +78,11 @@
         <span>{{ consoleId }}</span>
       </div>
       <div class="demo-shell__console-body">
-        <div v-for="(line, index) in logs" :key="`${index}-${line}`" class="demo-shell__console-line">
+        <div
+          v-for="(line, index) in logs"
+          :key="`${index}-${line}`"
+          class="demo-shell__console-line"
+        >
           {{ line }}
         </div>
       </div>
@@ -119,6 +124,14 @@ const props = defineProps({
     type: String,
     default: '/demo',
   },
+  initialMode: {
+    type: String,
+    default: '',
+  },
+  initialLayoutMode: {
+    type: String,
+    default: '',
+  },
   defaultMode: {
     type: String,
     default: 'split',
@@ -134,12 +147,14 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const localMode = ref(props.defaultMode)
+const localMode = ref(props.initialMode || props.defaultMode)
+const localLayoutMode = ref(props.initialLayoutMode || props.initialMode || props.defaultMode)
 
 watch(
-  () => props.defaultMode,
-  value => {
-    localMode.value = value
+  () => [props.defaultMode, props.initialMode, props.initialLayoutMode],
+  () => {
+    localMode.value = props.initialMode || props.defaultMode
+    localLayoutMode.value = props.initialLayoutMode || props.initialMode || props.defaultMode
   }
 )
 
@@ -150,23 +165,36 @@ const modes = computed(() => [
 ])
 
 const leftPanelStyle = computed(() => {
-  if (localMode.value === 'graph') {
+  if (localLayoutMode.value === 'graph') {
     return { width: '100%' }
   }
 
-  return { width: '50%' }
+  if (localLayoutMode.value === 'workbench') {
+    return { width: '0%' }
+  }
+
+  return { width: '51%' }
 })
 
 const rightPanelStyle = computed(() => {
-  if (localMode.value === 'workbench') {
+  if (localLayoutMode.value === 'workbench') {
     return { width: '100%' }
   }
 
-  return { width: '50%' }
+  if (localLayoutMode.value === 'graph') {
+    return { width: '0%' }
+  }
+
+  return { width: '49%' }
 })
 
 const handleBack = () => {
   router.push(props.backPath)
+}
+
+const handleModeSelect = mode => {
+  localMode.value = mode
+  localLayoutMode.value = mode
 }
 
 const openConsole = () => {
@@ -237,17 +265,18 @@ const openLogin = () => {
 }
 
 .demo-shell__back {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .demo-shell__brand {
   border: none;
   padding: 0;
-  font-size: 30px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 800;
   cursor: pointer;
 }
 
@@ -260,19 +289,20 @@ const openLogin = () => {
 }
 
 .demo-shell__switch {
-  min-width: 68px;
-  padding: 8px 14px;
+  min-width: 72px;
+  padding: 7px 14px;
   border: none;
   border-radius: 6px;
   background: transparent;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .demo-shell__switch--active {
   background: #fff;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  font-weight: 800;
 }
 
 .demo-shell__step {
@@ -282,9 +312,19 @@ const openLogin = () => {
   color: #8a8a8a;
 }
 
+.demo-shell__step-count {
+  font-weight: 700;
+}
+
 .demo-shell__step-name {
   color: #050505;
   font-weight: 700;
+}
+
+.demo-shell__divider {
+  width: 1px;
+  height: 16px;
+  background: #d8d8d8;
 }
 
 .demo-shell__status {
@@ -312,8 +352,8 @@ const openLogin = () => {
 }
 
 .demo-shell__action {
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: 10px 15px;
+  border-radius: 7px;
   background: #111;
   color: #fff;
   font-size: 12px;
@@ -346,7 +386,7 @@ const openLogin = () => {
 }
 
 .demo-shell__console {
-  height: 124px;
+  height: 118px;
   display: flex;
   flex-direction: column;
   background: #050505;

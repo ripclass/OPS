@@ -8,7 +8,8 @@
     :logs="visibleLogs"
     :scenario="scenario"
     back-path="/demo/population"
-    default-mode="split"
+    initial-mode="split"
+    initial-layout-mode="split"
     console-id="demo_simulation"
   >
     <template #left>
@@ -22,21 +23,32 @@
 
     <template #right>
       <div class="demo-simulation">
-        <div class="demo-simulation__communities">
-          <article class="demo-simulation__community">
-            <div class="demo-simulation__community-title">{{ currentPack.simulation.communityA.name }}</div>
-            <div class="demo-simulation__community-meta">
-              <span>Round {{ visibleRound }}/40</span>
-              <span>Acts {{ visibleActsA }}</span>
-            </div>
-          </article>
-          <article class="demo-simulation__community">
-            <div class="demo-simulation__community-title">{{ currentPack.simulation.communityB.name }}</div>
-            <div class="demo-simulation__community-meta">
-              <span>Round {{ visibleRound }}/40</span>
-              <span>Acts {{ visibleActsB }}</span>
-            </div>
-          </article>
+        <div class="demo-simulation__toolbar">
+          <div class="demo-simulation__communities">
+            <article class="demo-simulation__community">
+              <div class="demo-simulation__community-title">{{ currentPack.simulation.communityA.name }}</div>
+              <div class="demo-simulation__community-meta">
+                <span>Round {{ visibleRound }}/40</span>
+                <span>Acts {{ visibleActsA }}</span>
+              </div>
+            </article>
+            <article class="demo-simulation__community">
+              <div class="demo-simulation__community-title">{{ currentPack.simulation.communityB.name }}</div>
+              <div class="demo-simulation__community-meta">
+                <span>Round {{ visibleRound }}/40</span>
+                <span>Acts {{ visibleActsB }}</span>
+              </div>
+            </article>
+          </div>
+
+          <button
+            v-if="completed"
+            class="demo-simulation__header-cta"
+            type="button"
+            @click="goNext"
+          >
+            Generate Report ->
+          </button>
         </div>
 
         <div class="demo-simulation__summary">
@@ -66,20 +78,11 @@
           type="button"
           @click="startSimulation"
         >
-          Start Simulation →
+          Start Simulation ->
         </button>
 
         <button
-          v-else-if="completed"
-          class="demo-simulation__cta"
-          type="button"
-          @click="goNext"
-        >
-          Generate Report →
-        </button>
-
-        <button
-          v-else
+          v-else-if="running"
           class="demo-simulation__cta demo-simulation__cta--disabled"
           type="button"
           disabled
@@ -204,12 +207,21 @@ onBeforeUnmount(() => {
   height: 100%;
   overflow: auto;
   padding: 24px;
+  background: #fbfbfb;
+}
+
+.demo-simulation__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .demo-simulation__communities {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  flex: 1;
 }
 
 .demo-simulation__community {
@@ -231,6 +243,18 @@ onBeforeUnmount(() => {
   color: #6b6b6b;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
   font-size: 13px;
+}
+
+.demo-simulation__header-cta {
+  min-width: 220px;
+  padding: 20px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #050505;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .demo-simulation__summary {
