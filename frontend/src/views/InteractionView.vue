@@ -152,6 +152,15 @@ const updateStatus = (status) => {
   currentStatus.value = status
 }
 
+const resetInteractionViewState = () => {
+  simulationId.value = null
+  projectData.value = null
+  graphData.value = null
+  graphLoading.value = false
+  systemLogs.value = []
+  currentStatus.value = 'processing'
+}
+
 // --- Layout Methods ---
 const toggleMaximize = (target) => {
   if (viewMode.value === target) {
@@ -163,8 +172,11 @@ const toggleMaximize = (target) => {
 
 // --- Data Logic ---
 const loadReportData = async () => {
+  if (!currentReportId.value) return
+
   try {
     addLog(`Loading report data: ${currentReportId.value}`)
+    currentStatus.value = 'processing'
     
     // Retrieve report information to obtain simulation_id
     const reportRes = await getReport(currentReportId.value)
@@ -189,15 +201,30 @@ const loadReportData = async () => {
               if (projRes.data.graph_id) {
                 await loadGraph(projRes.data.graph_id)
               }
+              currentStatus.value = 'ready'
+            } else {
+              addLog(`Failed to load project data: ${projRes.error || 'Unknown error'}`)
+              currentStatus.value = 'error'
             }
+          } else {
+            addLog('Simulation record is missing project_id')
+            currentStatus.value = 'error'
           }
+        } else {
+          addLog(`Failed to load simulation data: ${simRes.error || 'Unknown error'}`)
+          currentStatus.value = 'error'
         }
+      } else {
+        addLog('Report record is missing simulation_id')
+        currentStatus.value = 'error'
       }
     } else {
       addLog(`Failed to get report information: ${reportRes.error || 'Unknown error'}`)
+      currentStatus.value = 'error'
     }
   } catch (err) {
     addLog(`Load exception: ${err.message}`)
+    currentStatus.value = 'error'
   }
 }
 
@@ -242,10 +269,11 @@ const handleDemoContinue = () => {
 // Watch route params
 watch(() => route.params.reportId, (newId) => {
   if (newId && newId !== currentReportId.value) {
-    currentReportId.value = newId
+    currentReportId.value = String(newId)
+    resetInteractionViewState()
     loadReportData()
   }
-}, { immediate: true })
+})
 
 onMounted(() => {
   const bootstrap = async () => {

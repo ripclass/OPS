@@ -646,7 +646,7 @@ const renderMarkdown = (content) => {
   return html
 }
 
-const getProfileAgentId = (profile, fallbackIndex = null) => {
+const getProfileAgentId = (profile) => {
   const rawId = profile?.user_id ?? profile?.agent_id
   const parsedId = Number.parseInt(String(rawId), 10)
 
@@ -654,12 +654,33 @@ const getProfileAgentId = (profile, fallbackIndex = null) => {
     return parsedId
   }
 
-  if (fallbackIndex === null || fallbackIndex === undefined) {
-    return null
-  }
+  return null
+}
 
-  const fallbackParsed = Number.parseInt(String(fallbackIndex), 10)
-  return Number.isFinite(fallbackParsed) ? fallbackParsed : null
+const resetInteractionState = () => {
+  activeTab.value = 'chat'
+  chatTarget.value = 'report_agent'
+  showAgentDropdown.value = false
+  selectedAgent.value = null
+  selectedAgentIndex.value = null
+  showFullProfile.value = true
+  showToolsDetail.value = true
+
+  chatInput.value = ''
+  chatHistory.value = []
+  chatHistoryCache.value = {}
+  isSending.value = false
+
+  selectedAgents.value = new Set()
+  surveyQuestion.value = ''
+  surveyResults.value = []
+  isSurveying.value = false
+
+  reportOutline.value = null
+  generatedSections.value = {}
+  collapsedSections.value = new Set()
+  currentSectionIndex.value = null
+  profiles.value = []
 }
 
 // Chat Methods
@@ -737,7 +758,7 @@ const sendToAgent = async (message) => {
   
   addLog(`Sending to ${selectedAgent.value.username}: ${message.substring(0, 50)}...`)
 
-  const agentId = getProfileAgentId(selectedAgent.value, selectedAgentIndex.value)
+  const agentId = getProfileAgentId(selectedAgent.value)
   if (agentId === null) {
     throw new Error('Unable to resolve a stable agent identifier')
   }
@@ -836,7 +857,10 @@ const submitSurvey = async () => {
   try {
     const interviews = Array.from(selectedAgents.value).map(idx => {
       const agent = profiles.value[idx]
-      const agentId = getProfileAgentId(agent, idx)
+      const agentId = getProfileAgentId(agent)
+      if (agentId === null) {
+        throw new Error(`Unable to resolve a stable agent identifier for ${agent?.username || `agent_${idx}`}`)
+      }
 
       return {
         agent_id: agentId,
@@ -907,6 +931,7 @@ const loadReportData = async () => {
   if (!props.reportId) return
   
   try {
+    emit('update-status', 'processing')
     addLog(`loading report data: ${props.reportId}`)
     
     // Get report info
@@ -914,9 +939,13 @@ const loadReportData = async () => {
     if (reportRes.success && reportRes.data) {
       // Load agent logs to get report outline and sections
       await loadAgentLogs()
+    } else {
+      addLog(`Failed to load report metadata: ${reportRes.error || 'Unknown error'}`)
+      emit('update-status', 'error')
     }
   } catch (err) {
     addLog(`Loading report failed: ${err.message}`)
+    emit('update-status', 'error')
   }
 }
 
@@ -939,9 +968,14 @@ const loadAgentLogs = async () => {
       })
       
       addLog('Report data loading completed')
+      emit('update-status', 'ready')
+    } else {
+      addLog(`Failed to load report logs: ${res.error || 'Unknown error'}`)
+      emit('update-status', 'error')
     }
   } catch (err) {
     addLog(`Failed to load report logs: ${err.message}`)
+    emit('update-status', 'error')
   }
 }
 
@@ -970,8 +1004,6 @@ const handleClickOutside = (e) => {
 // Lifecycle
 onMounted(() => {
   addLog('Step 5: Live interactions initialized')
-  loadReportData()
-  loadProfiles()
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -979,17 +1011,27 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-watch(() => props.reportId, (newId) => {
-  if (newId) {
-    loadReportData()
-  }
-}, { immediate: true })
+watch(
+  [() => props.reportId, () => props.simulationId],
+  ([newReportId, newSimulationId], [oldReportId, oldSimulationId]) => {
+    if (!newReportId && !newSimulationId) {
+      return
+    }
 
-watch(() => props.simulationId, (newId) => {
-  if (newId) {
-    loadProfiles()
-  }
-}, { immediate: true })
+    if (newReportId !== oldReportId || newSimulationId !== oldSimulationId) {
+      resetInteractionState()
+    }
+
+    if (newReportId) {
+      loadReportData()
+    }
+
+    if (newSimulationId) {
+      loadProfiles()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
