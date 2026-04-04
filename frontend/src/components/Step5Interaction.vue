@@ -646,6 +646,22 @@ const renderMarkdown = (content) => {
   return html
 }
 
+const getProfileAgentId = (profile, fallbackIndex = null) => {
+  const rawId = profile?.user_id ?? profile?.agent_id
+  const parsedId = Number.parseInt(String(rawId), 10)
+
+  if (Number.isFinite(parsedId)) {
+    return parsedId
+  }
+
+  if (fallbackIndex === null || fallbackIndex === undefined) {
+    return null
+  }
+
+  const fallbackParsed = Number.parseInt(String(fallbackIndex), 10)
+  return Number.isFinite(fallbackParsed) ? fallbackParsed : null
+}
+
 // Chat Methods
 const sendMessage = async () => {
   if (!chatInput.value.trim() || isSending.value) return
@@ -720,6 +736,11 @@ const sendToAgent = async (message) => {
   }
   
   addLog(`Sending to ${selectedAgent.value.username}: ${message.substring(0, 50)}...`)
+
+  const agentId = getProfileAgentId(selectedAgent.value, selectedAgentIndex.value)
+  if (agentId === null) {
+    throw new Error('Unable to resolve a stable agent identifier')
+  }
   
   // Build prompt with chat history
   let prompt = message
@@ -735,7 +756,7 @@ const sendToAgent = async (message) => {
   const res = await interviewAgents({
     simulation_id: props.simulationId,
     interviews: [{
-      agent_id: selectedAgentIndex.value,
+      agent_id: agentId,
       prompt: prompt
     }]
   })
@@ -748,7 +769,6 @@ const sendToAgent = async (message) => {
     
     // Convert the object dictionary to an array, prioritizing responses from the reddit platform
     let responseContent = null
-    const agentId = selectedAgentIndex.value
     
     if (typeof resultsDict === 'object' && !Array.isArray(resultsDict)) {
       // Prioritize responses from the reddit platform, then twitter
@@ -814,10 +834,16 @@ const submitSurvey = async () => {
   addLog(`Sending the survey to ${selectedAgents.value.size} objects...`)
   
   try {
-    const interviews = Array.from(selectedAgents.value).map(idx => ({
-      agent_id: idx,
-      prompt: surveyQuestion.value.trim()
-    }))
+    const interviews = Array.from(selectedAgents.value).map(idx => {
+      const agent = profiles.value[idx]
+      const agentId = getProfileAgentId(agent, idx)
+
+      return {
+        agent_id: agentId,
+        profile_index: idx,
+        prompt: surveyQuestion.value.trim(),
+      }
+    })
     
     const res = await interviewAgents({
       simulation_id: props.simulationId,
@@ -834,30 +860,30 @@ const submitSurvey = async () => {
       const surveyResultsList = []
       
       for (const interview of interviews) {
-        const agentIdx = interview.agent_id
-        const agent = profiles.value[agentIdx]
+        const agentId = interview.agent_id
+        const agent = profiles.value[interview.profile_index]
         
         // Prioritize responses from the reddit platform, then twitter
         let responseContent = 'no response'
         
         if (typeof resultsDict === 'object' && !Array.isArray(resultsDict)) {
-          const redditKey = `reddit_${agentIdx}`
-          const twitterKey = `twitter_${agentIdx}`
+          const redditKey = `reddit_${agentId}`
+          const twitterKey = `twitter_${agentId}`
           const agentResult = resultsDict[redditKey] || resultsDict[twitterKey]
           if (agentResult) {
             responseContent = agentResult.response || agentResult.answer || 'no response'
           }
         } else if (Array.isArray(resultsDict)) {
           // compatibility for array format
-          const matchedResult = resultsDict.find(r => r.agent_id === agentIdx)
+          const matchedResult = resultsDict.find(r => r.agent_id === agentId)
           if (matchedResult) {
             responseContent = matchedResult.response || matchedResult.answer || 'no response'
           }
         }
         
         surveyResultsList.push({
-          agent_id: agentIdx,
-          agent_name: agent?.username || `Agent ${agentIdx}`,
+          agent_id: agentId,
+          agent_name: agent?.username || `Agent ${agentId}`,
           profession: agent?.profession,
           question: surveyQuestion.value.trim(),
           answer: responseContent
