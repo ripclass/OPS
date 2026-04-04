@@ -149,7 +149,7 @@ const handleFinalAction = () => {
 .demo-report {
   height: 100%;
   overflow: auto;
-  padding: 34px 38px 44px;
+  padding: 32px 36px 40px;
   background: #fff;
 }
 
@@ -185,7 +185,7 @@ const handleFinalAction = () => {
   margin: 24px 0 0;
   max-width: 760px;
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(38px, 4.3vw, 60px);
+  font-size: clamp(36px, 4vw, 56px);
   line-height: 1.06;
 }
 
@@ -194,14 +194,14 @@ const handleFinalAction = () => {
   max-width: 720px;
   color: #5a5a5a;
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 23px;
+  font-size: 21px;
   line-height: 1.6;
 }
 
 .demo-interaction {
   height: 100%;
   overflow: auto;
-  padding: 20px;
+  padding: 18px;
   background: #fbfbfb;
 }
 
@@ -252,13 +252,13 @@ const handleFinalAction = () => {
 
 .demo-thread__title {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .demo-thread__subtitle {
   margin-top: 6px;
   color: #707070;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
@@ -301,7 +301,7 @@ const handleFinalAction = () => {
 
 .demo-thread__message p {
   margin: 10px 0 0;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.55;
 }
 
@@ -339,7 +339,7 @@ const handleFinalAction = () => {
 .demo-thread__composer-text {
   flex: 1;
   color: #565656;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.45;
 }
 
@@ -407,7 +407,7 @@ const handleFinalAction = () => {
 
 .demo-agent__name {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 900;
 }
 
@@ -432,7 +432,7 @@ const handleFinalAction = () => {
 
 .demo-agent-card__name {
   margin: 14px 0 0;
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1.05;
 }
 
@@ -446,7 +446,7 @@ const handleFinalAction = () => {
 
 .demo-agent-card__response {
   margin: 14px 0 0;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.58;
 }
 
@@ -458,7 +458,7 @@ const handleFinalAction = () => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }

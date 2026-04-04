@@ -93,12 +93,12 @@ const goNext = () => {
 .demo-population {
   height: 100%;
   overflow: auto;
-  padding: 24px;
+  padding: 22px;
   background: #fbfbfb;
 }
 
 .demo-population__card {
-  padding: 22px;
+  padding: 20px;
   border: 1px solid #e8e8e8;
   border-radius: 14px;
   background: #fff;
@@ -128,7 +128,7 @@ const goNext = () => {
 
 .demo-population__title {
   margin: 10px 0 0;
-  font-size: 34px;
+  font-size: 32px;
   line-height: 1.04;
 }
 
@@ -158,13 +158,13 @@ const goNext = () => {
 .demo-population__meta dd {
   margin: 6px 0 0;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .demo-population__notes {
   margin: 14px 0 0;
   padding-left: 22px;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.6;
 }
 
@@ -187,7 +187,7 @@ const goNext = () => {
 }
 
 .demo-population__persona-name {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
 }
 
@@ -201,7 +201,7 @@ const goNext = () => {
 .demo-population__persona-detail,
 .demo-population__persona-trait {
   margin: 10px 0 0;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
@@ -213,7 +213,7 @@ const goNext = () => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }

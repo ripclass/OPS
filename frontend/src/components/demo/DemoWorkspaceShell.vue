@@ -232,11 +232,11 @@ const openLogin = () => {
 
 .demo-shell__header {
   position: relative;
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 22px;
+  padding: 0 24px;
   border-bottom: 1px solid #e6e6e6;
   background: #fff;
   z-index: 2;
@@ -283,14 +283,14 @@ const openLogin = () => {
 .demo-shell__switcher {
   display: inline-flex;
   gap: 4px;
-  padding: 4px;
+  padding: 5px;
   border-radius: 8px;
   background: #f4f4f4;
 }
 
 .demo-shell__switch {
-  min-width: 72px;
-  padding: 7px 14px;
+  min-width: 76px;
+  padding: 8px 15px;
   border: none;
   border-radius: 6px;
   background: transparent;
@@ -367,8 +367,8 @@ const openLogin = () => {
 }
 
 .demo-shell__action {
-  padding: 10px 15px;
-  border-radius: 7px;
+  padding: 10px 16px;
+  border-radius: 8px;
   background: #111;
   color: #fff;
   font-size: 12px;
@@ -401,7 +401,7 @@ const openLogin = () => {
 }
 
 .demo-shell__console {
-  height: 118px;
+  height: 112px;
   display: flex;
   flex-direction: column;
   background: #050505;

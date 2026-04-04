@@ -115,12 +115,12 @@ const goNext = () => {
 .demo-step-panel {
   height: 100%;
   overflow: auto;
-  padding: 24px;
+  padding: 22px;
   background: #fbfbfb;
 }
 
 .demo-card {
-  padding: 22px;
+  padding: 20px;
   border: 1px solid #e8e8e8;
   border-radius: 14px;
   background: #fff;
@@ -146,7 +146,7 @@ const goNext = () => {
 
 .demo-card__title {
   margin: 8px 0 0;
-  font-size: 34px;
+  font-size: 32px;
   line-height: 1.02;
 }
 
@@ -170,7 +170,7 @@ const goNext = () => {
 .demo-card__body {
   margin: 18px 0 0;
   color: #444;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.58;
 }
 
@@ -199,7 +199,7 @@ const goNext = () => {
   border-radius: 10px;
   background: #fafafa;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .demo-stats {
@@ -220,7 +220,7 @@ const goNext = () => {
 }
 
 .demo-stat__value {
-  font-size: 40px;
+  font-size: 36px;
   font-weight: 900;
 }
 
@@ -248,7 +248,7 @@ const goNext = () => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }

@@ -46,7 +46,7 @@
       <div class="demo-workbench">
         <section class="demo-workbench__status-panel">
           <div class="demo-workbench__status-top">
-            <div class="demo-workbench__status-title">OK · COMPLETE</div>
+            <div class="demo-workbench__status-title">OK / COMPLETE</div>
             <div class="demo-workbench__status-chip">Section 1/{{ currentPack.report.sections.length }}</div>
           </div>
 
@@ -171,7 +171,7 @@ const goNext = () => {
 .demo-report {
   height: 100%;
   overflow: auto;
-  padding: 34px 38px 44px;
+  padding: 32px 36px 40px;
   background: #fff;
 }
 
@@ -201,8 +201,8 @@ const goNext = () => {
   margin: 24px 0 0;
   max-width: 780px;
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: clamp(42px, 4.5vw, 66px);
-  line-height: 1.05;
+  font-size: clamp(40px, 4.2vw, 62px);
+  line-height: 1.06;
   letter-spacing: -0.03em;
 }
 
@@ -211,7 +211,7 @@ const goNext = () => {
   max-width: 760px;
   color: #5c5c5c;
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 25px;
+  font-size: 23px;
   line-height: 1.6;
 }
 
@@ -233,21 +233,21 @@ const goNext = () => {
 .demo-report__section-title {
   margin: 0;
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 38px;
+  font-size: 34px;
   line-height: 1.16;
 }
 
 .demo-report__paragraph {
   margin: 20px 0 0;
   max-width: 720px;
-  font-size: 21px;
-  line-height: 1.7;
+  font-size: 19px;
+  line-height: 1.72;
 }
 
 .demo-workbench {
   height: 100%;
   overflow: auto;
-  padding: 18px 20px 30px;
+  padding: 18px 18px 28px;
   background: #fbfbfb;
 }
 
@@ -387,13 +387,13 @@ const goNext = () => {
 
 .demo-workbench__trace-title {
   margin: 12px 0 0;
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1.12;
 }
 
 .demo-workbench__trace-detail {
   margin: 10px 0 0;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -422,26 +422,26 @@ const goNext = () => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }
 
 @media (max-width: 1280px) {
   .demo-report__title {
-    font-size: clamp(36px, 4vw, 56px);
+    font-size: clamp(34px, 3.8vw, 54px);
   }
 
   .demo-report__summary {
-    font-size: 22px;
+    font-size: 21px;
   }
 
   .demo-report__section-title {
-    font-size: 32px;
+    font-size: 30px;
   }
 
   .demo-report__paragraph {
-    font-size: 19px;
+    font-size: 18px;
   }
 }
 </style>

@@ -61,7 +61,7 @@
           <section class="demo-simulation__focus" v-if="latestAction">
             <div class="demo-simulation__focus-header">
               <span>{{ latestAction.platform === 'plaza' ? currentPack.simulation.communityA.name : currentPack.simulation.communityB.name }}</span>
-              <span>{{ latestAction.round }} • {{ latestAction.time }}</span>
+              <span>{{ latestAction.round }} / {{ latestAction.time }}</span>
             </div>
             <div class="demo-simulation__focus-role">{{ latestAction.role }}</div>
             <h2 class="demo-simulation__focus-actor">{{ latestAction.actor }}</h2>
@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
 .demo-simulation {
   height: 100%;
   overflow: auto;
-  padding: 24px;
+  padding: 22px;
   background: #fbfbfb;
 }
 
@@ -252,7 +252,7 @@ onBeforeUnmount(() => {
 }
 
 .demo-simulation__community-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
 }
 
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: #f1f1f1;
   color: #585858;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -328,14 +328,14 @@ onBeforeUnmount(() => {
 
 .demo-simulation__focus-actor {
   margin: 8px 0 0;
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1.04;
 }
 
 .demo-simulation__focus-text {
   margin: 16px 0 0;
-  font-size: 28px;
-  line-height: 1.45;
+  font-size: 24px;
+  line-height: 1.5;
 }
 
 .demo-simulation__focus-tag {
@@ -380,7 +380,7 @@ onBeforeUnmount(() => {
 
 .demo-simulation__event-text {
   margin: 10px 0 0;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.55;
 }
 
@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   background: #050505;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
 }

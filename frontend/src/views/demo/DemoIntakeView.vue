@@ -143,7 +143,7 @@ const startDemo = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 30px;
+  padding: 18px 32px;
   border-bottom: 1px solid #efefef;
 }
 
@@ -176,12 +176,12 @@ const startDemo = () => {
 .demo-intake__body {
   display: grid;
   grid-template-columns: minmax(300px, 0.78fr) minmax(560px, 1.22fr);
-  gap: 56px;
-  padding: 54px 38px 64px;
+  gap: 64px;
+  padding: 58px 42px 76px;
 }
 
 .demo-intake__status {
-  padding: 42px 8px 0 4px;
+  padding: 34px 10px 0 6px;
 }
 
 .demo-intake__eyebrow,
@@ -193,7 +193,7 @@ const startDemo = () => {
 
 .demo-intake__title {
   margin: 28px 0 16px;
-  font-size: clamp(40px, 4.8vw, 62px);
+  font-size: clamp(38px, 4.4vw, 58px);
   line-height: 0.96;
   letter-spacing: -0.035em;
 }
@@ -209,12 +209,12 @@ const startDemo = () => {
   margin: 14px 0 0;
   max-width: 390px;
   color: #5b5b5b;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.55;
 }
 
 .demo-intake__steps {
-  margin-top: 64px;
+  margin-top: 72px;
 }
 
 .demo-intake__step {
@@ -241,7 +241,7 @@ const startDemo = () => {
 .demo-intake__step-description {
   margin: 10px 0 0;
   color: #333;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.65;
 }
 
@@ -363,7 +363,7 @@ const startDemo = () => {
   border: 1px solid #e2e2e2;
   background: #fff;
   color: #050505;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   cursor: pointer;
 }
