@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
@@ -127,6 +127,14 @@ const addLog = (msg) => {
   if (systemLogs.value.length > 100) {
     systemLogs.value.shift()
   }
+}
+
+const resetSimulationViewState = () => {
+  projectData.value = null
+  graphData.value = null
+  graphLoading.value = false
+  systemLogs.value = []
+  currentStatus.value = 'processing'
 }
 
 const updateStatus = (status) => {
@@ -269,13 +277,21 @@ const loadSimulationData = async () => {
           if (projRes.data.graph_id) {
             await loadGraph(projRes.data.graph_id)
           }
+        } else {
+          currentStatus.value = 'error'
+          addLog(`Project load failed: ${projRes.error || 'Unknown error'}`)
         }
+      } else {
+        currentStatus.value = 'error'
+        addLog('Simulation data missing project_id')
       }
     } else {
       addLog(`Failed to load simulation data: ${simRes.error || 'Unknown error'}`)
+      currentStatus.value = 'error'
     }
   } catch (err) {
     addLog(`Load failure: ${err.message}`)
+    currentStatus.value = 'error'
   }
 }
 
@@ -317,6 +333,22 @@ onMounted(async () => {
   // Load simulation data
   loadSimulationData()
 })
+
+watch(
+  () => route.params.simulationId,
+  async (newSimulationId, previousSimulationId) => {
+    if (!newSimulationId || newSimulationId === previousSimulationId) {
+      return
+    }
+
+    currentSimulationId.value = String(newSimulationId)
+    resetSimulationViewState()
+    await nextTick()
+    addLog('SimulationView Reinitialized')
+    await checkAndStopRunningSimulation()
+    loadSimulationData()
+  }
+)
 </script>
 
 <style scoped>
