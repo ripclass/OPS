@@ -15,7 +15,10 @@
   >
     <template #left>
       <article class="demo-report">
-        <div class="demo-report__eyebrow">Prediction Report</div>
+        <div class="demo-report__header">
+          <div class="demo-report__eyebrow">Prediction Report</div>
+          <div class="demo-report__id">ID: {{ reportIdentifier }}</div>
+        </div>
         <h1 class="demo-report__title">{{ currentPack.report.title }}</h1>
         <p class="demo-report__summary">{{ currentPack.report.summary }}</p>
 
@@ -41,15 +44,58 @@
 
     <template #right>
       <div class="demo-workbench">
-        <article
-          v-for="(item, index) in currentPack.report.workbench"
-          :key="item.title"
-          class="demo-workbench__item"
-        >
-          <div class="demo-workbench__label">{{ String(index + 1).padStart(2, '0') }} / {{ item.label }}</div>
-          <h2 class="demo-workbench__title">{{ item.title }}</h2>
-          <p class="demo-workbench__detail">{{ item.detail }}</p>
-        </article>
+        <section class="demo-workbench__status-panel">
+          <div class="demo-workbench__status-top">
+            <div class="demo-workbench__status-title">OK · COMPLETE</div>
+            <div class="demo-workbench__status-chip">Section 1/{{ currentPack.report.sections.length }}</div>
+          </div>
+
+          <div class="demo-workbench__status-list">
+            <article
+              v-for="(item, index) in currentPack.report.workbench"
+              :key="`status-${item.title}`"
+              class="demo-workbench__status-row"
+            >
+              <span class="demo-workbench__status-index">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="demo-workbench__status-text">{{ item.title }}</span>
+              <span class="demo-workbench__status-check">+</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="demo-workbench__timeline">
+          <article
+            v-for="entry in workbenchEntries"
+            :key="entry.key"
+            class="demo-workbench__trace"
+            :class="`demo-workbench__trace--${entry.tone}`"
+          >
+            <div class="demo-workbench__trace-meta">
+              <span class="demo-workbench__trace-type">{{ entry.kind }}</span>
+              <span class="demo-workbench__trace-time">{{ entry.elapsed }}</span>
+            </div>
+
+            <div class="demo-workbench__trace-header">
+              <div class="demo-workbench__trace-label">{{ entry.label }}</div>
+              <button class="demo-workbench__trace-toggle" type="button">
+                {{ entry.toggleLabel }}
+              </button>
+            </div>
+
+            <h2 class="demo-workbench__trace-title">{{ entry.title }}</h2>
+            <p class="demo-workbench__trace-detail">{{ entry.detail }}</p>
+
+            <div v-if="entry.points?.length" class="demo-workbench__trace-points">
+              <article
+                v-for="point in entry.points"
+                :key="point"
+                class="demo-workbench__trace-point"
+              >
+                {{ point }}
+              </article>
+            </div>
+          </article>
+        </section>
 
         <button class="demo-workbench__cta" type="button" @click="goNext">
           Open Deep Interaction ->
@@ -60,6 +106,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DemoWorkspaceShell from '../../components/demo/DemoWorkspaceShell.vue'
 import { useDemoRoute } from '../../composables/useDemoRoute'
@@ -67,6 +114,50 @@ import { useDemoRoute } from '../../composables/useDemoRoute'
 const route = useRoute()
 const router = useRouter()
 const { loading, currentPack, scenario, demoQuery } = useDemoRoute(route, router, 'report')
+
+const reportIdentifier = computed(() => `report_${currentPack.value.countryCode.toLowerCase()}_${currentPack.value.key}`)
+const workbenchEntries = computed(() => {
+  const sectionTitles = currentPack.value.report.sections.map(section => section.title)
+  const sectionHighlights = currentPack.value.report.sections.map(section => section.paragraphs[0])
+  const personaSignals = currentPack.value.population.personas.map(persona => `${persona.name}: ${persona.trait}`)
+
+  const entryMeta = [
+    {
+      kind: 'LLM RESPONSE',
+      tone: 'neutral',
+      elapsed: '+72.5s',
+      toggleLabel: 'Hide response',
+      points: sectionTitles,
+    },
+    {
+      kind: 'TOOL CALL',
+      tone: 'blue',
+      elapsed: '+120.4s',
+      toggleLabel: 'Show params',
+      points: personaSignals,
+    },
+    {
+      kind: 'TOOL RESULT',
+      tone: 'orange',
+      elapsed: '+166.8s',
+      toggleLabel: 'Raw output',
+      points: sectionHighlights,
+    },
+    {
+      kind: 'LLM RESPONSE',
+      tone: 'green',
+      elapsed: '+208.1s',
+      toggleLabel: 'Hide response',
+      points: ['Draft package compiled.', 'Evidence chain linked.', 'Workbench trace preserved.'],
+    },
+  ]
+
+  return currentPack.value.report.workbench.map((item, index) => ({
+    key: `${item.label}-${index}`,
+    ...entryMeta[index],
+    ...item,
+  }))
+})
 
 const goNext = () => {
   router.push({
@@ -84,6 +175,12 @@ const goNext = () => {
   background: #fff;
 }
 
+.demo-report__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .demo-report__eyebrow {
   display: inline-flex;
   padding: 6px 10px;
@@ -92,6 +189,12 @@ const goNext = () => {
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.demo-report__id {
+  color: #9a9a9a;
+  font-family: var(--murmur-font-type, 'Special Elite', monospace);
+  font-size: 13px;
 }
 
 .demo-report__title {
@@ -148,34 +251,167 @@ const goNext = () => {
   background: #fbfbfb;
 }
 
-.demo-workbench__item {
+.demo-workbench__status-panel {
+  padding: 16px;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.demo-workbench__status-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.demo-workbench__status-title {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.demo-workbench__status-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #202934;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.demo-workbench__status-list {
+  margin-top: 14px;
+}
+
+.demo-workbench__status-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  background: #fbfbfb;
+}
+
+.demo-workbench__status-row + .demo-workbench__status-row {
+  margin-top: 10px;
+}
+
+.demo-workbench__status-index {
+  color: #0052ff;
+  font-family: var(--murmur-font-type, 'Special Elite', monospace);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.demo-workbench__status-text {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.demo-workbench__status-check {
+  color: #15a35b;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.demo-workbench__timeline {
+  margin-top: 16px;
+}
+
+.demo-workbench__trace {
   padding: 18px;
   border: 1px solid #e7e7e7;
   border-radius: 12px;
   background: #fff;
 }
 
-.demo-workbench__item + .demo-workbench__item {
+.demo-workbench__trace + .demo-workbench__trace {
   margin-top: 14px;
 }
 
-.demo-workbench__label {
-  color: #6a6a6a;
+.demo-workbench__trace--blue {
+  border-color: #d7e5ff;
+}
+
+.demo-workbench__trace--orange {
+  border-color: #ffd8c2;
+}
+
+.demo-workbench__trace--green {
+  border-color: #d7f0e0;
+}
+
+.demo-workbench__trace-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #8f8f8f;
   font-family: var(--murmur-font-type, 'Special Elite', monospace);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
 }
 
-.demo-workbench__title {
-  margin: 12px 0 0;
-  font-size: 26px;
-  line-height: 1.08;
+.demo-workbench__trace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
 }
 
-.demo-workbench__detail {
+.demo-workbench__trace-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f4f4f4;
+  color: #4d4d4d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.demo-workbench__trace-toggle {
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  background: #fff;
+  color: #7d7d7d;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 9px;
+  cursor: default;
+}
+
+.demo-workbench__trace-title {
   margin: 12px 0 0;
-  font-size: 17px;
-  line-height: 1.55;
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.demo-workbench__trace-detail {
+  margin: 10px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.demo-workbench__trace-points {
+  margin-top: 16px;
+}
+
+.demo-workbench__trace-point {
+  padding: 12px 14px;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-workbench__trace-point + .demo-workbench__trace-point {
+  margin-top: 8px;
 }
 
 .demo-workbench__cta {
@@ -189,5 +425,23 @@ const goNext = () => {
   font-size: 18px;
   font-weight: 800;
   cursor: pointer;
+}
+
+@media (max-width: 1280px) {
+  .demo-report__title {
+    font-size: clamp(36px, 4vw, 56px);
+  }
+
+  .demo-report__summary {
+    font-size: 22px;
+  }
+
+  .demo-report__section-title {
+    font-size: 32px;
+  }
+
+  .demo-report__paragraph {
+    font-size: 19px;
+  }
 }
 </style>
