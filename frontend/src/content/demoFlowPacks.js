@@ -47,7 +47,101 @@ const GRAPH_EDGES = [
   ['dhaka', 'workers', 'HOSTS'],
 ]
 
-function createGraphData(key, labels = {}) {
+const GRAPH_CLUSTER_SPECS = [
+  {
+    anchor: 'students',
+    label: 'MediaOutlet',
+    count: 18,
+    secondary: ['media', 'bazaar', 'dhaka'],
+    cross: ['workers', 'mothers'],
+    relations: ['AMPLIFIES', 'ECHOES', 'THREADS_WITH'],
+    nameFactory: ({ city }, index) => `${city} student page ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'media',
+    label: 'MediaOutlet',
+    count: 16,
+    secondary: ['students', 'gov_notice', 'relief'],
+    cross: ['bazaar', 'grocers'],
+    relations: ['FRAMES', 'REPOSTS', 'REFERENCES'],
+    nameFactory: ({ countryLabel }, index) => `${countryLabel} bulletin ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'remittance',
+    label: 'Person',
+    count: 22,
+    secondary: ['commodity', 'grocers', 'mothers'],
+    cross: ['workers', 'dhaka'],
+    relations: ['ABSORBS', 'SHARES_WITH', 'DEPENDS_ON'],
+    nameFactory: ({ city }, index) => `${city} household ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'workers',
+    label: 'Person',
+    count: 20,
+    secondary: ['commodity', 'dhaka', 'students'],
+    cross: ['media', 'grocers'],
+    relations: ['STRAINS', 'HOSTS', 'COMMENTS_ON'],
+    nameFactory: ({ city }, index) => `${city} worker ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'mothers',
+    label: 'Person',
+    count: 18,
+    secondary: ['bazaar', 'grocers', 'relief'],
+    cross: ['remittance', 'mosque'],
+    relations: ['QUEUES_AT', 'HEARS', 'ASKS'],
+    nameFactory: ({ city }, index) => `${city} queue mother ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'bazaar',
+    label: 'Organization',
+    count: 16,
+    secondary: ['grocers', 'media', 'mothers'],
+    cross: ['students', 'relief'],
+    relations: ['ECHOES', 'CONNECTS', 'REACHES'],
+    nameFactory: ({ city }, index) => `${city} bazaar thread ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'grocers',
+    label: 'Organization',
+    count: 12,
+    secondary: ['bazaar', 'commodity', 'dhaka'],
+    cross: ['remittance', 'workers'],
+    relations: ['UPDATES', 'HOSTS', 'WARNS'],
+    nameFactory: ({ city }, index) => `${city} grocer lane ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'gov_notice',
+    label: 'GovernmentAgency',
+    count: 10,
+    secondary: ['relief', 'media', 'students'],
+    cross: ['commodity', 'dhaka'],
+    relations: ['ANNOUNCES', 'CLARIFIES', 'DELAYS'],
+    nameFactory: ({ countryLabel }, index) => `${countryLabel} notice relay ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'relief',
+    label: 'GovernmentAgency',
+    count: 10,
+    secondary: ['gov_notice', 'mothers', 'grocers'],
+    cross: ['bazaar', 'media'],
+    relations: ['RESPONDS_TO', 'SERVES', 'MISSES'],
+    nameFactory: ({ city }, index) => `${city} relief desk ${String(index + 1).padStart(2, '0')}`,
+  },
+  {
+    anchor: 'dhaka',
+    label: 'Location',
+    count: 14,
+    secondary: ['workers', 'students', 'bazaar'],
+    cross: ['relief', 'media'],
+    relations: ['HOSTS', 'CONTAINS', 'LINKS'],
+    nameFactory: ({ city }, index) => `${city} ward ${String(index + 1).padStart(2, '0')}`,
+  },
+]
+
+function createGraphData(key, context = {}) {
+  const { labels = {}, countryLabel = 'Country', city = 'City' } = context
   const nodes = GRAPH_TEMPLATE.map(([id, name, nodeLabels]) => ({
     uuid: `${key}_${id}`,
     name: labels[id] || name,
@@ -65,6 +159,46 @@ function createGraphData(key, labels = {}) {
     name,
     fact_type: name,
   }))
+
+  const addEdge = (source, target, name) => {
+    edges.push({
+      uuid: `${key}_edge_${edges.length + 1}`,
+      source_node_uuid: source,
+      target_node_uuid: target,
+      name,
+      fact_type: name,
+    })
+  }
+
+  GRAPH_CLUSTER_SPECS.forEach((spec) => {
+    for (let index = 0; index < spec.count; index += 1) {
+      const nodeUuid = `${key}_${spec.anchor}_cluster_${String(index + 1).padStart(2, '0')}`
+      const previousUuid = index > 0
+        ? `${key}_${spec.anchor}_cluster_${String(index).padStart(2, '0')}`
+        : null
+
+      nodes.push({
+        uuid: nodeUuid,
+        name: spec.nameFactory({ countryLabel, city, labels }, index),
+        labels: ['Entity', spec.label],
+        attributes: {
+          region: key,
+          color: GRAPH_COLORS[spec.label] || GRAPH_COLORS.Entity,
+        },
+      })
+
+      addEdge(nodeUuid, `${key}_${spec.anchor}`, spec.relations[0])
+      addEdge(nodeUuid, `${key}_${spec.secondary[index % spec.secondary.length]}`, spec.relations[1])
+
+      if (previousUuid) {
+        addEdge(previousUuid, nodeUuid, spec.relations[2])
+      }
+
+      if (index % 4 === 0) {
+        addEdge(nodeUuid, `${key}_${spec.cross[Math.floor(index / 4) % spec.cross.length]}`, spec.relations[0])
+      }
+    }
+  })
 
   return {
     nodes,
@@ -96,9 +230,13 @@ function createPack({
   interviewAgents,
 }) {
   const graphData = createGraphData(key, {
-    commodity: `${countryLabel} staple price shock`,
-    dhaka: city,
-    ...graphLabels,
+    countryLabel,
+    city,
+    labels: {
+      commodity: `${countryLabel} staple price shock`,
+      dhaka: city,
+      ...graphLabels,
+    },
   })
 
   return {

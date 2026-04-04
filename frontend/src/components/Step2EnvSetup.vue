@@ -176,7 +176,7 @@
                   @click="opsConfig.targetAgents = option.value"
                 >
                   <span class="choice-label">{{ option.label }}</span>
-                  <span class="choice-desc">{{ option.estimateLabel }}</span>
+                  <span v-if="!isDemoMode" class="choice-desc">{{ option.estimateLabel }}</span>
                 </button>
               </div>
             </div>
@@ -205,7 +205,7 @@
           <div class="review-shell">
             <div class="review-header">
               <span class="review-title">Run Review</span>
-              <span class="review-badge">{{ opsEstimateLabel }}</span>
+              <span class="review-badge">{{ reviewBadgeLabel }}</span>
             </div>
 
             <div class="review-grid">
@@ -233,7 +233,7 @@
                 <span class="info-label">Outputs</span>
                 <span class="info-value">{{ outputsSummary }}</span>
               </div>
-              <div class="review-item">
+              <div v-if="!isDemoMode" class="review-item">
                 <span class="info-label">Launch Mode</span>
                 <span class="info-value">{{ billingModeLabel }}</span>
               </div>
@@ -987,6 +987,9 @@ const geographySummary = computed(() => getOpsGeographySummary(opsConfig.value))
 const segmentsSummary = computed(() => opsConfig.value.segments.join(', ') || 'None selected')
 const targetAgentsSummary = computed(() => getTargetAgentsLabel(opsConfig.value.targetAgents))
 const outputsSummary = computed(() => opsConfig.value.requestedOutputs.join(', ') || 'None selected')
+const reviewBadgeLabel = computed(() => {
+  return isDemoMode ? targetAgentsSummary.value : opsEstimateLabel.value
+})
 const billingModeLabel = computed(() => {
   return (isDemoMode || opsConfig.value.demoModeBypass) ? 'Demo mode bypass' : 'Production checkout'
 })
