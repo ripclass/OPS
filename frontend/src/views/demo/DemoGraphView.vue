@@ -34,8 +34,13 @@
           <p class="demo-card__body">
             Murmur reads the scenario brief, extracts public actors, locations, institutions, and pressure points, then stages an ontology for the simulated public sphere.
           </p>
+          <div class="demo-card__group-label">Generated Entity Types</div>
           <div class="demo-pill-list">
             <span v-for="type in currentPack.graph.entityTypes" :key="type" class="demo-pill">{{ type }}</span>
+          </div>
+          <div class="demo-card__group-label demo-card__group-label--spaced">Generated Relation Types</div>
+          <div class="demo-pill-list">
+            <span v-for="type in currentPack.graph.relationTypes" :key="type" class="demo-pill">{{ type }}</span>
           </div>
         </article>
 
@@ -68,10 +73,13 @@
         </article>
 
         <article class="demo-card demo-card--cta">
-          <div>
-            <div class="demo-card__number">03</div>
-            <h2 class="demo-card__title">Build Complete</h2>
-            <div class="demo-card__meta">POST /api/simulation/create</div>
+          <div class="demo-card__header">
+            <div>
+              <div class="demo-card__number">03</div>
+              <h2 class="demo-card__title">Build Complete</h2>
+              <div class="demo-card__meta">POST /api/simulation/create</div>
+            </div>
+            <span class="demo-card__status demo-card__status--accent">Ready for Step 2</span>
           </div>
           <p class="demo-card__body">
             The scenario graph is ready. Continue to population setup to stage Murmur's country-grounded agents and environment scaffolding.
@@ -166,6 +174,18 @@ const goNext = () => {
   line-height: 1.58;
 }
 
+.demo-card__group-label {
+  margin-top: 20px;
+  color: #9a9a9a;
+  font-family: var(--murmur-font-type, 'Special Elite', monospace);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.demo-card__group-label--spaced {
+  margin-top: 18px;
+}
+
 .demo-pill-list {
   display: flex;
   flex-wrap: wrap;
@@ -212,6 +232,12 @@ const goNext = () => {
 
 .demo-card--cta {
   border-color: #ff6b35;
+  background: #fffaf7;
+}
+
+.demo-card__status--accent {
+  background: #fff2eb;
+  color: #ff6b35;
 }
 
 .demo-card__button {
