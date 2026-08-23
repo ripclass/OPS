@@ -2813,6 +2813,13 @@ watch(() => props.reportId, (newId) => {
   background: var(--wf-done-dot);
 }
 
+/* The 1fr grid track cannot shrink past its content while this is min-width:
+   auto, so the title's own ellipsis never got a chance to fire and the row
+   pushed out of the card instead. */
+.wf-step-content {
+  min-width: 0;
+}
+
 .wf-step-title-row {
   display: flex;
   align-items: baseline;
@@ -5117,5 +5124,33 @@ watch(() => props.reportId, (newId) => {
 .log-msg.error { color: #EF5350; }
 .log-msg.warning { color: #FFA726; }
 .log-msg.success { color: #66BB6A; }
+
+@media (max-width: 768px) {
+  /* The report column carries min-width: 450px, so on a phone it was simply
+     clipped and the workbench beside it got no width at all. Stacked, both
+     get the full column and the page scrolls. */
+  .report-panel {
+    height: auto;
+    overflow: visible;
+  }
+
+  .main-split-layout {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .left-panel.report-style {
+    width: 100%;
+    min-width: 0;
+    overflow-y: visible;
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 22px 16px 32px;
+  }
+
+  .right-panel {
+    overflow-y: visible;
+  }
+}
 </style>
 

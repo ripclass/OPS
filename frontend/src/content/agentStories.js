@@ -34,7 +34,7 @@ export const AGENT_STORIES = {
     headlineInkMeta: 'Noakhali.\nFish drying worker.',
     heroInkLines: ['MURMUR', 'KNOWS', 'HALIMA'],
     footerWordmark: 'MURMUR',
-    footerSubtitle: 'South Asia behavioural intelligence',
+    footerSubtitle: 'South Asia behavioural intelligence. Any sector, rehearsed first.',
     scribbles: [
       {
         text: 'NO POST\nNO PROTEST',
@@ -244,7 +244,7 @@ export const WHAT_IT_KNOWS = [
 ]
 
 export const WHAT_IT_DOES = [
-  "You describe a scenario. A policy announcement. A price increase. A flood warning that may or may not be believed. A health campaign aimed at women who will not come to the clinic. An election narrative before it is deployed.",
+  "You describe a scenario. A policy announcement. A price increase. A rumour about a product that sits in every kitchen. A flood warning that may or may not be believed. A health campaign aimed at women who will not come to the clinic. An election narrative before it is deployed.",
   'Murmur generates the population that will receive it. Not a segment. Not a demographic average. Specific people with names, dialects, income sources, shame thresholds, trust levels for each institution, and a political lean they keep hidden.',
   'It runs the scenario through them. Hour by hour. Family phone call to WhatsApp voice message to Facebook post to bazaar rumour to teashop remark to the silence that travels faster than noise.',
   'It shows you what one hundred to ten thousand specific people do - in their languages, with their emotions, at their speeds, through their networks - with cascade architecture, amplifier identification, and the behavioural math of who shares, who absorbs, and who goes quiet.',
@@ -262,9 +262,76 @@ export const WHO_ITS_FOR_LINES = [
   'A disaster warning in a language the affected population does not trust.',
   'A price shock hitting millions of households with no relief plan.',
   'A brand entering a market where the wrong word triggers a boycott in forty minutes.',
+  'A programme office about to ask two hundred thousand households to register again.',
+  'An employer announcing a wage decision in the middle of bonus season.',
 ]
 
-export const WHO_ITS_FOR_OUTRO = 'Murmur is the rehearsal. What happens in the simulation before it happens in the street, the feed, or the ministry\'s inbox.'
+export const WHO_ITS_FOR_OUTRO = 'Murmur is the rehearsal. What happens in the simulation before it happens in the street, the feed, the shelf, or the inbox.'
+
+// The scenario library. Seven prepared runs, one per sector, each written
+// around the silence lane that sector actually loses people through. The
+// countryCode on each entry is the same code ?country= accepts, so a card is
+// only ever a pack selection. Substance is pulled from each pack in
+// content/demoFlowPacks.js; keep the two in step if a pack is added.
+export const SCENARIO_LIBRARY_INTRO = {
+  title: 'Seven rehearsals already built.',
+  lead: 'Every sector loses its people in a different way. Pick one and the run starts on prepared reality seeds, a built graph, and a population that belongs to that sector.',
+  detail: 'The brands, operators, wallets and programmes named here are invented for the demo. The behaviour is not.',
+  scribble: 'seven ways to go quiet',
+  close: 'Your sector is not on this list. Write the brief below and Murmur builds that room too.',
+}
+
+export const SCENARIO_LIBRARY = [
+  {
+    countryCode: 'BD',
+    sector: 'Staple food price',
+    title: 'Rice price shock',
+    place: 'Dhaka, the week before Eid',
+    quiet: 'The household that cuts the evening meal first and says the word shortage last.',
+  },
+  {
+    countryCode: 'BD-BRAND',
+    sector: 'Consumer brand',
+    title: 'Contamination rumour',
+    place: 'Fictional noodle brand, Eid campaign week, Dhaka',
+    quiet: 'The tiffin box quietly packed with another brand. The shelf turns before the sentiment does.',
+  },
+  {
+    countryCode: 'BD-NGO',
+    sector: 'Social programme',
+    title: 'Re-registration rumour',
+    place: 'Maternal cash transfer, Kurigram',
+    quiet: 'The mother who stops collecting rather than be told at the counter that her name is gone.',
+  },
+  {
+    countryCode: 'BD-TELCO',
+    sector: 'Telecom',
+    title: 'Price rise and throttling rumour',
+    place: 'Fictional operator, Dhaka',
+    quiet: 'The second SIM. Churn with no ticket, and a care line counting only the people who stayed.',
+  },
+  {
+    countryCode: 'BD-WALLET',
+    sector: 'Mobile money',
+    title: 'Cashout fee rumour',
+    place: 'Fictional wallet, Sylhet agent points',
+    quiet: 'Nobody complains about taking out their own money. The agent point is simply dry by noon.',
+  },
+  {
+    countryCode: 'BD-WAGE',
+    sector: 'Industrial relations',
+    title: 'Wage board in bonus season',
+    place: 'Garment floor, Gazipur',
+    quiet: 'Silence on the line in front of the supervisor. The sentence that matters is said at the teashop at ten at night.',
+  },
+  {
+    countryCode: 'BD-HEALTH',
+    sector: 'Public health',
+    title: 'Beds full rumour',
+    place: 'Dengue season, Dhaka',
+    quiet: 'The household that never arrives, whose fever is managed at a pharmacy counter with no register.',
+  },
+]
 
 // The About section argues insider authenticity at region level only. No city
 // or country is named here: provenance is "inside South Asia", and the

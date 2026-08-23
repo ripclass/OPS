@@ -117,18 +117,34 @@ let pollTimer = null
 let graphPollTimer = null
 let missingTaskRecoveryLogged = false
 
-// --- Computed Layout Styles ---
-const leftPanelStyle = computed(() => {
-  if (viewMode.value === 'graph') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
-  if (viewMode.value === 'workbench') return { width: '0%', opacity: 0, transform: 'translateX(-20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
-})
+// --- Narrow viewport ---
+// Side by side, the two panels each take half the width. On a phone that is a
+// node cloud nobody can read next to a column running one word per line. Below
+// this width they stack full width instead, and a panel the current mode hides
+// is removed rather than collapsed to zero width, because a zero-width column
+// in a stacked layout still occupies its row.
+const NARROW_QUERY = '(max-width: 768px)'
+const isNarrow = ref(false)
+let narrowMedia = null
+const syncNarrow = (event) => {
+  isNarrow.value = event.matches
+}
 
-const rightPanelStyle = computed(() => {
-  if (viewMode.value === 'workbench') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
-  if (viewMode.value === 'graph') return { width: '0%', opacity: 0, transform: 'translateX(20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
-})
+// --- Computed Layout Styles ---
+const panelStyle = (visible, hiddenShift) => {
+  if (isNarrow.value) {
+    return visible
+      ? { width: '100%', opacity: 1, transform: 'translateX(0)' }
+      : { display: 'none' }
+  }
+  return visible
+    ? { width: viewMode.value === 'split' ? '50%' : '100%', opacity: 1, transform: 'translateX(0)' }
+    : { width: '0%', opacity: 0, transform: `translateX(${hiddenShift})` }
+}
+
+const leftPanelStyle = computed(() => panelStyle(viewMode.value !== 'workbench', '-20px'))
+
+const rightPanelStyle = computed(() => panelStyle(viewMode.value !== 'graph', '20px'))
 
 // --- Status Computed ---
 const statusClass = computed(() => {
@@ -498,6 +514,11 @@ const stopGraphPolling = () => {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    narrowMedia = window.matchMedia(NARROW_QUERY)
+    isNarrow.value = narrowMedia.matches
+    narrowMedia.addEventListener('change', syncNarrow)
+  }
   initProject()
 })
 
@@ -520,6 +541,8 @@ watch(
 onUnmounted(() => {
   stopPolling()
   stopGraphPolling()
+  narrowMedia?.removeEventListener('change', syncNarrow)
+  narrowMedia = null
 })
 </script>
 
@@ -655,5 +678,60 @@ onUnmounted(() => {
 
 .panel-wrapper.left {
   border-right: 1px solid #EAEAEA;
+}
+
+/* The whole view is a locked 100vh two-column workspace. On a phone that has
+   to become one scrolling column, or every panel is a letterbox. */
+@media (max-width: 768px) {
+  .main-view {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .app-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  /* Centring by absolute positioning stops working the moment the header
+     wraps, and the switcher was sitting on top of the brand. */
+  .header-center {
+    position: static;
+    order: 3;
+    width: 100%;
+    transform: none;
+  }
+
+  .view-switcher {
+    width: 100%;
+  }
+
+  .switch-btn {
+    flex: 1;
+    padding: 8px 6px;
+  }
+
+  .content-area {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .panel-wrapper {
+    height: auto;
+    transition: opacity 0.3s ease;
+  }
+
+  .panel-wrapper.left {
+    border-right: none;
+    border-bottom: 1px solid #EAEAEA;
+    /* The graph needs a stated height once it is no longer filling a
+       full-height column. */
+    height: 58vh;
+    min-height: 320px;
+  }
 }
 </style>

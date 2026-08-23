@@ -126,16 +126,33 @@ const placeholderPath = computed(() => (
     ? `frontend/public${props.story.imagePath}`
     : ''
 ))
+// The marker offsets in the story data are pixels measured against the desktop
+// media box. Below 1024px that box narrows to the viewport, so pixels would
+// push the bar off the right edge and give the whole page a horizontal
+// scrollbar. Expressed as a share of the reference box they land identically on
+// desktop and follow the image everywhere else, because the image keeps the
+// same aspect ratio.
+const MEDIA_REFERENCE_WIDTH = 560
+const MEDIA_REFERENCE_HEIGHT = 677
+
+const toShare = (value, reference) => {
+  const match = /^(-?[\d.]+)px$/.exec(String(value || '').trim())
+  if (!match) {
+    return value
+  }
+  return `${(Number(match[1]) / reference) * 100}%`
+}
+
 const eyeMarkerStyle = computed(() => {
   if (!props.story.eyeMarker) {
     return {}
   }
 
   return {
-    top: props.story.eyeMarker.top,
-    left: props.story.eyeMarker.left,
-    width: props.story.eyeMarker.width,
-    height: props.story.eyeMarker.height,
+    top: toShare(props.story.eyeMarker.top, MEDIA_REFERENCE_HEIGHT),
+    left: toShare(props.story.eyeMarker.left, MEDIA_REFERENCE_WIDTH),
+    width: toShare(props.story.eyeMarker.width, MEDIA_REFERENCE_WIDTH),
+    height: toShare(props.story.eyeMarker.height, MEDIA_REFERENCE_HEIGHT),
     background: props.story.eyeMarker.color || '#0048ffbf',
     transform: `rotate(${props.story.eyeMarker.rotate || '0deg'})`,
   }
@@ -382,7 +399,6 @@ const inkTitleLines = computed(() => {
     padding-bottom: 48px;
   }
 
-  .hero-story__media,
   .hero-story__ink-title,
   .hero-story__copy,
   .hero-story__brand-lockup,
@@ -397,7 +413,13 @@ const inkTitleLines = computed(() => {
     gap: 24px;
   }
 
+  /* Relative rather than static: the eye marker is positioned against this box
+     and must not escape to the canvas. */
   .hero-story__media {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
     height: auto;
   }
 
@@ -425,6 +447,46 @@ const inkTitleLines = computed(() => {
 
   .hero-story__scribble {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-story__canvas {
+    gap: 20px;
+  }
+
+  .hero-story__ink-title {
+    font-size: clamp(38px, 13vw, 56px);
+  }
+
+  .hero-story__headline {
+    font-size: 22px;
+  }
+
+  /* The hand font sits on a 0.68 line box, which is fine as a two-line ink
+     annotation beside desktop copy but collides with the headline once the
+     column narrows. */
+  .hero-story__headline-meta {
+    margin-top: 6px;
+    font-size: 17px;
+    line-height: 0.92;
+    top: 0;
+  }
+
+  /* 12px is a desktop caption size. On a phone this is the body of the hero. */
+  .hero-story__paragraph {
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.34;
+  }
+
+  .hero-story__brand-word {
+    font-size: 40px;
+  }
+
+  .hero-story__brand-subtitle {
+    font-size: 15px;
+    line-height: 1.25;
   }
 }
 </style>

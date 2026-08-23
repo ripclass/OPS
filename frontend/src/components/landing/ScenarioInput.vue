@@ -621,7 +621,11 @@ const handleSubmit = async () => {
 }
 
 .scenario-primary__arrow {
+  flex: none;
   font-size: 22px;
+  /* Two glyphs that must stay one mark: at narrow widths the label wraps and
+     was taking the ">" onto its own line. */
+  white-space: nowrap;
 }
 
 .scenario-note {
@@ -676,6 +680,61 @@ const handleSubmit = async () => {
 
   .scenario-primary {
     font-size: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .scenario-standfirst__lead {
+    font-size: 18px;
+  }
+
+  .scenario-scribble {
+    margin: 22px 0 16px;
+    width: auto;
+    text-align: left;
+  }
+
+  /* 28px of side padding inside a 343px column left the textarea barely wider
+     than the label above it. */
+  .scenario-console__section {
+    padding: 18px 14px 0;
+  }
+
+  .scenario-console__section--steps {
+    padding-bottom: 20px;
+  }
+
+  .scenario-input {
+    min-height: 150px;
+    padding: 16px 14px 40px;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .scenario-seed {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 10px;
+  }
+
+  .scenario-seed__kind {
+    min-width: 40px;
+  }
+
+  /* The tick reads as decoration once the row is this tight, and the word
+     "attached" already says it. */
+  .scenario-seed__tick {
+    display: none;
+  }
+
+  .scenario-primary {
+    margin-top: 20px;
+    padding: 16px 16px;
+    font-size: 19px;
+  }
+
+  .scenario-primary__arrow {
+    font-size: 18px;
   }
 }
 </style>

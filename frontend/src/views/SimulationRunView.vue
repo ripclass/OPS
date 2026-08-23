@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import GraphPanel from '../components/GraphPanel.vue'
 import Step3Simulation from '../components/Step3Simulation.vue'
@@ -101,17 +101,31 @@ const maxRounds = computed(() => {
   return Number.isFinite(parsed) ? parsed : undefined
 })
 
-const leftPanelStyle = computed(() => {
-  if (viewMode.value === 'graph') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
-  if (viewMode.value === 'workbench') return { width: '0%', opacity: 0, transform: 'translateX(-20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
-})
+// Below this width the two panels stack into one scrolling column instead of
+// each taking half a phone. A panel the current mode hides is removed rather
+// than collapsed to zero width, because a zero-width column still holds a row
+// once the layout stacks.
+const NARROW_QUERY = '(max-width: 768px)'
+const isNarrow = ref(false)
+let narrowMedia = null
+const syncNarrow = (event) => {
+  isNarrow.value = event.matches
+}
 
-const rightPanelStyle = computed(() => {
-  if (viewMode.value === 'workbench') return { width: '100%', opacity: 1, transform: 'translateX(0)' }
-  if (viewMode.value === 'graph') return { width: '0%', opacity: 0, transform: 'translateX(20px)' }
-  return { width: '50%', opacity: 1, transform: 'translateX(0)' }
-})
+const panelStyle = (visible, hiddenShift) => {
+  if (isNarrow.value) {
+    return visible
+      ? { width: '100%', opacity: 1, transform: 'translateX(0)' }
+      : { display: 'none' }
+  }
+  return visible
+    ? { width: viewMode.value === 'split' ? '50%' : '100%', opacity: 1, transform: 'translateX(0)' }
+    : { width: '0%', opacity: 0, transform: `translateX(${hiddenShift})` }
+}
+
+const leftPanelStyle = computed(() => panelStyle(viewMode.value !== 'workbench', '-20px'))
+
+const rightPanelStyle = computed(() => panelStyle(viewMode.value !== 'graph', '20px'))
 
 const statusClass = computed(() => currentStatus.value)
 
@@ -142,6 +156,14 @@ const addLog = (msg) => {
 
 const updateStatus = (status) => {
   currentStatus.value = status
+}
+
+const resetSimulationRunViewState = () => {
+  projectData.value = null
+  graphData.value = null
+  graphLoading.value = false
+  systemLogs.value = []
+  currentStatus.value = 'processing'
 }
 
 const toggleMaximize = (target) => {
@@ -186,6 +208,7 @@ const loadSimulationData = async () => {
 
   try {
     addLog(`Loading simulation data: ${currentSimulationId.value}`)
+    currentStatus.value = 'processing'
     const simRes = await getSimulation(currentSimulationId.value)
     if (simRes.success && simRes.data) {
       const simData = simRes.data
@@ -197,9 +220,14 @@ const loadSimulationData = async () => {
           if (projRes.data.graph_id) {
             await loadGraph(projRes.data.graph_id)
           }
+          currentStatus.value = 'ready'
         } else {
           addLog(`Failed to load project data: ${projRes.error || 'Unknown error'}`)
+          currentStatus.value = 'error'
         }
+      } else {
+        addLog('Simulation record is missing project_id')
+        currentStatus.value = 'error'
       }
     } else {
       addLog(`Failed to load simulation data: ${simRes.error || 'Unknown error'}`)
@@ -222,13 +250,24 @@ watch(
   (newId) => {
     if (newId && newId !== currentSimulationId.value) {
       currentSimulationId.value = String(newId)
-      systemLogs.value = []
+      resetSimulationRunViewState()
       loadSimulationData()
     }
   }
 )
 
+onUnmounted(() => {
+  narrowMedia?.removeEventListener('change', syncNarrow)
+  narrowMedia = null
+})
+
 onMounted(() => {
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    narrowMedia = window.matchMedia(NARROW_QUERY)
+    isNarrow.value = narrowMedia.matches
+    narrowMedia.addEventListener('change', syncNarrow)
+  }
+
   const bootstrap = async () => {
     addLog('Simulation run view initialized')
     if (isDemoRoute.value) {
@@ -392,5 +431,56 @@ onMounted(() => {
 
 .panel-wrapper.left {
   border-right: 1px solid #eaeaea;
+}
+
+/* Same reason as the graph step: a locked 100vh two-column workspace has to
+   become one scrolling column on a phone. */
+@media (max-width: 768px) {
+  .main-view {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .app-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .header-center {
+    position: static;
+    order: 3;
+    width: 100%;
+    transform: none;
+  }
+
+  .view-switcher {
+    width: 100%;
+  }
+
+  .switch-btn {
+    flex: 1;
+    padding: 8px 6px;
+  }
+
+  .content-area {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .panel-wrapper {
+    height: auto;
+    transition: opacity 0.3s ease;
+  }
+
+  .panel-wrapper.left {
+    border-right: none;
+    border-bottom: 1px solid #eaeaea;
+    height: 50vh;
+    min-height: 300px;
+  }
 }
 </style>

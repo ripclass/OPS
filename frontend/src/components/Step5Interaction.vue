@@ -2747,4 +2747,104 @@ watch(
   border-top: 1px solid #E5E7EB;
   margin: 24px 0;
 }
+
+@media (max-width: 768px) {
+  /* Same problem the report step had: the summary column carries a
+     min-width of 450px, so on a phone it was clipped and the chat panel
+     beside it got no width at all. Stacked, both get the full column. */
+  .interaction-panel {
+    height: auto;
+    overflow: visible;
+  }
+
+  .main-split-layout {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .left-panel.report-style {
+    width: 100%;
+    min-width: 0;
+    overflow-y: visible;
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 22px 16px 32px;
+  }
+
+  .right-panel {
+    overflow: visible;
+  }
+
+  /* The action bar puts a label, three pills and a divider on one row. On a
+     phone that row is 343px wide, so it wraps instead of squeezing. */
+  .action-bar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .action-bar-header {
+    min-width: 0;
+  }
+
+  .action-bar-tabs {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .tab-divider {
+    display: none;
+  }
+
+  .tab-pill {
+    max-width: 100%;
+  }
+
+  .tab-pill span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The person dropdown was anchored to a pill that is now full width. */
+  .agent-dropdown {
+    width: 100%;
+  }
+
+  .agent-dropdown .tab-pill {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    left: 0;
+    right: 0;
+    width: auto;
+    min-width: 0;
+    max-height: 60vh;
+  }
+
+  .chat-container {
+    height: auto;
+  }
+
+  /* A chat that grows the page instead of scrolling inside a 100vh box:
+     the message list keeps its own scroll but at a height a phone can hold. */
+  .chat-messages {
+    max-height: 62vh;
+    padding: 16px 14px;
+  }
+
+  .chat-input-area {
+    padding: 12px 14px;
+  }
+
+  .suggestion-chip {
+    font-size: 12px;
+  }
+
+  .empty-suggestions {
+    max-width: 100%;
+  }
+}
 </style>

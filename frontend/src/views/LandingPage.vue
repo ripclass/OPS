@@ -9,6 +9,7 @@
         <a href="#console">Run a scenario</a>
         <a href="#cascades">Cascades</a>
         <a href="#introduction">Introduction</a>
+        <a href="#library">Scenarios</a>
         <a href="#about-us">About us</a>
       </nav>
 
@@ -53,8 +54,8 @@
         <MurmurIntro
           kicker="South Asia behavioural intelligence"
           title="The street knows before the briefing room does."
-          summary="Murmur is a behavioural rehearsal system for decisions that will reach millions of South Asians."
-          detail="Five country models across South Asia. One hundred to ten thousand specific people, run hour by hour before the street, the feed, or the market moves."
+          summary="Murmur is a rehearsal room for any decision that will reach millions of South Asians."
+          detail="Five country models across South Asia. A price shock, a product recall, a benefit cut, a wage board, an outbreak. One hundred to ten thousand specific people, run hour by hour before the street, the feed, or the market moves."
         />
       </section>
 
@@ -72,6 +73,14 @@
 
       <section id="research" class="content-section content-section--wide content-section--knowledge">
         <WhatItKnows :items="WHAT_IT_KNOWS" />
+      </section>
+
+      <section id="library" class="content-section content-section--wide content-section--library">
+        <ScenarioLibrary
+          :intro="SCENARIO_LIBRARY_INTRO"
+          :items="SCENARIO_LIBRARY"
+          @select="handleScenarioPick"
+        />
       </section>
 
       <section id="console" class="content-section content-section--wide content-section--scenario">
@@ -121,6 +130,7 @@ import CarouselDots from '../components/landing/CarouselDots.vue'
 import LegitimacyFooter from '../components/landing/LegitimacyFooter.vue'
 import MurmurIntro from '../components/landing/MurmurIntro.vue'
 import ScenarioInput from '../components/landing/ScenarioInput.vue'
+import ScenarioLibrary from '../components/landing/ScenarioLibrary.vue'
 import WhatItDoes from '../components/landing/WhatItDoes.vue'
 import WhatItKnows from '../components/landing/WhatItKnows.vue'
 import WhoItsFor from '../components/landing/WhoItsFor.vue'
@@ -130,6 +140,8 @@ import {
   ABOUT_PUNCH,
   AGENT_STORIES,
   GLOBAL_ROTATION_ORDER,
+  SCENARIO_LIBRARY,
+  SCENARIO_LIBRARY_INTRO,
   WHAT_IT_DOES,
   WHAT_IT_KNOWS,
   WHO_ITS_FOR_INTRO,
@@ -281,6 +293,24 @@ const handleScenarioSubmit = async (scenario) => {
   if (brief) {
     setDemoScenario(brief)
   }
+
+  router.push({
+    name: 'DemoGraph',
+    query: buildDemoQuery(),
+  })
+}
+
+// A scenario-library card is a request for that pack's prepared brief, not for
+// whatever brief is left over in the session, so the carried scenario is
+// cleared before the store resolves the pack default. Otherwise it takes the
+// same path the CTA does: seed the store, then jump straight to step 01.
+const handleScenarioPick = async (countryCode) => {
+  setDemoScenario('')
+
+  await initializeDemoFlow({
+    scenario: '',
+    country: countryCode,
+  })
 
   router.push({
     name: 'DemoGraph',
@@ -483,8 +513,12 @@ const scrollToTop = () => {
   padding-top: 152px;
 }
 
-.content-section--scenario {
+.content-section--library {
   padding-top: 152px;
+}
+
+.content-section--scenario {
+  padding-top: 120px;
 }
 
 .content-section--privacy {
@@ -546,25 +580,56 @@ const scrollToTop = () => {
   opacity: 0;
 }
 
-@media (max-width: 768px) {
-  .murmur-nav {
-    padding: 16px 20px 0;
-  }
-
+/* The link row is absolutely placed at a fixed left offset for the 978px
+   layout, so it has to leave before it can collide with the action buttons.
+   The hero stops being an absolutely positioned canvas at 1024px too, which is
+   where its reserved height stops meaning anything. */
+@media (max-width: 1024px) {
   .murmur-nav__links {
     display: none;
-  }
-
-  .murmur-main {
-    padding: 28px 20px 32px;
   }
 
   .opening-shell {
     min-height: 0;
   }
+}
+
+@media (max-width: 768px) {
+  .murmur-nav {
+    padding: 16px 16px 0;
+    gap: 12px;
+  }
+
+  .murmur-brand__word {
+    font-size: 21px;
+  }
+
+  /* Thumb-sized rather than pointer-sized. The label stays small; the box
+     around it grows. */
+  .nav-button {
+    min-height: 40px;
+    padding: 11px 16px;
+    font-size: 11px;
+  }
+
+  .murmur-main {
+    padding: 28px 16px 32px;
+  }
 
   .content-section {
-    padding-top: 80px;
+    padding-top: 72px;
+  }
+
+  .content-section--privacy {
+    padding-top: 36px;
+  }
+
+  .privacy-note {
+    font-size: 15px;
+  }
+
+  .auth-modal {
+    padding: 16px;
   }
 }
 </style>

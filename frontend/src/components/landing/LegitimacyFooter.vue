@@ -172,9 +172,18 @@ const { targetRef, isVisible } = useRevealOnScroll()
 }
 
 @media (max-width: 640px) {
+  .footer-shell {
+    padding-bottom: 48px;
+  }
+
   .footer-brand__line,
   .footer-links a {
     font-size: 16px;
+  }
+
+  .footer-brand__line {
+    max-width: none;
+    margin-top: 14px;
   }
 
   .footer-copy p {
@@ -182,12 +191,24 @@ const { targetRef, isVisible } = useRevealOnScroll()
   }
 
   .footer-pullquote {
+    margin-top: 30px;
+    padding-top: 20px;
     font-size: 19px;
   }
 
   .footer-scribble {
     text-align: left;
     font-size: 22px;
+  }
+
+  /* Three links on one 343px row left no space between the tap targets. */
+  .footer-links {
+    gap: 14px 22px;
+    margin-top: 26px;
+  }
+
+  .footer-links a {
+    padding: 6px 0;
   }
 }
 </style>

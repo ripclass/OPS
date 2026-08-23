@@ -1216,6 +1216,10 @@ input:checked + .slider:before {
   bottom: 160px; /* Moved up from 80px */
   left: 50%;
   transform: translateX(-50%);
+  /* Centred on the panel, so without a ceiling it grows past both edges of a
+     narrow panel instead of wrapping. */
+  max-width: calc(100% - 24px);
+  box-sizing: border-box;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(8px);
   color: #fff;
@@ -1268,9 +1272,26 @@ input:checked + .slider:before {
   color: #FFF;
 }
 
+/* nowrap keeps it to one line where there is room; min-width lets the flex
+   item shrink at all, and below a panel width that fits the sentence it wraps
+   rather than running out through both sides of the pill. */
 .finished-hint .hint-text {
   flex: 1;
+  min-width: 0;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .graph-building-hint {
+    bottom: 96px;
+    padding: 9px 14px;
+    font-size: 12px;
+    letter-spacing: 0.2px;
+  }
+
+  .finished-hint .hint-text {
+    white-space: normal;
+  }
 }
 
 .hint-close-btn {

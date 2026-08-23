@@ -451,4 +451,46 @@ onMounted(() => {
 .panel-wrapper.left {
   border-right: 1px solid #EAEAEA;
 }
+
+/* Same treatment as the report shell: on a phone this stops being a locked
+   100vh box, the absolutely centred workflow strip gets its own row, and the
+   page is allowed to scroll. The interaction step handles its own stacking. */
+@media (max-width: 768px) {
+  .main-view {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .app-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .header-center {
+    position: static;
+    order: 3;
+    width: 100%;
+    transform: none;
+  }
+
+  .header-right {
+    gap: 10px;
+  }
+
+  .demo-continue-btn {
+    padding: 10px 14px;
+  }
+
+  .content-area {
+    overflow: visible;
+  }
+
+  .panel-wrapper {
+    height: auto;
+  }
+}
 </style>

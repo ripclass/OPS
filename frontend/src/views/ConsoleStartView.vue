@@ -494,7 +494,13 @@ const handleSignOut = async () => {
 </script>
 
 <style scoped>
-:root {
+/* These live on the component root, not on :root. Vue compiles a scoped
+   selector to :root[data-v-...], which matches nothing, so every var() below
+   used to resolve to nothing: the orange tag lost its background, the mono
+   labels fell back to the inherited sans, and every `border: 1px solid
+   var(--border)` computed to no border at all. Both font families are loaded
+   globally in index.html. */
+.console-start-container {
   --black: #000000;
   --white: #ffffff;
   --orange: #ff4500;
@@ -502,9 +508,6 @@ const handleSignOut = async () => {
   --border: #e5e5e5;
   --font-mono: 'JetBrains Mono', monospace;
   --font-sans: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
-}
-
-.console-start-container {
   min-height: 100vh;
   background: var(--white);
   font-family: var(--font-sans);
@@ -728,9 +731,14 @@ const handleSignOut = async () => {
   padding-top: 0;
 }
 
+/* The two spans butt straight up against each other once the row is narrow
+   enough for space-between to have no space left to give. */
 .console-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   margin-bottom: 15px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -916,9 +924,7 @@ const handleSignOut = async () => {
   color: #999;
 }
 
-/* Drawn rather than set as a glyph, so no font substitutes an emoji tick.
-   The literal is deliberate: --orange is declared under :root inside this
-   scoped block, so it never resolves here. */
+/* Drawn rather than set as a glyph, so no font substitutes an emoji tick. */
 .file-attached::before {
   content: '';
   width: 4px;
@@ -1045,6 +1051,13 @@ const handleSignOut = async () => {
   letter-spacing: 1px;
 }
 
+/* Two glyphs that have to stay one mark: once the label wrapped, the ">" was
+   being carried onto the next line on its own. */
+.btn-arrow {
+  flex: none;
+  white-space: nowrap;
+}
+
 .start-engine-btn:not(:disabled):hover {
   background: var(--orange);
 }
@@ -1068,7 +1081,7 @@ const handleSignOut = async () => {
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 18px;
+    padding: 12px 16px;
     height: auto;
     min-height: 60px;
     flex-wrap: wrap;
@@ -1081,12 +1094,84 @@ const handleSignOut = async () => {
     flex-wrap: wrap;
   }
 
+  .nav-action,
+  .github-link {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
   .main-title {
     font-size: 2.8rem;
   }
 
   .main-content {
     padding: 20px 16px;
+  }
+
+  /* The logo is anchored to the right of the hero, and at this width the hero
+     is narrower than the logo. It was printing straight through the title. */
+  .hero-section {
+    background-image: none;
+    min-height: 0;
+    margin-bottom: 28px;
+    padding: 8px 0 0;
+  }
+
+  .steps-container {
+    padding: 20px 16px;
+  }
+
+  .workflow-item {
+    gap: 14px;
+  }
+
+  /* 8px of box plus 20px of section on each side left the inputs barely wider
+     than their own labels. */
+  .console-section {
+    padding: 16px 12px;
+  }
+
+  .console-box {
+    padding: 4px;
+  }
+
+  .pack-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .file-list {
+    padding: 12px;
+  }
+
+  .file-item {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+
+  .code-input {
+    padding: 14px;
+    min-height: 130px;
+    font-size: 0.85rem;
+  }
+
+  .start-engine-btn {
+    padding: 16px 14px;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 2.2rem;
+    letter-spacing: -1px;
+  }
+
+  .hero-desc {
+    font-size: 0.95rem;
+    line-height: 1.65;
   }
 }
 </style>

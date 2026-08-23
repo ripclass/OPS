@@ -858,6 +858,7 @@ onUnmounted(() => {
 .status-group {
   display: flex;
   gap: 12px;
+  min-width: 0;
 }
 
 /* Platform Status Cards */
@@ -1397,5 +1398,68 @@ onUnmounted(() => {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-right: 6px;
+}
+
+@media (max-width: 768px) {
+  /* Two 140px platform cards plus the round counter do not fit a phone. The
+     row keeps its shape and scrolls inside itself rather than dragging the
+     page sideways. */
+  .control-bar {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+  }
+
+  .status-group {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .platform-status {
+    flex: none;
+  }
+
+  /* Hover tooltips have no gesture on touch and only overflowed the row. */
+  .actions-tooltip {
+    display: none;
+  }
+
+  /* The feed alternates sides around a centre axis, which on a phone gives
+     each card about 145px and one word per line. The axis moves to the left
+     edge and every card runs the full width beside it. */
+  .timeline-feed {
+    padding: 18px 0;
+  }
+
+  .timeline-axis {
+    left: 9px;
+    transform: none;
+  }
+
+  .timeline-marker {
+    left: 9px;
+    top: 20px;
+  }
+
+  .timeline-item,
+  .timeline-item.twitter,
+  .timeline-item.reddit {
+    justify-content: flex-start;
+    padding-left: 28px;
+    padding-right: 0;
+    margin-bottom: 18px;
+  }
+
+  .timeline-item .timeline-card,
+  .timeline-item.twitter .timeline-card,
+  .timeline-item.reddit .timeline-card {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 14px 16px;
+  }
 }
 </style>

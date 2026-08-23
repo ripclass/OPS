@@ -70,8 +70,8 @@ const decoratedSummary = computed(() => decorate(
     'Murmur',
     '<span class="intro-circle intro-circle--brand">Murmur</span>'
   ),
-  'rehearsal',
-  '<span class="intro-underline intro-underline--summary">rehearsal</span>'
+  'rehearsal room',
+  '<span class="intro-underline intro-underline--summary">rehearsal room</span>'
 ))
 
 const decoratedDetail = computed(() => decorate(
@@ -271,5 +271,34 @@ const decoratedDetail = computed(() => decorate(
     line-height: 0.74;
   }
 
+}
+
+@media (max-width: 640px) {
+  .intro-kicker {
+    font-size: 16px;
+  }
+
+  .intro-summary {
+    font-size: 18px;
+  }
+
+  .intro-detail {
+    margin-top: 16px;
+    font-size: 15px;
+  }
+
+  .intro-illustration {
+    margin-top: 20px;
+    padding-top: 24px;
+  }
+
+  /* At 54px the six ink lines ran the full height of the drawing and read as
+     scribble over the figures instead of behind them. */
+  .intro-illustration__note {
+    top: 8px;
+    width: 140px;
+    font-size: 36px;
+    line-height: 0.76;
+  }
 }
 </style>

@@ -394,4 +394,37 @@ onMounted(() => {
 .panel-wrapper.left {
   border-right: 1px solid #eaeaea;
 }
+
+/* The report step is itself a split layout, so this shell only has to stop
+   being a locked 100vh box and let the page scroll. */
+@media (max-width: 768px) {
+  .main-view {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .app-header {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+
+  .header-center {
+    position: static;
+    order: 3;
+    width: 100%;
+    transform: none;
+  }
+
+  .content-area {
+    overflow: visible;
+  }
+
+  .panel-wrapper {
+    height: auto;
+  }
+}
 </style>
