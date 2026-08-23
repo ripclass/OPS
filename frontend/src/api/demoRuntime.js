@@ -38,16 +38,17 @@ const COUNTRY_AGENT_POOLS = {
     },
     femaleFirst: ['Halima', 'Shila', 'Rokeya', 'Munni', 'Nasima', 'Jannat', 'Rashida', 'Farzana', 'Sufia', 'Aklima', 'Momena', 'Shahnaz', 'Dilruba', 'Parvin'],
     maleFirst: ['Rafi', 'Harun', 'Sohel', 'Imran', 'Masud', 'Jahid', 'Rasel', 'Shakib', 'Monir', 'Babul', 'Kamal', 'Anis', 'Selim', 'Naeem'],
-    surnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Sheikh', 'Ahmed'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
     locations: ['Noakhali', 'Gazipur', 'Mirpur, Dhaka', 'Keraniganj', 'Savar', 'Narayanganj', 'Mohammadpur', 'Jatrabari', 'Mugda', 'Demra'],
     occupations: {
       rural: ['Fish drying worker', 'Shrimp peeling worker', 'Agricultural day laborer', 'Homestead poultry farmer', 'Vegetable seller'],
       urban_working: ['Garment worker', 'Market porter', 'Neighbourhood grocer helper', 'Food delivery rider', 'Construction helper'],
       middle_class: ['Government school teacher', 'Nurse', 'NGO program officer', 'Bank clerk', 'Journalist'],
       corporate: ['Software associate', 'Corporate communications officer', 'Private bank officer', 'Policy researcher', 'University lecturer'],
-      migration_workers: ['Remittance household manager', 'Gulf returnee driver', 'Migrant wife running the household', 'Recruiting-agency caller', 'Overseas worker family bookkeeper'],
+      // This segment is mixed-gender, so every entry has to read plausibly for
+      // either. "Migrant wife running the household" did not.
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Recruiting-agency caller', 'Overseas worker family bookkeeper'],
       students: ['Campus page admin', 'Private university student', 'Public university student', 'Coaching student', 'Freelance student organizer'],
       women: ['Queue manager for the household', 'Domestic worker', 'Beauty parlor worker', 'Microcredit field collector', 'Clinic support worker'],
       elderly: ['Retired madrasa teacher', 'Retired school clerk', 'Elderly shopkeeper', 'Village elder', 'Household pensioner'],
@@ -67,9 +68,8 @@ const COUNTRY_AGENT_POOLS = {
     },
     femaleFirst: ['Phulwanti', 'Sunita', 'Asha', 'Meena', 'Kavita', 'Pooja', 'Ruksana', 'Shabnam'],
     maleFirst: ['Rahul', 'Vikas', 'Imran', 'Arjun', 'Suresh', 'Rohit', 'Prakash', 'Amit'],
-    surnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Devi', 'Khan', 'Paswan'],
     femaleSurnames: ['Devi', 'Kumari', 'Yadav', 'Sharma', 'Ansari', 'Singh', 'Khan'],
-    maleSurnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Khan', 'Paswan'],
+    maleSurnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Khan', 'Paswan', 'Prasad'],
     locations: ['Delhi', 'Gaya', 'Noida', 'Surat', 'Lucknow', 'Patna', 'Mumbai', 'Kanpur'],
     occupations: {
       rural: ['NREGA worker', 'Bidi roller', 'ASHA volunteer', 'Agricultural laborer', 'Dairy farmer'],
@@ -96,7 +96,11 @@ const COUNTRY_AGENT_POOLS = {
     },
     femaleFirst: ['Nasreen', 'Rabia', 'Farzana', 'Shazia', 'Nida', 'Rukhsar', 'Amina', 'Hina'],
     maleFirst: ['Bilal', 'Imran', 'Usman', 'Adnan', 'Salman', 'Hamza', 'Faisal', 'Adeel'],
-    surnames: ['Khan', 'Butt', 'Ahmed', 'Siddiqui', 'Ansari', 'Malik', 'Chaudhry', 'Sheikh'],
+    // Pakistani family names here are carried by both genders, so the two
+    // lists are the same set. They are still declared explicitly so no pack
+    // depends on the neutral fallback.
+    femaleSurnames: ['Khan', 'Butt', 'Ahmed', 'Siddiqui', 'Ansari', 'Malik', 'Chaudhry', 'Sheikh'],
+    maleSurnames: ['Khan', 'Butt', 'Ahmed', 'Siddiqui', 'Ansari', 'Malik', 'Chaudhry', 'Sheikh'],
     locations: ['Faisalabad', 'Lahore', 'Karachi', 'Rawalpindi', 'Multan', 'Sialkot', 'Peshawar', 'Hyderabad'],
     occupations: {
       rural: ['Cotton picker', 'Brick kiln worker', 'Agricultural laborer', 'Canal-irrigation farmer', 'Livestock caretaker'],
@@ -123,14 +127,16 @@ const COUNTRY_AGENT_POOLS = {
     },
     femaleFirst: ['Selvamani', 'Tharshi', 'Nadeesha', 'Shanika', 'Fathima', 'Kumari', 'Ruwani', 'Dilani'],
     maleFirst: ['Suren', 'Kasun', 'Nimal', 'Arun', 'Rizwan', 'Pradeep', 'Thilak', 'Sajith'],
-    surnames: ['Perera', 'Fernando', 'Silva', 'Rajapaksa', 'Nadarajah', 'Subramaniam', 'Mendis', 'Ismail'],
+    // Sinhala and Tamil family names carried by both genders.
+    femaleSurnames: ['Perera', 'Fernando', 'Silva', 'Rajapaksa', 'Nadarajah', 'Subramaniam', 'Mendis', 'Ismail'],
+    maleSurnames: ['Perera', 'Fernando', 'Silva', 'Rajapaksa', 'Nadarajah', 'Subramaniam', 'Mendis', 'Ismail'],
     locations: ['Nuwara Eliya', 'Colombo', 'Kandy', 'Jaffna', 'Batticaloa', 'Galle', 'Negombo', 'Ratnapura'],
     occupations: {
       rural: ['Tea plucker', 'Smallholder farmer', 'Fishing worker', 'Gem pit laborer', 'Rubber tapper'],
       urban_working: ['FTZ garment worker', 'Bus conductor', 'Shop cashier', 'Delivery rider', 'Port helper'],
       middle_class: ['School teacher', 'Nurse', 'Bank officer', 'Local journalist', 'Account assistant'],
       corporate: ['IT analyst', 'Tourism manager', 'Law associate', 'Corporate planner', 'Private hospital executive'],
-      migration_workers: ['Gulf remittance wife', 'Abroad domestic worker family contact', 'Return migrant technician', 'Transfer-dependent parent', 'Recruitment desk caller'],
+      migration_workers: ['Gulf remittance household head', 'Abroad domestic worker family contact', 'Return migrant technician', 'Transfer-dependent parent', 'Recruitment desk caller'],
       students: ['Campus activist', 'Tuition student', 'University society editor', 'Student page moderator', 'A-level candidate'],
       women: ['Tea estate household manager', 'Clinic attendant', 'Garment dormitory worker', 'School canteen worker', 'Union volunteer'],
       elderly: ['Retired public servant', 'Temple elder', 'Estate elder', 'Small trader', 'Pensioner'],
@@ -150,7 +156,9 @@ const COUNTRY_AGENT_POOLS = {
     },
     femaleFirst: ['Kalpana', 'Sita', 'Asha', 'Mina', 'Laxmi', 'Pabitra', 'Sunita', 'Gita'],
     maleFirst: ['Milan', 'Suresh', 'Dinesh', 'Bikash', 'Rajesh', 'Kiran', 'Ram', 'Arjun'],
-    surnames: ['Tamang', 'Sharma', 'Thapa', 'Magar', 'Yadav', 'Rai', 'Sherpa', 'Chaudhary'],
+    // Nepali caste and ethnic surnames carried by both genders.
+    femaleSurnames: ['Tamang', 'Sharma', 'Thapa', 'Magar', 'Yadav', 'Rai', 'Sherpa', 'Chaudhary'],
+    maleSurnames: ['Tamang', 'Sharma', 'Thapa', 'Magar', 'Yadav', 'Rai', 'Sherpa', 'Chaudhary'],
     locations: ['Sindhupalchok', 'Kathmandu', 'Pokhara', 'Biratnagar', 'Janakpur', 'Dang', 'Butwal', 'Dhading'],
     occupations: {
       rural: ['Farmer', 'Goat keeper', 'Village shopkeeper', 'Terrace cultivator', 'Vegetable seller'],
@@ -407,14 +415,27 @@ function buildTopicPool(pack) {
   return Array.from(new Set([...seedTopics, ...dynamicTopics]))
 }
 
+// Given names decide the surname list. Several South Asian family names are
+// gender-marked (Begum, Khatun, Akhter, Devi, Kumari) and pairing one with a
+// male given name — "Naeem Begum" — reads as an obvious generation artefact to
+// anyone from the region. Every pack declares both lists, so this never falls
+// back to a mixed set; the fallback exists only so a future pack cannot crash.
+function resolveSurnamePool(pools, gender) {
+  if (gender === 'female') {
+    return pools.femaleSurnames || pools.surnames || []
+  }
+  return pools.maleSurnames || pools.surnames || []
+}
+
+// Gender alternates with index parity, so indexing a given-name list directly
+// by index only ever reaches its even or odd half. Striding by a number
+// coprime with every pool length (8 and 14 here) walks the whole list instead.
+const NAME_STRIDE = 5
+
 function buildUniqueAgentName(pools, gender, index) {
   const firstNames = gender === 'female' ? pools.femaleFirst : pools.maleFirst
-  // Some surnames in these pools are gender-marked (Begum, Khatun, Devi...).
-  // Pairing them with a male given name reads as an obvious generation
-  // artefact to a South Asian audience, so honour the per-gender lists when a
-  // pack provides them.
-  const surnames = (gender === 'female' ? pools.femaleSurnames : pools.maleSurnames) || pools.surnames
-  const first = firstNames[index % firstNames.length]
+  const surnames = resolveSurnamePool(pools, gender)
+  const first = firstNames[(index * NAME_STRIDE) % firstNames.length]
   const surname = surnames[Math.floor(index / firstNames.length) % surnames.length]
   const cycle = Math.floor(index / (firstNames.length * surnames.length))
   return cycle > 0 ? `${first} ${surname} ${cycle + 1}` : `${first} ${surname}`
@@ -485,6 +506,9 @@ function createProfiles(pack) {
       id: index,
       agent_id: index,
       username,
+      // Carried so the interview view can keep pronouns consistent with the
+      // name it just showed.
+      gender,
       name: createHandle(username, index),
       profession,
       bio: createDemoBio(pack, anchor, profession, location, segmentKey, detailNote),
@@ -733,7 +757,7 @@ function createConsoleLogs(pack) {
     'INFO: Resolving high-salience population memories',
     'INFO: Running quick search against active graph state',
     'INFO: Compiling report sections',
-    'INFO: Static demo report package complete',
+    'INFO: Report package complete',
   ]
 
   return pack.report.workbench.map((item, index) => `INFO: ${item.label} - ${item.detail}`).concat(base)
@@ -1027,7 +1051,7 @@ export function getDemoPrepareStatus({ task_id, simulation_id }) {
           total_stages: 4,
           current_item: createProfiles(pack).length,
           total_items: createProfiles(pack).length,
-          item_description: 'Static demo environment loaded.',
+          item_description: 'Environment ready.',
         },
       },
     }
@@ -1387,17 +1411,46 @@ export function chatWithDemoReport({ simulation_id, message }) {
   }
 }
 
+// The scripted answers are written about a specific anchor persona, so they
+// carry that persona's pronouns. Any agent past the end of the scripted list
+// used to fall back to the FIRST answer verbatim — interviewing a man returned
+// "She does not post...". Cycle through the answers instead, and correct the
+// pronouns to the agent actually being interviewed.
+function retargetPronouns(text, gender) {
+  const [subject, object, possessive] = gender === 'female'
+    ? ['She', 'her', 'her']
+    : ['He', 'him', 'his']
+  return String(text || '')
+    .replace(/\bShe\b/g, subject)
+    .replace(/\bHe\b/g, subject)
+    .replace(/\bshe\b/g, subject.toLowerCase())
+    .replace(/\bhe\b/g, subject.toLowerCase())
+    .replace(/\bher own\b/g, `${possessive} own`)
+    .replace(/\bhis own\b/g, `${possessive} own`)
+    .replace(/\bherself\b/g, gender === 'female' ? 'herself' : 'himself')
+    .replace(/\bhimself\b/g, gender === 'female' ? 'herself' : 'himself')
+    .replace(/\bhers\b/g, gender === 'female' ? 'hers' : 'his')
+    .replace(/\bher\b/g, object)
+    .replace(/\bhim\b/g, object)
+    .replace(/\bhis\b/g, possessive)
+}
+
 export function interviewDemoAgents({ simulation_id, interviews = [] }) {
   const pack = getPackForIdentifier(simulation_id)
   const profiles = createProfiles(pack)
+  const scripted = pack.interaction.interviewAgents || []
   const results = {}
 
   interviews.forEach((interview) => {
     const agentId = Number.parseInt(String(interview.agent_id), 10) || 0
-    const interviewPack = pack.interaction.interviewAgents[agentId] || pack.interaction.interviewAgents[0]
     const profile = profiles[agentId] || profiles[0]
+    const interviewPack = scripted.length
+      ? scripted[agentId % scripted.length]
+      : null
+    const base = interviewPack?.response
+      || `${profile.username} answers from ${profile.profession.toLowerCase()} in ${profile.bio.split('.')[0]}.`
     results[`reddit_${agentId}`] = {
-      response: interviewPack?.response || `${profile.username} would answer from the perspective encoded in the static demo pack.`,
+      response: retargetPronouns(base, profile.gender),
     }
   })
 
