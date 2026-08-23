@@ -39,6 +39,8 @@ const COUNTRY_AGENT_POOLS = {
     femaleFirst: ['Halima', 'Shila', 'Rokeya', 'Munni', 'Nasima', 'Jannat', 'Rashida', 'Farzana', 'Sufia', 'Aklima', 'Momena', 'Shahnaz', 'Dilruba', 'Parvin'],
     maleFirst: ['Rafi', 'Harun', 'Sohel', 'Imran', 'Masud', 'Jahid', 'Rasel', 'Shakib', 'Monir', 'Babul', 'Kamal', 'Anis', 'Selim', 'Naeem'],
     surnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Sheikh', 'Ahmed'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed'],
     locations: ['Noakhali', 'Gazipur', 'Mirpur, Dhaka', 'Keraniganj', 'Savar', 'Narayanganj', 'Mohammadpur', 'Jatrabari', 'Mugda', 'Demra'],
     occupations: {
       rural: ['Fish drying worker', 'Shrimp peeling worker', 'Agricultural day laborer', 'Homestead poultry farmer', 'Vegetable seller'],
@@ -66,6 +68,8 @@ const COUNTRY_AGENT_POOLS = {
     femaleFirst: ['Phulwanti', 'Sunita', 'Asha', 'Meena', 'Kavita', 'Pooja', 'Ruksana', 'Shabnam'],
     maleFirst: ['Rahul', 'Vikas', 'Imran', 'Arjun', 'Suresh', 'Rohit', 'Prakash', 'Amit'],
     surnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Devi', 'Khan', 'Paswan'],
+    femaleSurnames: ['Devi', 'Kumari', 'Yadav', 'Sharma', 'Ansari', 'Singh', 'Khan'],
+    maleSurnames: ['Yadav', 'Kumar', 'Ansari', 'Sharma', 'Singh', 'Khan', 'Paswan'],
     locations: ['Delhi', 'Gaya', 'Noida', 'Surat', 'Lucknow', 'Patna', 'Mumbai', 'Kanpur'],
     occupations: {
       rural: ['NREGA worker', 'Bidi roller', 'ASHA volunteer', 'Agricultural laborer', 'Dairy farmer'],
@@ -405,9 +409,14 @@ function buildTopicPool(pack) {
 
 function buildUniqueAgentName(pools, gender, index) {
   const firstNames = gender === 'female' ? pools.femaleFirst : pools.maleFirst
+  // Some surnames in these pools are gender-marked (Begum, Khatun, Devi...).
+  // Pairing them with a male given name reads as an obvious generation
+  // artefact to a South Asian audience, so honour the per-gender lists when a
+  // pack provides them.
+  const surnames = (gender === 'female' ? pools.femaleSurnames : pools.maleSurnames) || pools.surnames
   const first = firstNames[index % firstNames.length]
-  const surname = pools.surnames[Math.floor(index / firstNames.length) % pools.surnames.length]
-  const cycle = Math.floor(index / (firstNames.length * pools.surnames.length))
+  const surname = surnames[Math.floor(index / firstNames.length) % surnames.length]
+  const cycle = Math.floor(index / (firstNames.length * surnames.length))
   return cycle > 0 ? `${first} ${surname} ${cycle + 1}` : `${first} ${surname}`
 }
 
@@ -1153,6 +1162,19 @@ export function startDemoSimulation({ simulation_id }) {
   }
 }
 
+function ensureSimulationStarted(pack) {
+  // Entering the run step directly (a pre-run walkthrough of a finished scenario)
+  // should present a completed run rather than an idle one. Mirrors
+  // ensureReportStarted. A run started through the flow keeps its own timeline.
+  const runtime = getRuntimeState(pack)
+  if (!runtime.simulationStartedAt) {
+    withRuntime(pack.key, current => ({
+      ...current,
+      simulationStartedAt: Date.now() - SIMULATION_DURATION_MS,
+    }))
+  }
+}
+
 function getSimulationProgress(pack) {
   const runtime = getRuntimeState(pack)
   if (!runtime.simulationStartedAt) {
@@ -1166,6 +1188,7 @@ function getSimulationProgress(pack) {
 
 export function getDemoRunStatus(simulationId) {
   const pack = getPackForIdentifier(simulationId)
+  ensureSimulationStarted(pack)
   const progress = getSimulationProgress(pack)
   const totalRounds = 40
   const twitterActs = pack.simulation.communityA.acts
@@ -1195,6 +1218,7 @@ export function getDemoRunStatus(simulationId) {
 
 export function getDemoRunStatusDetail(simulationId) {
   const pack = getPackForIdentifier(simulationId)
+  ensureSimulationStarted(pack)
   const actions = createSimulationActions(pack)
   const runtime = getRuntimeState(pack)
 
@@ -1207,6 +1231,10 @@ export function getDemoRunStatusDetail(simulationId) {
   return {
     success: true,
     data: {
+      // The real /run-status/detail returns the run counters alongside the
+      // actions; the run view hydrates from this payload, so mirror it here
+      // or the round/act counters reset to zero.
+      ...getDemoRunStatus(simulationId).data,
       all_actions: visibleActions,
     },
   }
