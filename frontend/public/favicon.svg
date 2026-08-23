@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Murmur">
+  <!--
+    The Murmur mark: a lowercase "m" caught inside the hand-drawn oval from the
+    product-vision cover. Palette is the landing's own - paper #F6F5F2,
+    ink #050505, scribble blue #0048FF. Stroke weights are tuned so the glyph
+    keeps its counters and the ring stays visible in a 16px tab slot.
+  -->
+  <rect width="64" height="64" rx="13" fill="#F6F5F2"/>
+
+  <!--
+    The oval is drawn, not geometric: flatter across the top left, heavier
+    under the bottom right, and the pen carries on past where it started.
+  -->
+  <path
+    d="M60.8 27.4
+       C62.0 38.9 48.9 50.9 31.5 51.6
+       C14.1 52.3 3.4 43.2 3.0 32.0
+       C2.6 20.8 16.5 11.2 31.9 10.8
+       C47.3 10.4 59.9 16.8 60.7 27.4
+       C61.1 31.7 59.3 35.5 56.0 38.8"
+    fill="none" stroke="#0048FF" stroke-width="3.4"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- lowercase m, a stroked skeleton so the two counters stay open when small -->
+  <g transform="translate(32 32) scale(0.95) translate(-32 -32)">
+    <path
+      d="M15.5 42.6 V30.2 C15.5 24.6 19.1 21.9 23.4 21.9 C27.7 21.9 31.4 24.6 31.4 30.2 V42.6
+         M31.4 30.2 C31.4 24.6 35.1 21.9 39.4 21.9 C43.7 21.9 47.4 24.6 47.4 30.2 V42.6"
+      fill="none" stroke="#050505" stroke-width="6"
+      stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
