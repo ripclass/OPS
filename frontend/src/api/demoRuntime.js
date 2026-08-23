@@ -1,6 +1,7 @@
 import { DEMO_DEFAULT_PACK_KEY, DEMO_PACKS, getDemoPack, resolveDemoPackKey } from '../content/demoFlowPacks'
 import { demoState } from '../store/demoFlow'
 import { getPendingUpload } from '../store/pendingUpload'
+import { createBanglaCrowd } from './bdNameGenerator'
 
 const RUNTIME_STORAGE_KEY = 'murmur_demo_runtime_v2'
 const REPORT_TIMELINE_DURATION_MS = 9000
@@ -39,10 +40,8 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.03,
       elderly: 0.02,
     },
-    femaleFirst: ['Halima', 'Shila', 'Rokeya', 'Munni', 'Nasima', 'Jannat', 'Rashida', 'Farzana', 'Sufia', 'Aklima', 'Momena', 'Shahnaz', 'Dilruba', 'Parvin'],
-    maleFirst: ['Rafi', 'Harun', 'Sohel', 'Imran', 'Masud', 'Jahid', 'Rasel', 'Shakib', 'Monir', 'Babul', 'Kamal', 'Anis', 'Selim', 'Naeem'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Dhaka metro plus Noakhali and the industrial fringe: a national mix.
+    naming: { region: 'national', community: { hindu: 0.085, barua: 0.008, christian: 0.004, cht: 0 } },
     locations: ['Noakhali', 'Gazipur', 'Mirpur, Dhaka', 'Keraniganj', 'Savar', 'Narayanganj', 'Mohammadpur', 'Jatrabari', 'Mugda', 'Demra'],
     occupations: {
       rural: ['Fish drying worker', 'Shrimp peeling worker', 'Agricultural day laborer', 'Homestead poultry farmer', 'Vegetable seller'],
@@ -74,10 +73,8 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.1,
       elderly: 0.02,
     },
-    femaleFirst: ['Sharmin', 'Nasrin', 'Tahmina', 'Rumana', 'Sabina', 'Jannat', 'Farhana', 'Shireen', 'Mitu', 'Nusrat', 'Afsana', 'Rehana', 'Sumaiya', 'Labonno'],
-    maleFirst: ['Kamrul', 'Tanvir', 'Shahin', 'Rakib', 'Faisal', 'Mizanur', 'Sabbir', 'Arif', 'Tuhin', 'Jewel', 'Nayeem', 'Ashiq', 'Robin', 'Sajib'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Dhaka metro consumer crowd: national mix, no district skew.
+    naming: { region: 'national', community: { hindu: 0.08, barua: 0.01, christian: 0.005, cht: 0 } },
     locations: ['Mirpur, Dhaka', 'Mohammadpur', 'Uttara', 'Bashundhara', 'Jatrabari', 'Badda', 'Rampura', 'Gazipur', 'Narayanganj', 'Savar'],
     occupations: {
       rural: ['Village shopkeeper', 'Homestead poultry farmer', 'Vegetable seller', 'Agricultural day laborer', 'Rural school teacher'],
@@ -106,10 +103,10 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.18,
       elderly: 0.04,
     },
-    femaleFirst: ['Rahima', 'Morjina', 'Amena', 'Josna', 'Rojina', 'Sathi', 'Kohinoor', 'Anowara', 'Shefali', 'Bilkis', 'Shahida', 'Ayesha', 'Momtaz', 'Nurjahan'],
-    maleFirst: ['Sirajul', 'Mokbul', 'Rafiqul', 'Jashim', 'Nurul', 'Habibur', 'Shahjahan', 'Alamgir', 'Delwar', 'Ripon', 'Sohag', 'Faruk', 'Motaleb', 'Aziz'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Kurigram and the northern char belt: Pramanik, Sarkar and Mondol carry
+    // the name-part load, Mst. is far commoner than nationally, and Khatun is
+    // still winning against Akter here.
+    naming: { region: 'north_bengal', community: { hindu: 0.1, barua: 0.001, christian: 0.004, cht: 0 } },
     locations: ['Kurigram', 'Chilmari', 'Ulipur', 'Rowmari', 'Nageshwari', 'Bhurungamari', 'Char Rajibpur', 'Lalmonirhat', 'Gaibandha', 'Rangpur'],
     occupations: {
       rural: ['Char household farmer', 'Day labourer', 'Homestead poultry keeper', 'Boat ghat helper', 'Vegetable seller'],
@@ -138,10 +135,9 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.04,
       elderly: 0.02,
     },
-    femaleFirst: ['Mim', 'Tasnim', 'Sadia', 'Ishrat', 'Anika', 'Nusrat', 'Raisa', 'Tamanna', 'Jarin', 'Samira', 'Oishi', 'Fariha', 'Maliha', 'Rimi'],
-    maleFirst: ['Shakil', 'Rakib', 'Tanjim', 'Nahid', 'Sourav', 'Rifat', 'Mahmud', 'Emon', 'Shanto', 'Piyash', 'Redwan', 'Tawhid', 'Nazmul', 'Fahim'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Dhaka plus the three biggest secondary cities. Chattogram in the mix is
+    // why the Barua share is a little higher here than in a Dhaka-only pack.
+    naming: { region: 'national', community: { hindu: 0.085, barua: 0.018, christian: 0.004, cht: 0 } },
     locations: ['Mirpur, Dhaka', 'Uttara', 'Badda', 'Mohammadpur', 'Farmgate', 'Rampura', 'Jatrabari', 'Chattogram', 'Sylhet', 'Khulna'],
     occupations: {
       rural: ['Village shopkeeper', 'Homestead farmer', 'Rural school teacher', 'Agricultural day labourer', 'Poultry farm helper'],
@@ -171,10 +167,11 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.1,
       elderly: 0.02,
     },
-    femaleFirst: ['Rahela', 'Jesmin', 'Nargis', 'Rokeya', 'Shirin', 'Marium', 'Kulsum', 'Salma', 'Ruma', 'Dilara', 'Mahmuda', 'Aleya', 'Ferdousi', 'Nazma'],
-    maleFirst: ['Suhel', 'Jamal', 'Tofazzol', 'Ruhul', 'Belal', 'Kamruzzaman', 'Ashraf', 'Mostafa', 'Iqbal', 'Rubel', 'Shamim', 'Jubayer', 'Anwar', 'Liton'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Sylhet division. Chowdhury, Talukder and Laskar density, Syed and Shah
+    // leads, Mst. close to absent, and Khatun suppressed: it is a west-and-north
+    // Bengal marker, not a Sylheti one. Note also that Miah is NOT a Sylhet
+    // signal in this generator; it encodes rural and older, everywhere.
+    naming: { region: 'sylhet', community: { hindu: 0.085, barua: 0.002, christian: 0.004, cht: 0 } },
     locations: ['Sylhet', 'Beanibazar', 'Golapganj', 'Jaintiapur', 'Bishwanath', 'Zakiganj', 'Kanaighat', 'Moulvibazar', 'Habiganj', 'Sunamganj'],
     occupations: {
       rural: ['Homestead farmer', 'Haor fishing worker', 'Betel leaf grower', 'Agricultural day labourer', 'Village poultry keeper'],
@@ -203,10 +200,10 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.16,
       elderly: 0.02,
     },
-    femaleFirst: ['Rina', 'Shilpi', 'Monowara', 'Beauty', 'Rojina', 'Aduri', 'Shahanaz', 'Rupali', 'Jorna', 'Konica', 'Lipi', 'Mukta', 'Shathi', 'Poly'],
-    maleFirst: ['Babul', 'Milon', 'Shafiq', 'Rased', 'Jewel', 'Bacchu', 'Mizan', 'Sumon', 'Titu', 'Khokon', 'Robiul', 'Jahangir', 'Palash', 'Shohel'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Gazipur industrial belt. A migrant floor drawn from every district, so a
+    // national mix, but the Bhawal and Nagori Catholic villages are local, which
+    // is why the Christian share is the highest of the seven packs.
+    naming: { region: 'national', community: { hindu: 0.08, barua: 0.005, christian: 0.012, cht: 0 } },
     locations: ['Gazipur', 'Konabari', 'Tongi', 'Ashulia', 'Savar', 'Kaliakoir', 'Board Bazar', 'Narayanganj', 'Fatullah', 'Mirpur, Dhaka'],
     occupations: {
       rural: ['Village household farmer', 'Day labourer', 'Homestead poultry keeper', 'Vegetable seller', 'Rural school teacher'],
@@ -235,10 +232,8 @@ const COUNTRY_AGENT_POOLS = {
       women: 0.1,
       elderly: 0.02,
     },
-    femaleFirst: ['Shefa', 'Rumpa', 'Tania', 'Nishat', 'Sharmili', 'Afroza', 'Sumona', 'Jharna', 'Rukhsana', 'Tahmina', 'Nasima', 'Papia', 'Sanjida', 'Munira'],
-    maleFirst: ['Shipon', 'Arafat', 'Zahid', 'Rony', 'Masum', 'Tarek', 'Nayan', 'Sabuj', 'Rasel', 'Imtiaz', 'Bappi', 'Shohag', 'Riyad', 'Kabir'],
-    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
-    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    // Dhaka wards carrying the case load: a national mix.
+    naming: { region: 'national', community: { hindu: 0.085, barua: 0.008, christian: 0.004, cht: 0 } },
     locations: ['Jatrabari, Dhaka', 'Mugda', 'Khilgaon', 'Mirpur, Dhaka', 'Rampura', 'Kamrangirchar', 'Shyampur', 'Badda', 'Demra', 'Narayanganj'],
     occupations: {
       rural: ['Village household farmer', 'Homestead poultry keeper', 'Rural school teacher', 'Agricultural day labourer', 'Village shopkeeper'],
@@ -623,9 +618,12 @@ function buildTopicPool(pack) {
   return Array.from(new Set([...seedTopics, ...dynamicTopics]))
 }
 
+// India, Pakistan, Sri Lanka and Nepal only. The Bangladesh packs are named by
+// ./bdNameGenerator.js instead.
+//
 // Given names decide the surname list. Several South Asian family names are
 // gender-marked (Begum, Khatun, Akhter, Devi, Kumari) and pairing one with a
-// male given name — "Naeem Begum" — reads as an obvious generation artefact to
+// male given name, "Naeem Begum", reads as an obvious generation artefact to
 // anyone from the region. Every pack declares both lists, so this never falls
 // back to a mixed set; the fallback exists only so a future pack cannot crash.
 function resolveSurnamePool(pools, gender) {
@@ -691,18 +689,48 @@ function createHandle(name, index) {
   return `${slug}_${String(index + 1).padStart(3, '0')}`
 }
 
-function createProfiles(pack) {
+// Bangladesh packs name their people from the research dataset in
+// ../content/bdNames.js, through the crowd generator. The other country packs
+// still use the pool grid above; the dataset's regional appendix for India,
+// Pakistan, Sri Lanka and Nepal is future work, and their existing pools are
+// already gender-safe.
+function usesBanglaNameGenerator(pack) {
+  return Boolean((COUNTRY_AGENT_POOLS[pack.key] || {}).naming)
+}
+
+// createProfiles is called on every poll of the population, config, run and
+// interview endpoints. Building the crowd is cheap but not free, and it must
+// return the same people every time, so cache on the inputs that decide it.
+const profileCache = new Map()
+const PROFILE_CACHE_LIMIT = 12
+
+function buildProfiles(pack) {
   const topicPool = buildTopicPool(pack)
   const anchors = pack.population.personas
   const pools = COUNTRY_AGENT_POOLS[pack.key] || COUNTRY_AGENT_POOLS.bangladesh
   const totalAgents = resolveDemoAgentCount(pack)
   const segmentAssignments = buildSegmentAssignments(pack, totalAgents)
 
-  return Array.from({ length: totalAgents }, (_, index) => {
+  const members = Array.from({ length: totalAgents }, (_unused, index) => ({
+    index,
+    segmentKey: segmentAssignments[index] || pools.defaultSegments[index % pools.defaultSegments.length],
+  })).map(member => ({ ...member, gender: resolveAgentGender(member.segmentKey, member.index) }))
+
+  const identities = usesBanglaNameGenerator(pack)
+    ? createBanglaCrowd({ packKey: pack.key, profile: pools.naming, members })
+    : members.map(member => ({
+        name: buildUniqueAgentName(pools, member.gender, member.index),
+        community: null,
+        cohort: null,
+        register: null,
+        age: null,
+      }))
+
+  return members.map((member, index) => {
     const anchor = anchors[index % anchors.length]
-    const segmentKey = segmentAssignments[index] || pools.defaultSegments[index % pools.defaultSegments.length]
-    const gender = resolveAgentGender(segmentKey, index)
-    const username = buildUniqueAgentName(pools, gender, index)
+    const { segmentKey, gender } = member
+    const identity = identities[index]
+    const username = identity.name
     const profession = buildAgentProfession(pack, pools, segmentKey, index)
     const location = buildAgentLocation(pools, index)
     const detailNote = pack.population.notes[index % pack.population.notes.length]
@@ -718,6 +746,12 @@ function createProfiles(pack) {
       // name it just showed, and match answers to the right lane.
       gender,
       segmentKey,
+      // Carried so a spot-check can confirm the name matches the age: an
+      // elderly agent should not be called Tahmid and a student should not be
+      // called Jobeda.
+      ageCohort: identity.cohort,
+      age: identity.age,
+      community: identity.community,
       name: createHandle(username, index),
       profession,
       bio: createDemoBio(pack, anchor, profession, location, segmentKey, detailNote),
@@ -725,6 +759,22 @@ function createProfiles(pack) {
       entity_type: 'Person',
     }
   })
+}
+
+function createProfiles(pack) {
+  const config = resolveDemoRuntimeConfig(pack)
+  const cacheKey = `${pack.key}|${config.selectedAgentCount}|${config.selectedSegments.join(',')}`
+  const cached = profileCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  const profiles = buildProfiles(pack)
+  if (profileCache.size >= PROFILE_CACHE_LIMIT) {
+    profileCache.delete(profileCache.keys().next().value)
+  }
+  profileCache.set(cacheKey, profiles)
+  return profiles
 }
 
 function createSimulationConfig(pack) {
