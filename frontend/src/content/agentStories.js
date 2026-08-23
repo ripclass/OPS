@@ -229,7 +229,7 @@ export const AGENT_FEED_POSTS = [
     content: 'Sorry Sri Lanka. 💔 Applying for the skilled visa tomorrow.',
   },
   {
-    meta: 'BD · Bangla · student · Dhaka University',
+    meta: 'BD · Bangla · student · public university',
     language: 'bengali',
     content: '#খাদ্যসংকট We did not bleed in July for THIS.',
   },
@@ -237,9 +237,9 @@ export const AGENT_FEED_POSTS = [
 
 export const WHAT_IT_KNOWS = [
   'A garments worker in Chittagong EPZ is usually a migrant from Noakhali, Bhola, or Lakshmipur, not a local middle-class Chatgaayan woman. A local woman in that factory faces social ruin. The migrant does not. Same floor. Same wage band. Two completely different social worlds. Most simulations collapse them into one.',
-  'A BRAC shasthya shebika in Rangpur is not a salaried health worker. She lives on medicine sales, referrals, and local trust. If a clinic campaign makes her look like the government\'s messenger, she can lose the very women she depends on. Miss that and your Bangladesh health simulation mistakes compliance for credibility.',
+  'A BRAC shasthya shebika in Rangpur is not a salaried health worker. She lives on medicine sales, referrals, and local trust. If a clinic campaign makes her look like the government\'s messenger, she can lose the very women she depends on. Miss that and your health simulation mistakes compliance for credibility.',
   'A wife in Noakhali with a husband in Saudi Arabia is not economically inactive. She manages remittance timing, bKash cash-outs, school fees, food rationing, and the mother-in-law\'s medicine. She may post nothing, protest nothing, and still be the first place a price shock is absorbed. No labour survey sees her clearly.',
-  'A Dhaka University student activist, a madrasa student in Brahmanbaria, and a private tutor in Mirpur do not receive the same message as the same politics. One frames it as betrayal, one as fitna, one as risk to livelihood. Put them in one youth segment and your Bangladesh model turns into fiction.',
+  'A public university student activist, a madrasa student in Brahmanbaria, and a private tutor in Mirpur do not receive the same message as the same politics. One frames it as betrayal, one as fitna, one as risk to livelihood. Put them in one youth segment and your model of that country turns into fiction.',
   'A fish trader in Barisal, a launch worker in Chandpur, and a CNG driver in Gazipur experience the same diesel increase differently: one raises prices, one loses passengers, one cuts meals at home. The public reaction is not one cascade. It is three linked household calculations moving at different speeds.',
 ]
 
@@ -260,15 +260,26 @@ export const WHO_ITS_FOR_LINES = [
   'A government about to cut a subsidy.',
   "A health campaign that will fail if it doesn't reach the women who distrust the clinic.",
   'A disaster warning in a language the affected population does not trust.',
-  'A price shock hitting households across Bangladesh with no relief plan.',
+  'A price shock hitting millions of households with no relief plan.',
   'A brand entering a market where the wrong word triggers a boycott in forty minutes.',
 ]
 
 export const WHO_ITS_FOR_OUTRO = 'Murmur is the rehearsal. What happens in the simulation before it happens in the street, the feed, or the ministry\'s inbox.'
 
-export const LEGITIMACY_LINES = [
-  'Five country models. Bangladesh, India, Pakistan, Sri Lanka, Nepal.',
-  'Labour survey data from each. 1,200 hours of recorded conversation in six dialects. Twenty-five years of documentary fieldwork.',
+// The About section argues insider authenticity at region level only. No city
+// or country is named here: provenance is "inside South Asia", and the
+// specificity lives in the product, not in a claim about where we sit.
+export const ABOUT_PUNCH = 'Built inside South Asia. Not pointed at it.'
+
+export const ABOUT_LINES = [
+  'Built from inside South Asia, by people who have spent twenty-five years recording how this region actually behaves - in the languages it argues, jokes and grieves in.',
+  'Five country models. Labour survey data from each country\'s own statistical office. Occupational reality frameworks developed country by country. 1,200 hours of recorded conversation across six regional dialects.',
+  'The cultural knowledge is not a translation layer applied at the end. It is the foundation the model is built on, which is the only reason the people who never post are in it at all.',
   'Not a chatbot. Not an academic ABM. Not social listening. Not a Western tool repackaged.',
-  'Built in Dhaka. Not pointed at it.',
 ]
+
+export const ABOUT_PULLQUOTE = {
+  before: 'The declared self talks to the researcher. The ',
+  emphasis: 'revealed self',
+  after: ' talks to Murmur.',
+}

@@ -54,7 +54,7 @@
           kicker="South Asia behavioural intelligence"
           title="The street knows before the briefing room does."
           summary="Murmur is a behavioural rehearsal system for decisions that will reach millions of South Asians."
-          detail="Bangladesh, India, Pakistan, Sri Lanka, Nepal. One hundred to ten thousand specific people, run hour by hour before the street, the feed, or the market moves."
+          detail="Five country models across South Asia. One hundred to ten thousand specific people, run hour by hour before the street, the feed, or the market moves."
         />
       </section>
 
@@ -85,7 +85,11 @@
       </section>
 
       <section id="about-us" class="content-section content-section--wide content-section--footer">
-        <LegitimacyFooter :lines="LEGITIMACY_LINES" />
+        <LegitimacyFooter
+          :punch="ABOUT_PUNCH"
+          :lines="ABOUT_LINES"
+          :pullquote="ABOUT_PULLQUOTE"
+        />
       </section>
     </main>
 
@@ -117,9 +121,11 @@ import WhatItDoes from '../components/landing/WhatItDoes.vue'
 import WhatItKnows from '../components/landing/WhatItKnows.vue'
 import WhoItsFor from '../components/landing/WhoItsFor.vue'
 import {
+  ABOUT_LINES,
+  ABOUT_PULLQUOTE,
+  ABOUT_PUNCH,
   AGENT_STORIES,
   GLOBAL_ROTATION_ORDER,
-  LEGITIMACY_LINES,
   WHAT_IT_DOES,
   WHAT_IT_KNOWS,
   WHO_ITS_FOR_INTRO,

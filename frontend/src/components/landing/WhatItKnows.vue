@@ -48,7 +48,7 @@ const labels = [
   'Chittagong EPZ / migrant women',
   'Rangpur / health trust economy',
   'Noakhali / remittance households',
-  'Dhaka and district youth / not one public',
+  'capital and district youth / not one public',
   'Barisal to Gazipur / price shock math',
 ]
 

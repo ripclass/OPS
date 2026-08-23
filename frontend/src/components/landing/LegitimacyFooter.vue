@@ -1,22 +1,26 @@
 <template>
   <footer ref="targetRef" class="footer-shell" :class="{ 'footer-shell--visible': isVisible }">
-    <div class="footer-label">FROM HERE</div>
+    <div class="footer-label">ABOUT</div>
 
     <div class="footer-top">
       <div class="footer-brand">
         <h2 class="footer-brand__word">MURMUR</h2>
-        <p class="footer-brand__line">{{ lines[3] }}</p>
+        <p class="footer-brand__line">{{ punch }}</p>
       </div>
 
       <div class="footer-copy">
-        <p v-for="(line, index) in primaryLines" :key="index">{{ line }}</p>
+        <p v-for="(line, index) in lines" :key="index">{{ line }}</p>
       </div>
     </div>
 
-    <div class="footer-scribble">built in Dhaka / not pointed at it</div>
+    <p class="footer-pullquote">
+      {{ pullquote.before }}<span class="footer-pullquote__mark">{{ pullquote.emphasis }}</span>{{ pullquote.after }}
+    </p>
+
+    <div class="footer-scribble">built inside south asia / not pointed at it</div>
 
     <nav class="footer-links" aria-label="Footer">
-      <a href="#about">About</a>
+      <a href="#about-us">About</a>
       <a href="mailto:hello@murmur.app">Contact</a>
       <a href="#research">Research</a>
       <a href="#privacy">Privacy</a>
@@ -25,19 +29,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useRevealOnScroll } from '../../composables/useRevealOnScroll'
 
-const props = defineProps({
+defineProps({
+  punch: {
+    type: String,
+    required: true,
+  },
   lines: {
     type: Array,
+    required: true,
+  },
+  pullquote: {
+    type: Object,
     required: true,
   },
 })
 
 const { targetRef, isVisible } = useRevealOnScroll()
-
-const primaryLines = computed(() => props.lines.slice(0, 3))
 </script>
 
 <style scoped>
@@ -98,8 +107,36 @@ const primaryLines = computed(() => props.lines.slice(0, 3))
   margin: 0;
   color: #050505;
   font-family: var(--murmur-font-ui);
-  font-size: 22px;
-  line-height: 1.42;
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.footer-pullquote {
+  max-width: 820px;
+  margin: 40px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(5, 5, 5, 0.12);
+  color: #050505;
+  font-family: 'Mom´sTypewriter', var(--murmur-font-type);
+  font-size: 24px;
+  line-height: 1.32;
+}
+
+.footer-pullquote__mark {
+  position: relative;
+  display: inline-block;
+}
+
+.footer-pullquote__mark::after {
+  content: '';
+  position: absolute;
+  left: -0.04em;
+  right: -0.04em;
+  bottom: -0.1em;
+  border-bottom: 3px solid #0048ff;
+  border-radius: 999px;
+  transform: rotate(-1.2deg);
+  pointer-events: none;
 }
 
 .footer-scribble {
@@ -142,7 +179,11 @@ const primaryLines = computed(() => props.lines.slice(0, 3))
   }
 
   .footer-copy p {
-    font-size: 18px;
+    font-size: 17px;
+  }
+
+  .footer-pullquote {
+    font-size: 19px;
   }
 
   .footer-scribble {
