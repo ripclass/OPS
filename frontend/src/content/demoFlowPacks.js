@@ -269,7 +269,7 @@ function createPack({
         `Load country priors for ${countryLabel}.`,
         `Assemble audience clusters for ${city}.`,
         'Generate persona seeds for the full demo population.',
-        `Lock environment configuration for static demo playback.`,
+        `Lock environment configuration before launch.`,
       ],
     },
     simulation: {
@@ -380,7 +380,7 @@ export const DEMO_PACKS = {
       { label: 'Planning', title: 'Outline', detail: 'Three sections focused on household coping, public amplification, and trust decay.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Price board photos, queue language, remittance household stress, Eid timing.' },
       { label: 'Agent Interview', title: 'Population check', detail: 'Silent coping among women managing food persists longer than visible complaint.' },
-      { label: 'Complete', title: 'Report ready', detail: 'Static demo report assembled for Bangladesh pack.' },
+      { label: 'Complete', title: 'Report ready', detail: 'Bangladesh report assembled and ready for review.' },
     ],
     interactionLogs: [
       'Open report-agent conversation.',
@@ -426,7 +426,7 @@ export const DEMO_PACKS = {
       'District graph ready for demo population setup.',
     ],
     populationNotes: [
-      'Women who manage both care labor and ration queues.',
+      'Households where women manage both care labour and ration queues.',
       'Migratory households dependent on irregular transfers.',
       'District message relays that travel through WhatsApp before formal clarification.',
     ],
@@ -460,7 +460,7 @@ export const DEMO_PACKS = {
       { label: 'Planning', title: 'Outline', detail: 'Ration queue, trust relay, delayed reassurance.' },
       { label: 'Quick Search', title: 'Household memories', detail: 'Festival week, wage irregularity, volunteer care labor.' },
       { label: 'Agent Interview', title: 'Volunteer check', detail: 'Care workers absorb questions that policy copy cannot answer.' },
-      { label: 'Complete', title: 'Report ready', detail: 'Static Bihar demo package complete.' },
+      { label: 'Complete', title: 'Report ready', detail: 'India report assembled and ready for review.' },
     ],
     interactionLogs: ['Load Bihar report thread.', 'Load interviewable district personas.', 'Survey prompt bank ready.'],
     reportAgentMessages: [
@@ -502,7 +502,7 @@ export const DEMO_PACKS = {
       'Faisalabad demo graph ready.',
     ],
     populationNotes: [
-      'Women who manage household food without public political speech.',
+      'Households where women manage food without public political speech.',
       'Factory households living under visible price pressure and hidden partisan anxiety.',
       'WhatsApp groups that route rumor through piety and practical information together.',
     ],
@@ -536,7 +536,7 @@ export const DEMO_PACKS = {
       { label: 'Planning', title: 'Outline', detail: 'Kitchen strain, relay networks, relief trust.' },
       { label: 'Quick Search', title: 'Household fragments', detail: 'Roti count, piety language, relief rumor, utility store.' },
       { label: 'Agent Interview', title: 'Household check', detail: 'Women ask practical questions before they speak politically.' },
-      { label: 'Complete', title: 'Report ready', detail: 'Static Faisalabad demo package complete.' },
+      { label: 'Complete', title: 'Report ready', detail: 'Pakistan report assembled and ready for review.' },
     ],
     interactionLogs: ['Load Faisalabad report thread.', 'Load interviewable household personas.', 'Survey prompt bank ready.'],
     reportAgentMessages: [
@@ -611,7 +611,7 @@ export const DEMO_PACKS = {
       { label: 'Planning', title: 'Outline', detail: 'Arithmetic, remittance stretch, slow organization.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Rice math, line-room talk, transfer dependence, relief delay.' },
       { label: 'Agent Interview', title: 'Household check', detail: 'Despair is the correct first emotion in this pack.' },
-      { label: 'Complete', title: 'Report ready', detail: 'Static Sri Lanka demo package complete.' },
+      { label: 'Complete', title: 'Report ready', detail: 'Sri Lanka report assembled and ready for review.' },
     ],
     interactionLogs: ['Load Sri Lanka report thread.', 'Load estate household interview set.', 'Survey prompt bank ready.'],
     reportAgentMessages: [
@@ -652,7 +652,7 @@ export const DEMO_PACKS = {
       'Nepal demo graph ready.',
     ],
     populationNotes: [
-      'Women running the farm, school payments, medicine, and debt servicing.',
+      'Households where women run the farm, school payments, medicine, and debt servicing.',
       'Remittance households whose transfers buy time but not certainty.',
       'Local volunteers who become trusted interpreters of risk.',
     ],
@@ -686,7 +686,7 @@ export const DEMO_PACKS = {
       { label: 'Planning', title: 'Outline', detail: 'Household silence, public pricing, remittance strain.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Debt, school delay, medicine, village shop evidence.' },
       { label: 'Agent Interview', title: 'Household check', detail: 'Silence here is workload, not disengagement.' },
-      { label: 'Complete', title: 'Report ready', detail: 'Static Nepal demo package complete.' },
+      { label: 'Complete', title: 'Report ready', detail: 'Nepal report assembled and ready for review.' },
     ],
     interactionLogs: ['Load Nepal report thread.', 'Load interviewable remittance-household personas.', 'Survey prompt bank ready.'],
     reportAgentMessages: [

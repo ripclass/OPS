@@ -127,9 +127,17 @@ const statusText = computed(() => {
   if (currentStatus.value === 'processing') return 'Processing'
   return 'Ready'
 })
-const workflowStepLabel = computed(() => (isDemoRoute.value ? 'Step 5/6' : 'Step 5/5'))
+// Every other step in the walkthrough counts out of five; this one claimed six.
+const workflowStepLabel = computed(() => 'Step 5/5')
+
+// Local demo machines have no reachable auth backend, so the sign-up route is a
+// dead end. Under the local bypass, offer the console directly instead.
+const localAuthBypass = import.meta.env.VITE_LOCAL_AUTH_BYPASS === 'true'
 const demoContinueLabel = computed(() => {
-  return authState.user ? 'Open console with this brief' : 'Sign up to run the real scenario'
+  if (authState.user || localAuthBypass) {
+    return 'Open console with this brief'
+  }
+  return 'Sign up to run the real scenario'
 })
 
 const buildConsolePath = (scenario = '') => {
@@ -252,7 +260,7 @@ const refreshGraph = () => {
 
 const handleDemoContinue = () => {
   const redirect = buildConsolePath(demoState.scenario)
-  if (authState.user) {
+  if (authState.user || localAuthBypass) {
     router.push(redirect)
     return
   }

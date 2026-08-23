@@ -7,7 +7,7 @@
 
       <nav class="murmur-nav__links" aria-label="Primary">
         <a href="#console">Run a scenario</a>
-        <a href="#videos">Cascades</a>
+        <a href="#cascades">Cascades</a>
         <a href="#introduction">Introduction</a>
         <a href="#about-us">About us</a>
       </nav>
@@ -30,7 +30,7 @@
     </header>
 
     <main class="murmur-main">
-      <section class="opening-shell">
+      <section id="cascades" class="opening-shell">
         <div v-if="loading" class="opening-status">Finding where you arrived from.</div>
         <AgentStory
           v-else
@@ -74,7 +74,7 @@
         <WhatItKnows :items="WHAT_IT_KNOWS" />
       </section>
 
-      <section class="content-section content-section--wide content-section--scenario">
+      <section id="console" class="content-section content-section--wide content-section--scenario">
         <ScenarioInput @submit="handleScenarioSubmit" />
       </section>
 
@@ -84,7 +84,7 @@
         </p>
       </section>
 
-      <section class="content-section content-section--wide content-section--footer">
+      <section id="about-us" class="content-section content-section--wide content-section--footer">
         <LegitimacyFooter :lines="LEGITIMACY_LINES" />
       </section>
     </main>

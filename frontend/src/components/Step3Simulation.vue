@@ -638,7 +638,7 @@ const fetchRunStatus = async () => {
       
       if (isCompleted || platformsCompleted) {
         if (platformsCompleted && !isCompleted) {
-          addLog('✓ All Platform Simulations Have Ended')
+          addLog('✓ All platform simulations have ended')
         }
         addLog('✓ Simulation Complete')
         phase.value = 2

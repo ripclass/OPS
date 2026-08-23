@@ -1488,7 +1488,7 @@ const QuickSearchDisplay = {
           ])
         ]),
         props.result.query && h('div', { class: 'header-query' }, [
-          h('span', { class: 'query-label' }, '%E6%90%9C%E7%B4%A2: '),
+          h('span', { class: 'query-label' }, 'Search: '),
           h('span', { class: 'query-text' }, props.result.query)
         ])
       ]),
@@ -1499,19 +1499,19 @@ const QuickSearchDisplay = {
           class: ['quicksearch-tab', { active: activeTab.value === 'facts' }],
           onClick: () => { activeTab.value = 'facts' }
         }, [
-          h('span', { class: 'tab-label' }, `%E4%BA%8B%E5%AE%9E (${props.result.facts.length})`)
+          h('span', { class: 'tab-label' }, `Facts (${props.result.facts.length})`)
         ]),
         hasEdges.value && h('button', {
           class: ['quicksearch-tab', { active: activeTab.value === 'edges' }],
           onClick: () => { activeTab.value = 'edges' }
         }, [
-          h('span', { class: 'tab-label' }, `%E5%85%B3%E7%B3%BB (${props.result.edges.length})`)
+          h('span', { class: 'tab-label' }, `Relations (${props.result.edges.length})`)
         ]),
         hasNodes.value && h('button', {
           class: ['quicksearch-tab', { active: activeTab.value === 'nodes' }],
           onClick: () => { activeTab.value = 'nodes' }
         }, [
-          h('span', { class: 'tab-label' }, `%E8%8A%82%E7%82%B9 (${props.result.nodes.length})`)
+          h('span', { class: 'tab-label' }, `Nodes (${props.result.nodes.length})`)
         ])
       ]),
       
@@ -1520,8 +1520,8 @@ const QuickSearchDisplay = {
         // Facts (always show if no tabs, or when facts tab is active)
         ((!showTabs.value) || activeTab.value === 'facts') && h('div', { class: 'facts-panel' }, [
           !showTabs.value && h('div', { class: 'panel-header' }, [
-            h('span', { class: 'panel-title' }, '%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C'),
-            h('span', { class: 'panel-count' }, `%E5%85%B1 ${props.result.facts.length} %E6%9D%A1`)
+            h('span', { class: 'panel-title' }, 'Search results'),
+            h('span', { class: 'panel-count' }, `${props.result.facts.length} total`)
           ]),
           props.result.facts.length > 0 ? h('div', { class: 'facts-list' },
             (expandedFacts.value ? props.result.facts : props.result.facts.slice(0, INITIAL_SHOW_COUNT)).map((fact, i) => 
@@ -1530,18 +1530,18 @@ const QuickSearchDisplay = {
                 h('div', { class: 'fact-content' }, fact)
               ])
             )
-          ) : h('div', { class: 'empty-state' }, '%E6%9C%AA%E6%89%BE%E5%88%B0%E7%9B%B8%E5%85%B3%E7%BB%93%E6%9E%9C'),
+          ) : h('div', { class: 'empty-state' }, 'No matching results'),
           props.result.facts.length > INITIAL_SHOW_COUNT && h('button', {
             class: 'expand-btn',
             onClick: () => { expandedFacts.value = !expandedFacts.value }
-          }, expandedFacts.value ? `%E6%94%B6%E8%B5%B7 ▲` : `%E5%B1%95%E5%BC%80%E5%85%A8%E9%83%A8 ${props.result.facts.length} %E6%9D%A1 ▼`)
+          }, expandedFacts.value ? `Collapse ▲` : `Show all ${props.result.facts.length} ▼`)
         ]),
         
         // Edges Tab
         activeTab.value === 'edges' && hasEdges.value && h('div', { class: 'edges-panel' }, [
           h('div', { class: 'panel-header' }, [
-            h('span', { class: 'panel-title' }, '%E7%9B%B8%E5%85%B3%E5%85%B3%E7%B3%BB'),
-            h('span', { class: 'panel-count' }, `%E5%85%B1 ${props.result.edges.length} %E6%9D%A1`)
+            h('span', { class: 'panel-title' }, 'Related relations'),
+            h('span', { class: 'panel-count' }, `${props.result.edges.length} total`)
           ]),
           h('div', { class: 'edges-list' },
             props.result.edges.map((edge, i) => 
@@ -1561,8 +1561,8 @@ const QuickSearchDisplay = {
         // Nodes Tab
         activeTab.value === 'nodes' && hasNodes.value && h('div', { class: 'nodes-panel' }, [
           h('div', { class: 'panel-header' }, [
-            h('span', { class: 'panel-title' }, '%E7%9B%B8%E5%85%B3%E8%8A%82%E7%82%B9'),
-            h('span', { class: 'panel-count' }, `%E5%85%B1 ${props.result.nodes.length} %E4%B8%AA`)
+            h('span', { class: 'panel-title' }, 'Related nodes'),
+            h('span', { class: 'panel-count' }, `${props.result.nodes.length} total`)
           ]),
           h('div', { class: 'nodes-grid' },
             props.result.nodes.map((node, i) => 
@@ -1658,7 +1658,7 @@ const activeStep = computed(() => {
   if (doneSteps.length > 0) return doneSteps[doneSteps.length - 1]
   
   // %E5%90%A6%E5%88%99%E8%BF%94%E5%9B%9E%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%AD%A5%E9%AA%A4
-  return steps[0] || { noLabel: '--', title: '%E7%AD%89%E5%BE%85%E5%BC%80%E5%A7%8B', status: 'todo', meta: '' }
+  return steps[0] || { noLabel: '--', title: 'Waiting to start', status: 'todo', meta: '' }
 })
 
 const workflowSteps = computed(() => {
