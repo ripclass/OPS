@@ -1,0 +1,33 @@
+# Files never uploaded to Vercel by the CLI (`vercel`, `vercel --prod`).
+#
+# Why this file exists, given Vercel already has a default ignore list:
+#
+#   1. Vercel's defaults DO cover `.env.local` and `.env.*.local`, but they do
+#      NOT cover a plain `.env`. If a `frontend/.env` is ever created it would
+#      be uploaded and then LOADED BY `vite build`, baking its values into the
+#      public bundle.
+#   2. `.gitignore` rules are NOT applied to CLI deploys. `.gitignore` is itself
+#      on Vercel's default-ignore list, so the file is not uploaded and its
+#      rules never take effect. Being gitignored protects the Git-integration
+#      path only.
+#   3. Vite inlines every `import.meta.env.VITE_*` reference at build time, so
+#      an env file that reaches the build is baked into the shipped JS and
+#      cannot be undone at runtime. VITE_LOCAL_AUTH_BYPASS=true in particular
+#      compiles the router's sign-in guard away entirely.
+#
+# Ref: https://vercel.com/docs/builds/build-features#ignored-files-and-folders
+# Ref: https://vercel.com/docs/deployments/vercel-ignore
+#
+# NOTE: this protects the UPLOAD only. It does NOT protect `vercel build` /
+# `vercel deploy --prebuilt`, which build locally in this directory where
+# .env.local is present on disk. Never use --prebuilt from this machine.
+
+# Local env files (secrets + local-only feature flags)
+.env
+.env.*
+.env.local
+*.local
+
+# Dependencies and build output — both regenerated on Vercel
+node_modules
+dist
