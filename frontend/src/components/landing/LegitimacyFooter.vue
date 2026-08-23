@@ -21,7 +21,6 @@
 
     <nav class="footer-links" aria-label="Footer">
       <a href="#about-us">About</a>
-      <a href="mailto:hello@murmur.app">Contact</a>
       <a href="#research">Research</a>
       <a href="#privacy">Privacy</a>
     </nav>
