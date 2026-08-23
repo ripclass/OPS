@@ -103,10 +103,20 @@ const router = createRouter({
   routes
 })
 
+// Opt-in, local-only escape hatch: lets a developer open stored runs
+// (/simulation/:id, /report/:id, ...) on a machine with no reachable Supabase
+// auth backend. Off unless VITE_LOCAL_AUTH_BYPASS is explicitly "true", so
+// hosted builds keep the normal sign-in requirement.
+const localAuthBypass = import.meta.env.VITE_LOCAL_AUTH_BYPASS === 'true'
+
 router.beforeEach(async to => {
   await initAuth()
 
   if (to.name === 'Home' || to.name === 'Login' || to.meta.public || to.path.startsWith('/demo')) {
+    return true
+  }
+
+  if (localAuthBypass) {
     return true
   }
 
