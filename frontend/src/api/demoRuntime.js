@@ -983,9 +983,15 @@ function createReportAgentLogs(pack) {
     })
   })
 
+  // The section logs have to fit inside the report timeline whatever the
+  // section count is. Reports are seven sections now, and a fixed 1200ms step
+  // pushed the last ones past report_complete.
+  const sectionSpan = 3200
+  const sectionStep = pack.report.sections.length ? sectionSpan / pack.report.sections.length : sectionSpan
+
   pack.report.sections.forEach((section, index) => {
     logs.push({
-      timestamp: createTimestamp(baseTime, 6200 + index * 1200),
+      timestamp: createTimestamp(baseTime, 6200 + index * sectionStep),
       action: 'section_start',
       section_index: index + 1,
       section_title: section.title,
@@ -994,7 +1000,7 @@ function createReportAgentLogs(pack) {
       },
     })
     logs.push({
-      timestamp: createTimestamp(baseTime, 6900 + index * 1200),
+      timestamp: createTimestamp(baseTime, 6200 + index * sectionStep + sectionStep * 0.6),
       action: 'section_complete',
       section_index: index + 1,
       section_title: section.title,
@@ -1652,28 +1658,54 @@ export function getDemoConsoleLog(reportId, fromLine = 0) {
   }
 }
 
+// The report agent runs dry after three questions if it only knows three
+// hooks, and the third question is where a meeting either opens up or stops.
+// These are the twelve things people actually ask a report in the room. First
+// match wins, and audience hooks come before intent hooks, because a question
+// that names a segment is nearly always a question about that segment: "how
+// did women respond" wants the women answer, not the recovery plan.
+const REPORT_AGENT_HOOKS = [
+  ['quiet', ['quiet', 'silence', 'silent', 'invisible', 'unseen', 'nobody', 'missed', 'not saying', 'no complaint']],
+  ['retail', ['retail', 'shop', 'shelf', 'counter', 'dealer', 'agent point', 'pharmacy', 'stock', 'trade', 'reorder', 'till']],
+  ['women', ['women', 'woman', 'mother', 'female', 'housewife', 'wife']],
+  ['young', ['young', 'student', 'campus', 'youth', 'meme', 'teen', 'university', 'gen z']],
+  ['recommend', ['recommend', 'advice', 'advise', 'should we', 'what do we do', 'next step', 'action', 'fix', 'playbook']],
+  ['recover', ['recover', 'repair', 'win back', 'come back', 'regain', 'rebuild', 'respond', 'response', 'reassure']],
+  ['worst', ['worst', 'risk', 'danger', 'downside', 'blind spot', 'exposure', 'wrong', 'fail']],
+  ['timeline', ['timeline', 'phase', 'sequence', 'how long', 'how fast', 'hour', 'day one', 'when did']],
+  ['compare', ['compare', 'versus', ' vs ', 'difference between', 'other segment', 'benchmark', 'which segment']],
+  ['spread', ['spread', 'amplif', 'travel', 'viral', 'share', 'reach', 'carry']],
+  ['trust', ['trust', 'believe', 'credib', 'legitim', 'doubt']],
+  ['first', ['first', 'earliest', 'start', 'begin', 'trigger', 'origin']],
+]
+
+// Generic wording for a pack that has not written its own answer for a hook.
+// Deliberately about the shape of a cascade rather than about any one scenario,
+// so the four non-Bangladesh packs stay coherent.
+const DEFAULT_REPORT_ANSWERS = {
+  first: 'The first signal is private adjustment: people change what they do before they change what they say, so the earliest movement in the run is behavioural and unrecorded.',
+  spread: 'It spreads when local pages and known relays convert a private strain into a public account of it. What travels is the version a neighbour forwards, not the version an institution publishes.',
+  trust: 'Trust does not fall evenly. It falls fastest where the official explanation arrives after people have already built their own, and it holds where a known person is standing between the institution and the household.',
+  quiet: 'The quiet lane is the finding. The people who never post are not neutral, they are the ones who have already acted, and no listening tool in this scenario can see them.',
+  retail: 'The trade lane turns before the conversation does. Counters and shopfronts register the change as volume, days before it registers anywhere as sentiment, and nobody at the counter is asked to explain why.',
+  women: 'Women in this run absorb the change first and describe it last. The household adjustment happens inside a decision nobody announces, which is why it shows up in behaviour long before it shows up in speech.',
+  young: 'Younger participants carry the reach. They are not the most affected and often not the most angry; they are simply the fastest at turning a claim into something worth sharing.',
+  timeline: 'The run has four phases: a private adjustment nobody reports, a relay phase where known intermediaries pass it on, a public phase where the framing hardens, and an official phase that arrives after the question has already been settled.',
+  compare: 'The gap that matters is between the segment that speaks and the segment that acts. They are rarely the same people, and measuring the first tells you almost nothing about the second.',
+  worst: 'The biggest risk is reading a quiet dashboard as containment. In this run the visible metrics recover before the silent lane does, which is exactly when the response gets stood down.',
+  recover: 'Recovery has to travel the same route the rumour did. A statement published where the rumour was not living reaches only the people who never moved.',
+  recommend: 'Instrument the silent lane first, answer in the channel and the language the claim is living in, and hold the response open past the point where the visible numbers look calm.',
+}
+
 export function chatWithDemoReport({ simulation_id, message }) {
   const pack = getPackForIdentifier(simulation_id)
   const prompt = String(message || '').toLowerCase()
 
-  // A pack may supply its own keyword answers; otherwise fall back to the
-  // price-shock wording these hooks were originally written for.
   const packAnswers = pack.interaction.reportAgentAnswers || {}
-  const DEFAULT_ANSWERS = {
-    spread: 'The issue spreads when local public pages and rumor relays convert private household strain into a legitimacy problem.',
-    trust: 'Institutional trust weakens when relief language arrives after people have already built their own explanation for the shock.',
-    first: 'The first signal is domestic adjustment: rationing, delay, and silence before visible complaint.',
-  }
-  const answer = key => packAnswers[key] || DEFAULT_ANSWERS[key]
+  const answer = key => packAnswers[key] || DEFAULT_REPORT_ANSWERS[key]
 
-  let response = pack.report.summary
-  if (prompt.includes('spread') || prompt.includes('amplif')) {
-    response = answer('spread')
-  } else if (prompt.includes('trust')) {
-    response = answer('trust')
-  } else if (prompt.includes('first') || prompt.includes('earliest')) {
-    response = answer('first')
-  }
+  const hit = REPORT_AGENT_HOOKS.find(([, keywords]) => keywords.some(word => prompt.includes(word)))
+  const response = hit ? answer(hit[0]) : pack.report.summary
 
   return {
     success: true,
@@ -1685,9 +1717,16 @@ export function chatWithDemoReport({ simulation_id, message }) {
 
 // The scripted answers are written about a specific anchor persona, so they
 // carry that persona's pronouns. Any agent past the end of the scripted list
-// used to fall back to the FIRST answer verbatim — interviewing a man returned
-// "She does not post...". Cycle through the answers instead, and correct the
-// pronouns to the agent actually being interviewed.
+// used to fall back to the FIRST answer verbatim, so interviewing a man
+// returned "She does not post...". Cycle through the answers instead, and
+// correct the pronouns to the agent actually being interviewed.
+//
+// THE RULE FOR ANYONE WRITING INTERVIEW ANSWERS, in content/reportPacks/:
+// never write the word "her" or "hers". English collapses the possessive and
+// the objective into one word, so this function cannot tell "her shop" from
+// "asked her", and a male agent ends up with "him shop". Write "his" and
+// "him" instead; both map correctly in either direction. Subject pronouns are
+// safe either way, so a scripted answer may open with "He" or with "She".
 function retargetPronouns(text, gender) {
   const [subject, object, possessive] = gender === 'female'
     ? ['She', 'her', 'her']
@@ -1707,6 +1746,55 @@ function retargetPronouns(text, gender) {
     .replace(/\bhis\b/g, possessive)
 }
 
+// The interview view prepends the running conversation to each new question,
+// so the prompt carries its own turn counter. Reading it lets a second and a
+// third question get new material instead of the same sentence again, which is
+// where the Q and A used to run dry.
+function countPriorTurns(prompt) {
+  const matches = String(prompt || '').match(/^You:/gm)
+  return matches ? matches.length : 0
+}
+
+const INTERVIEW_MARKER = 'My new question is:'
+
+function extractQuestion(prompt) {
+  const text = String(prompt || '')
+  const at = text.lastIndexOf(INTERVIEW_MARKER)
+  return (at >= 0 ? text.slice(at + INTERVIEW_MARKER.length) : text).toLowerCase()
+}
+
+function extractHistory(prompt) {
+  const text = String(prompt || '')
+  const at = text.lastIndexOf(INTERVIEW_MARKER)
+  return at >= 0 ? text.slice(0, at) : ''
+}
+
+// Answers already given come back in the prompt as history, but with pronouns
+// rewritten for the agent, so a plain substring match misses them. Strip the
+// pronouns from both sides and what is left is stable.
+function fingerprint(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/\b(he|she|his|her|him|hers|himself|herself)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// An entry may carry a flat list of strings, or objects with `when` keywords so
+// a directly relevant answer wins over the turn order. Older single-`response`
+// entries still work.
+function normalizeInterviewResponses(entry) {
+  if (!entry) {
+    return []
+  }
+  const source = Array.isArray(entry.responses) && entry.responses.length
+    ? entry.responses
+    : entry.response ? [entry.response] : []
+  return source
+    .map(item => (typeof item === 'string' ? { when: null, text: item } : { when: item.when || null, text: item.text }))
+    .filter(item => item.text)
+}
+
 export function interviewDemoAgents({ simulation_id, interviews = [] }) {
   const pack = getPackForIdentifier(simulation_id)
   const profiles = createProfiles(pack)
@@ -1724,8 +1812,41 @@ export function interviewDemoAgents({ simulation_id, interviews = [] }) {
     const interviewPack = pool.length
       ? pool[agentId % pool.length]
       : null
-    const base = interviewPack?.response
-      || `${profile.username} answers from ${profile.profession.toLowerCase()} in ${profile.bio.split('.')[0]}.`
+
+    const responses = normalizeInterviewResponses(interviewPack)
+    let base = `${profile.username} answers from ${profile.profession.toLowerCase()} in ${profile.bio.split('.')[0]}.`
+
+    if (responses.length) {
+      const question = extractQuestion(interview.prompt)
+      const history = fingerprint(extractHistory(interview.prompt))
+      const alreadySaid = (item) => {
+        const fp = fingerprint(item.text)
+        return fp.length > 40 && history.includes(fp.slice(0, 60))
+      }
+
+      // A directly relevant answer wins, then the turn order, and anything the
+      // agent has already said this conversation is skipped. Without the last
+      // rule an opener that happens to trip a keyword hook gets repeated
+      // verbatim on the next turn.
+      const turn = countPriorTurns(interview.prompt)
+      let chosen = responses.find(item => item.when
+        && item.when.some(word => question.includes(word))
+        && !alreadySaid(item))
+
+      if (!chosen) {
+        const start = turn % responses.length
+        for (let step = 0; step < responses.length; step += 1) {
+          const candidate = responses[(start + step) % responses.length]
+          if (!alreadySaid(candidate)) {
+            chosen = candidate
+            break
+          }
+        }
+      }
+
+      base = (chosen || responses[turn % responses.length]).text
+    }
+
     results[`reddit_${agentId}`] = {
       response: retargetPronouns(base, profile.gender),
     }

@@ -1,3 +1,15 @@
+// The report is the artefact the agency puts in front of a client, so it is
+// long. Each Bangladesh pack keeps its report sections, its report-agent
+// answers and its interview material in its own module under reportPacks/,
+// which is also where the answers get deep enough to survive a real Q and A.
+import { BANGLADESH_REPORT } from './reportPacks/bangladesh.js'
+import { BDBRAND_REPORT } from './reportPacks/bdbrand.js'
+import { BDNGO_REPORT } from './reportPacks/bdngo.js'
+import { BDTELCO_REPORT } from './reportPacks/bdtelco.js'
+import { BDWALLET_REPORT } from './reportPacks/bdwallet.js'
+import { BDWAGE_REPORT } from './reportPacks/bdwage.js'
+import { BDHEALTH_REPORT } from './reportPacks/bdhealth.js'
+
 const COUNTRY_CODE_TO_PACK = {
   BD: 'bangladesh',
   IN: 'india',
@@ -382,31 +394,10 @@ export const DEMO_PACKS = {
     reportTitle: 'Pre-Eid Rice Price Shock in Dhaka: Forecast Report on Household Strain, Rumor Spread, and Institutional Trust',
     reportSummary:
       'The simulated response does not begin with outrage. It begins with rationing, silence, and improvised household math, then spreads outward through student pages and bazaar rumor chains before official reassurance catches up.',
-    reportSections: [
-      {
-        title: 'Household stress surfaces before visible protest',
-        paragraphs: [
-          'In the first phase of the simulation, low-income households respond by shrinking food portions and delaying purchases before producing a loud public complaint.',
-          'The emotional center of the response is not ideological anger at first. It is domestic arithmetic, especially among remittance-linked households and women managing food for the family.',
-        ],
-      },
-      {
-        title: 'Student pages convert private strain into public narrative',
-        paragraphs: [
-          'Once campus Facebook pages frame the issue as institutional neglect, the conversation shifts from household coping to legitimacy and accountability.',
-          'That framing creates a bridge between price anxiety and a broader story of exclusion, letting the issue travel faster than official clarification.',
-        ],
-      },
-      {
-        title: 'Late relief messaging deepens distrust',
-        paragraphs: [
-          'When relief signals arrive late, they do not reset the conversation. They arrive into an already skeptical information environment shaped by rumor, screenshots, and queue imagery.',
-          'The result is not only frustration but a durable drop in trust toward the institutions expected to respond first.',
-        ],
-      },
-    ],
+    reportSections: BANGLADESH_REPORT.reportSections,
+    reportAgentAnswers: BANGLADESH_REPORT.reportAgentAnswers,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Three sections focused on household coping, public amplification, and trust decay.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the silence lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Price board photos, queue language, remittance household stress, Eid timing.' },
       { label: 'Agent Interview', title: 'Population check', detail: 'Silent coping among women managing food persists longer than visible complaint.' },
       { label: 'Complete', title: 'Report ready', detail: 'Bangladesh report assembled and ready for review.' },
@@ -421,11 +412,7 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'What makes the issue spread publicly?' },
       { role: 'assistant', text: 'Student Facebook pages and bazaar rumor chains translate private strain into a legitimacy narrative.' },
     ],
-    interviewAgents: [
-      { name: 'Halima', role: 'Fish drying worker', response: 'She does not post. She reduces meals first and only speaks when the shortage becomes impossible to hide.' },
-      { name: 'Rafi', role: 'Student page admin', response: 'He turns price anxiety into a sharable story about institutions not listening.' },
-      { name: 'Shila', role: 'Garment worker', response: 'She measures the shock through dormitory budgeting and delayed remittances home.' },
-    ],
+    interviewAgents: BANGLADESH_REPORT.interviewAgents,
   }),
   india: createPack({
     key: 'india',
@@ -814,31 +801,9 @@ export const DEMO_PACKS = {
     reportTitle: 'Contamination Rumour in Eid Campaign Week: Forecast Report on Silent Substitution, Retail Drag, and Split Trust Recovery',
     reportSummary:
       'The damage does not arrive as outrage. It arrives as a tiffin box packed with something else, a shelf that stops moving, and a clarification that reaches the segment that had already forgiven you.',
-    reportSections: [
-      {
-        title: 'The rumour clears the groups before it reaches the timeline',
-        paragraphs: [
-          'The first movement is a screenshot inside closed mother groups and building groups, carrying a batch number that nobody verifies. It travels as caution between people who know each other, which is the format that survives fact-checking.',
-          'The scheduled Eid campaign post lands into that suspicion rather than ahead of it. Because the campaign continues on its original calendar, the brand appears to be celebrating while parents are asking whether it is safe.',
-        ],
-      },
-      {
-        title: 'The shelf is the fastest indicator, and the quietest',
-        paragraphs: [
-          'Retailers register the change days before the brand does. Cartons stop moving, and customers switch without asking a question the shopkeeper could answer or report upward.',
-          'This is the population that never appears in a listening dashboard: no post, no complaint, no negative sentiment. Only a reorder that does not happen. In this run the retail lane turns before any measurable spike in public conversation.',
-        ],
-      },
-      {
-        title: 'The clarification lands in three different countries',
-        paragraphs: [
-          'An English-language compliance statement is legible to the middle-class segment, who were the least likely to have stopped buying. It does not enter the groups where the rumour actually lives, and it does not reach the retailer deciding whether to reorder.',
-          'Recovery therefore splits by trust rather than by exposure. The segments that saw the least evidence forgive fastest, and the households that quietly switched stay switched, because nothing has yet asked them to come back.',
-        ],
-      },
-    ],
+    reportSections: BDBRAND_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Group-first spread, retail drag, split trust recovery.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the silent substitution lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Tiffin box, batch number screenshot, mudi dokan reorder, Eid campaign calendar.' },
       { label: 'Agent Interview', title: 'Retail check', detail: 'Shopkeepers see the switch before the brand sees the sentiment.' },
       { label: 'Complete', title: 'Report ready', detail: 'Brand crisis report assembled and ready for review.' },
@@ -853,22 +818,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the brand find out?' },
       { role: 'assistant', text: 'At the shelf. Retailers stop reordering before public sentiment moves enough to register.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is inside closed mother groups: a forwarded screenshot with a batch number, hours before anything appears on a public timeline.',
-      spread: 'It spreads when group admins forward it as caution and meme pages convert the batch number into a joke. Humour carries it further than accusation would.',
-      trust: 'Trust splits by language and channel. The English compliance statement reassures the middle-class segment that had barely stopped buying, and never reaches the households or the retailers who already switched.',
-    },
-    interviewAgents: [
-      { name: 'Sharmin', role: 'School-group mother', segment: 'women', response: 'She takes the packet out of the tiffin box first and asks the group afterwards. The purchase stops days before the opinion forms.' },
-      { name: 'Kamrul', role: 'Mudi dokan owner', segment: 'retailers', response: 'He watches three cartons sit unsold and reads that as the verdict. No customer explains the switch to him, so he has nothing to pass upward.' },
-      { name: 'Tanvir', role: 'Meme page admin', segment: 'students', response: 'He is not angry at the brand. He is chasing reach, and the batch number happens to be the funniest thing available that week.' },
-      // No possessive "her" in any interview response: retargetPronouns rewrites
-      // a scripted answer to the interviewed agent's gender, and possessive
-      // "her" is indistinguishable from objective "her", so it comes out as
-      // "him sister" on a male agent. "his" and objective "her" both map safely.
-      { name: 'Rumana', role: 'School teacher', segment: 'middle_class', response: 'She reads the English statement, finds it credible, and never learns that the mothers group next door already moved on to another brand.' },
-      { name: 'Shahin', role: 'Garment worker', segment: 'urban_working', response: 'He switched at the bazaar without discussing it. Nobody asked him, so the decision never became data.' },
-    ],
+    reportAgentAnswers: BDBRAND_REPORT.reportAgentAnswers,
+    interviewAgents: BDBRAND_REPORT.interviewAgents,
   }),
 
   // Social-programme pack. Alor Shetu Foundation and the Mayer Hashi allowance
@@ -968,31 +919,9 @@ export const DEMO_PACKS = {
     reportTitle: 'Re-registration Rumour in a Maternal Allowance Programme: Forecast Report on Silent Non-Collection, Gatekeeper Amplification, and a Correction That Misses',
     reportSummary:
       'The programme does not lose the mothers who protest at the union office. It loses the ones who decide that the safest response to an unclear rule is to stop turning up, and the register writes that down as attendance rather than as alarm.',
-    reportSections: [
-      {
-        title: 'The rumour is settled by gatekeepers, not by the office',
-        paragraphs: [
-          'The first movement is a forwarded voice note inside shomiti groups, carrying a rule nobody has seen written down. It travels as a warning between women who know each other, which is the format an official denial cannot compete with.',
-          'What converts the warning into a fact is a union parishad member who starts signing verification slips. The queue outside his room is physical, visible evidence, and it settles the question for an entire union before the programme office knows a question was asked.',
-        ],
-      },
-      {
-        title: 'Non-collection is the loudest signal and nobody hears it',
-        paragraphs: [
-          'The mothers most exposed to the rumour do not protest and do not phone the help desk. They calculate that being told at the counter that the name is gone is worse than not going, so they stay home and say nothing, including to each other.',
-          'This is the population that never appears in a grievance log: no complaint, no call, no recorded query. Only a disbursement point with forty fewer women than last month. In this run non-collection moves well before any measurable rise in registered complaints.',
-        ],
-      },
-      {
-        title: 'The correction travels along the wrong wires',
-        paragraphs: [
-          'A written clarification and a hotline number reach the pages and the phones that were sceptical to begin with, and reassure people who had not stopped collecting. It is legible, it is correct, and it is aimed at the wrong lane.',
-          'Recovery therefore splits by proximity rather than by exposure. Households near a field officer return within a cycle, and households two ghats further out stay away, because nothing has yet gone to where they are and told them the name is still on the list.',
-        ],
-      },
-    ],
+    reportSections: BDNGO_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Gatekeeper settlement, silent non-collection, misdirected correction.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the non-collection lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Forwarded voice note, NID photocopy queue, verification slip, disbursement register.' },
       { label: 'Agent Interview', title: 'Field check', detail: 'Field officers learn about the drop from a register, never from a mother.' },
       { label: 'Complete', title: 'Report ready', detail: 'Maternal allowance report assembled and ready for review.' },
@@ -1007,20 +936,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the programme find out?' },
       { role: 'assistant', text: 'In the disbursement register, a month late, as an attendance number with no reason attached to it.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is a forwarded voice note inside shomiti groups saying the allowance is cut and every name must be re-registered with NID. It moves hours before anything reaches the union office.',
-      spread: 'It spreads when a union parishad member starts signing verification slips and a photocopy shop starts running NID copies all day. The queue is the proof, and the queue is faster than any denial.',
-      trust: 'Trust splits by distance from a field officer. Households that see one in person come back within a cycle, and the households furthest from the road read silence from the programme as confirmation that the name is already gone.',
-    },
-    interviewAgents: [
-      { name: 'Morjina', role: 'Beneficiary mother', segment: 'women', response: 'She stopped walking to the union office the month the rumour started. She did not complain and did not call, because being turned away at the counter is worse than not going.' },
-      { name: 'Sirajul', role: 'Field officer', segment: 'middle_class', response: 'He found out from the attendance register, not from a mother. Forty names simply were not there, and the register has no column for why.' },
-      { name: 'Anowara', role: 'Shomiti group leader', segment: 'rural', response: 'She forwarded the voice note because it sounded like a warning, and passing on a warning is a kindness. Twenty women took the decision from her that afternoon.' },
-      { name: 'Nurul', role: 'Photocopy shop owner', segment: 'retailers', response: 'He ran NID copies all week without knowing whether anyone needed them. The shop has never been busier and he still cannot say what the rule is.' },
-      { name: 'Josna', role: 'Char household farmer', segment: 'elderly', response: 'She has seen three programmes come and go and assumes every one of them ends without an announcement. Nothing in this month has argued with that.' },
-      { name: 'Sohag', role: 'Dhaka commentary page admin', segment: 'students', response: 'He posted the cut as fact because the screenshot was there and the reach was good. He has never been to the district and will never see the queue he helped create.' },
-      { name: 'Habibur', role: 'Programme manager', segment: 'corporate', response: 'He is watching the complaint log, which is almost empty, and reading that as calm. The disbursement variance sits on a different desk and arrives a month later.' },
-    ],
+    reportAgentAnswers: BDNGO_REPORT.reportAgentAnswers,
+    interviewAgents: BDNGO_REPORT.interviewAgents,
   }),
 
   // Telecom pack. Akashlink is an invented operator. The silence lane is dual
@@ -1119,31 +1036,9 @@ export const DEMO_PACKS = {
     reportTitle: 'Data Pack Repricing and a Throttling Rumour: Forecast Report on Loud Complaint, Silent Dual SIM Churn, and a Care Line Counting the Wrong People',
     reportSummary:
       'Complaint volume and churn are two different populations here. The people filling the comment section still hold the number, and the people who quietly move data onto the second SIM never file anything, so the operator measures its loudest loyal users and calls that the size of the damage.',
-    reportSections: [
-      {
-        title: 'A speed test outruns a tariff sheet',
-        paragraphs: [
-          'The repricing is a legible, arguable fact. The throttling claim is not, and that is precisely why it wins. One midnight screenshot from a gaming group is reproducible on every phone in the thread, so within hours thousands of people are running their own test and finding what they were told to look for.',
-          'The scheduled operator post lands into that argument rather than ahead of it. Because the campaign keeps running on its original calendar, the brand page becomes the venue for the complaint instead of the answer to it.',
-        ],
-      },
-      {
-        title: 'The switch is a two second physical act with no paper trail',
-        paragraphs: [
-          'Almost every phone in this population already holds a second SIM. Churn here needs no porting request, no call, and no decision anyone has to defend. It needs the tray opened, and the data moves while the old number stays alive for OTP codes and family calls.',
-          'That is the population no dashboard sees: the connection is still active, the subscriber is still counted, and only the recharge value falls. In this run the flexiload lane turns before complaint volume peaks, and it does not recover when the complaint volume does.',
-        ],
-      },
-      {
-        title: 'The care line measures loyalty and reports it as anger',
-        paragraphs: [
-          'A rise in call volume is read inside the operator as the scale of the crisis. Every one of those callers is someone who has not left and still expects a fix, which makes them the least representative sample available in the whole scenario.',
-          'Recovery therefore splits by whether a customer ever spoke. Complainers can be answered, credited, and kept. Silent switchers get no offer at all, because nothing in the system knows they have gone, and they will not return for a message they never receive.',
-        ],
-      },
-    ],
+    reportSections: BDTELCO_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Rumour verifiability, silent dual SIM churn, care line misread.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the silent churn lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Midnight speed test, tray swap, flexiload till, OTP only number.' },
       { label: 'Agent Interview', title: 'Recharge check', detail: 'Counter operators see the switch weeks before the retention team does.' },
       { label: 'Complete', title: 'Report ready', detail: 'Operator report assembled and ready for review.' },
@@ -1158,20 +1053,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the operator find out?' },
       { role: 'assistant', text: 'At the flexiload counter, as falling recharge value on a connection that still looks perfectly active.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is a midnight speed test posted into a gaming group. It is reproducible, so within hours thousands of people have run the same test and confirmed it to themselves.',
-      spread: 'It spreads because the claim can be checked on any phone. Rider groups and campus pages carry it as practical advice rather than accusation, and advice travels further than outrage does.',
-      trust: 'Trust splits by whether the customer ever spoke. Complainers can be answered and kept. Silent switchers stay counted as active subscribers, receive no offer, and simply stop recharging.',
-    },
-    interviewAgents: [
-      { name: 'Shakil', role: 'Delivery rider', segment: 'urban_working', response: 'He did not call and did not post. He opened the tray between two deliveries and moved the data to the other SIM, because a complaint costs time and time costs an order.' },
-      { name: 'Mim', role: 'University student', segment: 'students', response: 'She wrote three furious comments and kept the number, because the whole friend group is on it and moving costs more socially than it saves monthly.' },
-      { name: 'Nazma', role: 'Flexiload counter operator', segment: 'retailers', response: 'She watches the till, not the news. Akashlink recharge fell first, nobody at the counter has ever explained why, and so there is nothing to pass upward.' },
-      { name: 'Fariha', role: 'Household bill manager', segment: 'women', response: 'She buys the packs for the whole family, so one decision at the kitchen table moves four connections at once, and not one of the four appears as a complaint.' },
-      { name: 'Redwan', role: 'Small trader', segment: 'middle_class', response: 'He keeps the old number printed on the shop signboard and runs everything else on the new one. The signboard is the only reason the operator still counts him.' },
-      { name: 'Anwar', role: 'Para committee elder', segment: 'elderly', response: 'He has held the same number for eleven years and will not change it, but he told the whole building group which operator his grandson moved to.' },
-      { name: 'Sourav', role: 'Retention analyst', segment: 'corporate', response: 'He reports call volume as the measure of the damage, and the number is real. It is also a precise count of the customers who have not left.' },
-    ],
+    reportAgentAnswers: BDTELCO_REPORT.reportAgentAnswers,
+    interviewAgents: BDTELCO_REPORT.interviewAgents,
   }),
 
   // Mobile financial services pack. Shonchoy Pay is an invented wallet. The
@@ -1270,31 +1153,9 @@ export const DEMO_PACKS = {
     reportTitle: 'Cashout Fee Rumour and a Quiet Run on Agent Points: Forecast Report on Silent Withdrawal, Float Collapse, and a Helpline That Stays Quiet',
     reportSummary:
       'This crisis produces almost no complaints, because withdrawing your own money is not a grievance. The first and only visible symptom is an agent point running dry by noon, and by then the balances have already left the system.',
-    reportSections: [
-      {
-        title: 'An unverified screenshot is enough, because the cost of being wrong is lopsided',
-        paragraphs: [
-          'The rumour arrives as a circular image inside para committee and shomiti groups. Nobody has to believe it fully. Withdrawing early costs a small fee and being frozen costs the whole balance, so the rational move for a household is to act on a rumour it does not actually trust.',
-          'That asymmetry is why a denial does not work here. The correction has to defeat not belief but caution, and caution is cheap.',
-        ],
-      },
-      {
-        title: 'The run is silent and the float is the only witness',
-        paragraphs: [
-          'Households do not argue, do not call, and do not post. They arrive at the agent point one at a time, politely, and take everything. Each withdrawal on its own is ordinary. Together they are a run.',
-          'Helpline volume does not move, because nobody has a complaint to make. The only lane registering anything is the agent point, which is out of cash by late morning and cannot explain to the distributor why. In this run the float collapses before any measurable rise in support contacts.',
-        ],
-      },
-      {
-        title: 'The correction is addressed to people who still have a balance',
-        paragraphs: [
-          'A published fee table reassures app users who never moved their money, and reads as confirmation to anyone who did, because a brand only publishes a fee table when fees are in question.',
-          'Recovery therefore runs through the agent point, not through the app. Households now holding cash will not read a post, and the only person they will believe is the operator who tells them at the counter, next time they come in, that the money was never at risk.',
-        ],
-      },
-    ],
+    reportSections: BDWALLET_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Lopsided caution, silent run, float as the only witness.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the silent run lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Forwarded circular image, agent float, shomiti group decision, cash kept at home.' },
       { label: 'Agent Interview', title: 'Agent point check', detail: 'Operators run dry before anyone in the company sees a number move.' },
       { label: 'Complete', title: 'Report ready', detail: 'Wallet report assembled and ready for review.' },
@@ -1309,20 +1170,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the company find out?' },
       { role: 'assistant', text: 'At the agent point, when the float is gone by noon and the distributor has nothing left to send.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is a forwarded circular image in para committee and shomiti groups claiming cashout fees rise and balances above a limit will be frozen. It moves before anything reaches a public page.',
-      spread: 'It spreads because acting on it is cheap and ignoring it is expensive. Committee secretaries and group leaders pass it on as prudence, and prudence is far easier to forward than an accusation.',
-      trust: 'Trust is rebuilt at the counter, not in the app. Households holding cash will believe the agent point operator who tells them the money was safe, and they will never open a fee table posted to a page they do not follow.',
-    },
-    interviewAgents: [
-      { name: 'Rahela', role: 'Transfer receiving household head', segment: 'women', response: 'She took the whole balance out the same afternoon and told nobody. It was not a protest, it was arithmetic: the fee is small and losing the transfer is not.' },
-      { name: 'Suhel', role: 'Agent point operator', segment: 'retailers', response: 'He ran out of cash by eleven and still cannot say what happened. No customer complained, they simply kept arriving, and there is nothing to pass upward except an empty drawer.' },
-      { name: 'Belal', role: 'Para committee secretary', segment: 'elderly', response: 'He forwarded it as caution rather than as fact, and that is exactly why it worked. A warning from someone known is much harder to withdraw than an accusation.' },
-      { name: 'Jamal', role: 'Gulf returnee household head', segment: 'migration_workers', response: 'He told the family in Muscat to hold the next transfer for a week. That money never entered the system at all, so the company will never record it as a loss.' },
-      { name: 'Rubel', role: 'Campus meme page admin', segment: 'students', response: 'He is not angry at the wallet. The limit joke was the funniest thing available that week, and it carried the rumour much further than a complaint could.' },
-      { name: 'Nargis', role: 'Village household head', segment: 'rural', response: 'She keeps the money in the house now, in the same tin as before the wallet existed. Nothing has asked her to put it back.' },
-      { name: 'Iqbal', role: 'Distribution channel manager', segment: 'corporate', response: 'He is watching complaint volume, it is flat, and he reads that as containment. The float reports land on a different desk and a week later.' },
-    ],
+    reportAgentAnswers: BDWALLET_REPORT.reportAgentAnswers,
+    interviewAgents: BDWALLET_REPORT.interviewAgents,
   }),
 
   // Industrial relations pack. Shubarna Apparels, Poshak Sromik Oikko and the
@@ -1421,31 +1270,9 @@ export const DEMO_PACKS = {
     reportTitle: 'A Wage Board Announcement in Bonus Season: Forecast Report on Floor Silence, Teashop Truth, and Supervisors Caught in Between',
     reportSummary:
       'On the floor the response is silence, because speaking in front of the person who writes the overtime list is a risk. The sentence that matters is said at the teashop at ten at night, and the factory receives a fifth hand version of it a week later, if at all.',
-    reportSections: [
-      {
-        title: 'The floor and the teashop are two different publics',
-        paragraphs: [
-          'Nothing is said at the machine. Not because the workers have no view, but because the person standing two metres away writes the attendance and the overtime list. Silence on the line is a safety behaviour, and reading it as acceptance is the first mistake available to management.',
-          'The same people are precise and detailed in the mess and at the teashop at ten at night. That conversation has no supervisor in it, no record, and no route back into the factory, so the company receives the least accurate version of the floor and receives it late.',
-        ],
-      },
-      {
-        title: 'Union and owner messaging land on different trust maps',
-        paragraphs: [
-          'The union statement is about the bonus, arrives in Bangla, and is passed hand to hand. The owners forum statement is about implementation and compliance, arrives through a business page, and is aimed at buyers and regulators.',
-          'Both are honest and neither is an answer, because the question on the floor is not whether the new structure will be implemented. It is what the envelope will hold the week before Eid, and no lane in this run answers that.',
-        ],
-      },
-      {
-        title: 'Supervisors carry a number they did not set',
-        paragraphs: [
-          'The line supervisor is asked for a figure by sixty operators and for a target by production, and holds authority over neither. In this run the supervisor lane absorbs pressure from both directions and transmits almost nothing upward, because passing it up reads as failing to manage the line.',
-          'The visible outcome is not a stoppage. It is overtime refusal: people stop staying late, one shift at a time, which the factory records as a scheduling problem rather than as the answer it actually is.',
-        ],
-      },
-    ],
+    reportSections: BDWAGE_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Floor silence, split messaging, supervisor squeeze.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the floor silence lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Attendance and overtime list, teashop at ten, gate notice, village phone call.' },
       { label: 'Agent Interview', title: 'Floor check', detail: 'Workers give management the silence and the teashop the sentence.' },
       { label: 'Complete', title: 'Report ready', detail: 'Wage board report assembled and ready for review.' },
@@ -1460,20 +1287,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the sentence that matters get said?' },
       { role: 'assistant', text: 'At the teashop at ten at night, with no supervisor in the room and no route back into the factory.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is not a complaint. It is silence on the line, followed the same evening by a very specific conversation at the teashop about what the envelope will hold before Eid.',
-      spread: 'It spreads through the mess and the building network rather than through the factory. A rights page posting worked arithmetic gives the floor language for a sum it had already done.',
-      trust: 'Trust splits by who is speaking to whom. The union speaks about the bonus in Bangla and is believed. The owners forum speaks about compliance to buyers and is not so much disbelieved as considered irrelevant to the question asked.',
-    },
-    interviewAgents: [
-      { name: 'Rina', role: 'Sewing machine operator', segment: 'urban_working', response: 'She said nothing on the line, because the supervisor stands two metres away and writes the overtime list. The full sentence came out at the teashop at ten that night.' },
-      { name: 'Shafiq', role: 'Line supervisor', segment: 'middle_class', response: 'He is asked for a figure by sixty operators and for a target by production, and he sets neither. What he passes upward is nothing, because passing it up reads as failing to manage the line.' },
-      { name: 'Monowara', role: 'Helper section worker', segment: 'women', response: 'She has not told the family what the bonus will be, because she does not know, and a wrong number said out loud in the village is worse than no number at all.' },
-      { name: 'Jahangir', role: 'Owners forum representative', segment: 'corporate', response: 'He answered the question the buyers asked about compliance, which was the wrong question, and he will not learn that until the overtime lists come in short.' },
-      { name: 'Bacchu', role: 'Mess canteen owner', segment: 'retailers', response: 'He hears everything at ten at night and repeats none of it to anyone from the factory. The canteen knows a week before HR does.' },
-      { name: 'Palash', role: 'Labour rights page admin', segment: 'students', response: 'He posted the worked arithmetic and gave the floor language for a sum it had already finished. The reach came from people who have never stood on a line.' },
-      { name: 'Shilpi', role: 'Village household head', segment: 'rural', response: 'She is budgeting Eid around a figure nobody has confirmed, and she will find out what it was when the money either arrives or does not.' },
-    ],
+    reportAgentAnswers: BDWAGE_REPORT.reportAgentAnswers,
+    interviewAgents: BDWAGE_REPORT.interviewAgents,
   }),
 
   // Public health pack. Shapla General is an invented hospital. The silence
@@ -1572,31 +1387,9 @@ export const DEMO_PACKS = {
     reportTitle: 'A Beds Full Rumour in Dengue Season: Forecast Report on Care Seeking Collapse, Pharmacy Counter Triage, and a Correction Nobody Opens',
     reportSummary:
       'The hospital does not lose the patients who argue at the front desk. It loses the ones who never arrive, whose fever is managed at a pharmacy counter for four extra days, and who are written up on admission as late presentation rather than as a rumour.',
-    reportSections: [
-      {
-        title: 'An undated photograph beats a published occupancy figure',
-        paragraphs: [
-          'The rumour arrives as a corridor image inside building and para groups, with no date, no facility, and no source. It is passed on as care rather than as claim, which is the format a household cannot argue with and an official denial cannot displace.',
-          'The health office publishes accurate bed availability the same week. It is correct, it is public, and it is opened by journalists. Nobody deciding at eleven at night whether to move a child reads a published occupancy table.',
-        ],
-      },
-      {
-        title: 'The detection lane is a pharmacy counter with no register',
-        paragraphs: [
-          'Care seeking does not stop, it relocates. Households buy a fourth and a fifth day of paracetamol and saline and ask the counter what a platelet count means, and the counter answers, because it is the only clinician in the conversation.',
-          'This is the population that appears in no health statistic: no admission, no outpatient number, no complaint. The only place the surge is visible is retail volume in para pharmacies, and it turns days before hospital presentation numbers move in the opposite direction.',
-        ],
-      },
-      {
-        title: 'The ward and the city hold opposite beliefs on the same night',
-        paragraphs: [
-          'Ward staff report empty beds on nights the city is certain there are none, and have no route to say so that anyone outside the building would hear. The inversion holds because the rumour lives in groups the hospital does not belong to.',
-          'The cost is then recorded in the wrong column. Households arrive on day eight instead of day four, the file notes late presentation, and the rumour is converted into a clinical statistic and disappears from the record of what actually happened.',
-        ],
-      },
-    ],
+    reportSections: BDHEALTH_REPORT.reportSections,
     reportWorkbench: [
-      { label: 'Planning', title: 'Outline', detail: 'Undated image, relocation to the counter, ward inversion.' },
+      { label: 'Planning', title: 'Outline', detail: 'Cascade phases, segment breakdown, the care seeking lane, amplifier profiles, trust map, dashboard warning, recommendations.' },
       { label: 'Quick Search', title: 'Active memories', detail: 'Corridor photograph, fourth day of paracetamol, platelet question, occupancy notice.' },
       { label: 'Agent Interview', title: 'Counter check', detail: 'Pharmacies see the surge that never reaches an admission register.' },
       { label: 'Complete', title: 'Report ready', detail: 'Dengue season report assembled and ready for review.' },
@@ -1611,20 +1404,8 @@ export const DEMO_PACKS = {
       { role: 'user', text: 'Where does the system find out?' },
       { role: 'assistant', text: 'At a para pharmacy counter, as paracetamol volume, days before any admission number moves.' },
     ],
-    reportAgentAnswers: {
-      first: 'The earliest signal is an undated corridor photograph forwarded inside building and para groups. It is shared as care rather than as a claim, and it moves before any facility knows it exists.',
-      spread: 'It spreads through the people who carry the sick. Rickshaw stands, building committees, and pharmacy counters all repeat the last thing they heard, and a meme page turns it into something worth sharing for its own sake.',
-      trust: 'Trust splits by who you would ask at midnight. A published occupancy table is trusted by journalists. The counter two lanes away is trusted by the household, and that counter is repeating the rumour too.',
-    },
-    interviewAgents: [
-      { name: 'Shefa', role: 'Mother watching a fever chart', segment: 'women', response: 'She did not go, because a night on a corridor floor with two children at home was worse than a fifth day of paracetamol. She is keeping the temperature in a notebook instead.' },
-      { name: 'Masum', role: 'Para pharmacy counter', segment: 'retailers', response: 'He sold three times the usual paracetamol and answered platelet questions he is not qualified to answer, because he was the only person in the conversation who had ever seen a lab report.' },
-      { name: 'Tania', role: 'Ward nurse', segment: 'middle_class', response: 'She had four empty beds on a night the whole city was certain there were none, and no way to tell anyone outside the building.' },
-      { name: 'Arafat', role: 'Rickshaw stand organiser', segment: 'urban_working', response: 'He repeats whatever the last passenger said, and the last passenger said they were turned away. That is the entire evidence base behind a hundred journeys not taken.' },
-      { name: 'Sabuj', role: 'Health meme page admin', segment: 'students', response: 'He is not warning anyone. The bed shortage joke was the strongest post available that week, and it carried the claim to people the photograph never reached.' },
-      { name: 'Nishat', role: 'Hospital marketing officer', segment: 'corporate', response: 'She posted that beds are available and watched engagement rise. Every person who saw it was already willing to come.' },
-      { name: 'Kabir', role: 'Village household head', segment: 'rural', response: 'He heard that the Dhaka hospitals are full and concluded the district hospital was pointless too, which nobody in Dhaka said and nobody in the district can correct.' },
-    ],
+    reportAgentAnswers: BDHEALTH_REPORT.reportAgentAnswers,
+    interviewAgents: BDHEALTH_REPORT.interviewAgents,
   }),
 }
 

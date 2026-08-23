@@ -252,6 +252,23 @@
               <p class="empty-text">
                 {{ chatTarget === 'report_agent' ? `Chat with the ${reportAgentLabel} to explore the report in more depth` : 'Interview a simulated person to understand their perspective' }}
               </p>
+              <!-- Openers. The answers here go deep, but only if you know what
+                   to ask, and in a live demo nobody wants to guess. -->
+              <div v-if="suggestedQuestions.length" class="empty-suggestions">
+                <span class="empty-suggestions-label">Try asking</span>
+                <div class="empty-suggestions-row">
+                  <button
+                    v-for="question in suggestedQuestions"
+                    :key="question"
+                    class="suggestion-chip"
+                    type="button"
+                    :disabled="isSending"
+                    @click="askSuggested(question)"
+                  >
+                    {{ question }}
+                  </button>
+                </div>
+              </div>
             </div>
             <div 
               v-for="(msg, idx) in chatHistory" 
@@ -445,6 +462,43 @@ const chatHistoryCache = ref({}) // Cache all chat records: { 'report_agent': []
 const isSending = ref(false)
 const chatMessages = ref(null)
 const chatInputRef = ref(null)
+
+// Openers offered on the empty chat panel. The report agent and the simulated
+// people both answer a wide range of questions properly, but only if the
+// question is asked, and in a live demo nobody wants to guess at the phrasing.
+// These map onto the answer hooks the packs are written against.
+const REPORT_AGENT_OPENERS = [
+  'Who stayed quiet?',
+  'What was the first signal?',
+  'What did the shops see?',
+  'Walk me through the timeline.',
+  'What is the biggest risk here?',
+  'How do we recover?',
+  'What do you recommend?',
+]
+
+const AGENT_OPENERS = [
+  'What did you do first?',
+  'Why did you not complain?',
+  'Who did you believe?',
+  'What would have changed your mind?',
+  'What are you doing now?',
+]
+
+const suggestedQuestions = computed(() => {
+  if (chatTarget.value === 'report_agent') {
+    return REPORT_AGENT_OPENERS
+  }
+  return selectedAgent.value ? AGENT_OPENERS : []
+})
+
+const askSuggested = (question) => {
+  if (isSending.value) {
+    return
+  }
+  chatInput.value = question
+  sendMessage()
+}
 
 // Survey State
 const selectedAgents = ref(new Set())
@@ -2010,6 +2064,52 @@ watch(
   text-align: center;
   max-width: 280px;
   line-height: 1.6;
+}
+
+.empty-suggestions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.empty-suggestions-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9CA3AF;
+}
+
+.empty-suggestions-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.suggestion-chip {
+  padding: 7px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 999px;
+  background: #fff;
+  color: #4B5563;
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.suggestion-chip:hover:not(:disabled) {
+  border-color: #9CA3AF;
+  background: #F9FAFB;
+  color: #111827;
+}
+
+.suggestion-chip:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 
 .chat-message {
