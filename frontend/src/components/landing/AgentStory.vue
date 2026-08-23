@@ -64,7 +64,7 @@
         <div class="hero-story__brand-lockup">
           <div class="hero-story__brand-word">{{ story.footerWordmark || 'MURMUR' }}</div>
           <p class="hero-story__brand-subtitle">
-            {{ story.footerSubtitle || 'South Asia Behavioral Intelligence' }}
+            {{ story.footerSubtitle || 'South Asia behavioural intelligence' }}
           </p>
         </div>
 

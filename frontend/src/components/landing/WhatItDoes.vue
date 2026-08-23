@@ -90,7 +90,7 @@ const mechanismItems = [
   },
   {
     label: 'Memory + silence',
-    detail: 'What gets spoken, what stays hidden, and what behavior changes quietly.',
+    detail: 'What gets spoken, what stays hidden, and what behaviour changes quietly.',
   },
 ]
 
@@ -109,7 +109,7 @@ const outputItems = [
   },
   {
     label: 'Silent absorption',
-    detail: 'Who changes behavior without posting, protesting, or declaring anything.',
+    detail: 'Who changes behaviour without posting, protesting, or declaring anything.',
   },
   {
     label: 'Report + rehearsal',
@@ -133,12 +133,12 @@ const decoratedLead = computed(() => decorate(
 
 const decoratedDetail = computed(() => decorate(
   decorate(
-    'You are not looking at sentiment. You are looking at behavior under pressure.',
+    'You are not looking at sentiment. You are looking at behaviour under pressure.',
     'sentiment',
     '<span class="does-circle does-circle--small">sentiment</span>'
   ),
-  'behavior under pressure',
-  '<span class="does-underline">behavior under pressure</span>'
+  'behaviour under pressure',
+  '<span class="does-underline">behaviour under pressure</span>'
 ))
 </script>
 

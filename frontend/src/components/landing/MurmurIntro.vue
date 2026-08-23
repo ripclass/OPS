@@ -50,18 +50,18 @@ const decorate = (text, target, replacement) => text.replace(target, replacement
 
 const decoratedKicker = computed(() => decorate(
   props.kicker,
-  'scenario simulation',
-  '<span class="intro-underline">scenario simulation</span>'
+  'behavioural intelligence',
+  '<span class="intro-underline">behavioural intelligence</span>'
 ))
 
 const decoratedTitle = computed(() => decorate(
   decorate(
     props.title,
-    'populations',
-    '<span class="intro-circle">populations</span>'
+    'street',
+    '<span class="intro-circle">street</span>'
   ),
-  'narratives react',
-  '<span class="intro-underline intro-underline--tight">narratives react</span>'
+  'briefing room',
+  '<span class="intro-underline intro-underline--tight">briefing room</span>'
 ))
 
 const decoratedSummary = computed(() => decorate(
@@ -70,8 +70,8 @@ const decoratedSummary = computed(() => decorate(
     'Murmur',
     '<span class="intro-circle intro-circle--brand">Murmur</span>'
   ),
-  'simulated public sphere',
-  '<span class="intro-underline intro-underline--summary">simulated public sphere</span>'
+  'rehearsal',
+  '<span class="intro-underline intro-underline--summary">rehearsal</span>'
 ))
 
 const decoratedDetail = computed(() => decorate(

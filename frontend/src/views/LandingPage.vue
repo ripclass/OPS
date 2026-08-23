@@ -6,10 +6,10 @@
       </button>
 
       <nav class="murmur-nav__links" aria-label="Primary">
-        <a href="#console">Get Started</a>
-        <a href="#videos">Videos</a>
+        <a href="#console">Run a scenario</a>
+        <a href="#videos">Cascades</a>
         <a href="#introduction">Introduction</a>
-        <a href="#about-us">About US</a>
+        <a href="#about-us">About us</a>
       </nav>
 
       <div class="murmur-actions">
@@ -51,10 +51,10 @@
 
       <section id="introduction" class="content-section content-section--intro">
         <MurmurIntro
-          kicker="South Asia-grounded scenario simulation"
-          title="Rehearse how populations, institutions, and narratives react before the event goes live."
-          summary="Murmur turns scenario briefs, policy drafts, news material, and field evidence into a simulated public sphere across Bangladesh, India, Pakistan, Nepal, and Sri Lanka."
-          detail="Model likely reaction pathways before the street, the feed, or the market moves."
+          kicker="South Asia behavioural intelligence"
+          title="The street knows before the briefing room does."
+          summary="Murmur is a behavioural rehearsal system for decisions that will reach millions of South Asians."
+          detail="Bangladesh, India, Pakistan, Sri Lanka, Nepal. One hundred to ten thousand specific people, run hour by hour before the street, the feed, or the market moves."
         />
       </section>
 

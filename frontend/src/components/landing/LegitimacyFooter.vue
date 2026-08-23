@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="footer-scribble">built in Dhaka / not pointed at us</div>
+    <div class="footer-scribble">built in Dhaka / not pointed at it</div>
 
     <nav class="footer-links" aria-label="Footer">
       <a href="#about">About</a>

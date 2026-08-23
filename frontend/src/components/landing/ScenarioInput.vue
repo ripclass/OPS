@@ -7,7 +7,7 @@
 
       <div class="scenario-standfirst">
         <p class="scenario-standfirst__lead" v-html="decoratedLead" />
-        <p class="scenario-standfirst__detail">This opens the public Murmur demo flow.</p>
+        <p class="scenario-standfirst__detail">This opens the public Murmur demo. No account needed.</p>
       </div>
     </div>
 

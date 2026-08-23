@@ -61,15 +61,15 @@ const decoratedTitle = computed(() => decorate(
 ))
 
 const decoratedLead = computed(() => decorate(
-  'The difference between realism and fiction is whether the model knows who actually carries the cost.',
-  'carries the cost',
-  '<span class="knowledge-underline">carries the cost</span>'
+  'Surveys capture what people declare. Social listening captures what people post. Neither captures what people actually do when the decision arrives.',
+  'what people actually do',
+  '<span class="knowledge-underline">what people actually do</span>'
 ))
 
 const decoratedDetail = computed(() => decorate(
-  'Not averages. Not generic users. Social position, silence, and pressure in the right proportions.',
-  'Not generic users',
-  '<span class="knowledge-circle knowledge-circle--small">Not generic users</span>'
+  'Especially the people who will never post, never answer a survey, and never appear in a dashboard.',
+  'a dashboard',
+  '<span class="knowledge-circle knowledge-circle--small">a dashboard</span>'
 ))
 
 const decoratedClose = computed(() => decorate(

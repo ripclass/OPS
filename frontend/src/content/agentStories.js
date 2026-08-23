@@ -34,7 +34,7 @@ export const AGENT_STORIES = {
     headlineInkMeta: 'Noakhali.\nFish drying worker.',
     heroInkLines: ['MURMUR', 'KNOWS', 'HALIMA'],
     footerWordmark: 'MURMUR',
-    footerSubtitle: 'South Asia Behavioral Intelligence',
+    footerSubtitle: 'South Asia behavioural intelligence',
     scribbles: [
       {
         text: 'NO POST\nNO PROTEST',
@@ -238,16 +238,16 @@ export const AGENT_FEED_POSTS = [
 export const WHAT_IT_KNOWS = [
   'A garments worker in Chittagong EPZ is usually a migrant from Noakhali, Bhola, or Lakshmipur, not a local middle-class Chatgaayan woman. A local woman in that factory faces social ruin. The migrant does not. Same floor. Same wage band. Two completely different social worlds. Most simulations collapse them into one.',
   'A BRAC shasthya shebika in Rangpur is not a salaried health worker. She lives on medicine sales, referrals, and local trust. If a clinic campaign makes her look like the government\'s messenger, she can lose the very women she depends on. Miss that and your Bangladesh health simulation mistakes compliance for credibility.',
-  'A wife in Noakhali with a husband in Saudi Arabia is not economically inactive. She manages remittance timing, bKash cash-outs, school fees, food rationing, and the mother-in-law\'s medicine. She may post nothing, protest nothing, and still be the first place a price shock is absorbed. No labor survey sees her clearly.',
+  'A wife in Noakhali with a husband in Saudi Arabia is not economically inactive. She manages remittance timing, bKash cash-outs, school fees, food rationing, and the mother-in-law\'s medicine. She may post nothing, protest nothing, and still be the first place a price shock is absorbed. No labour survey sees her clearly.',
   'A Dhaka University student activist, a madrasa student in Brahmanbaria, and a private tutor in Mirpur do not receive the same message as the same politics. One frames it as betrayal, one as fitna, one as risk to livelihood. Put them in one youth segment and your Bangladesh model turns into fiction.',
   'A fish trader in Barisal, a launch worker in Chandpur, and a CNG driver in Gazipur experience the same diesel increase differently: one raises prices, one loses passengers, one cuts meals at home. The public reaction is not one cascade. It is three linked household calculations moving at different speeds.',
 ]
 
 export const WHAT_IT_DOES = [
-  "You describe a scenario. A policy announcement. A price shock. A flood warning that may or may not be believed. A health campaign targeting women who won't come to the clinic. An election narrative before it's deployed.",
-  "Murmur generates the population that will receive it. Not a segment. Not a demographic average. Specific people with names, dialects, income sources, shame thresholds, political affiliations they will never say out loud, and fears that shape everything they do.",
-  'It runs the scenario through them. Hour by hour. WhatsApp voice message to Facebook post to bazaar rumor to family phone call to silence that spreads faster than noise.',
-  'It shows you what 750 people do - in their languages, with their emotions, at their speeds, through their networks - with cascade architecture, amplifier identification, and the specific behavioral math of who shares and who absorbs and why.',
+  "You describe a scenario. A policy announcement. A price increase. A flood warning that may or may not be believed. A health campaign aimed at women who will not come to the clinic. An election narrative before it is deployed.",
+  'Murmur generates the population that will receive it. Not a segment. Not a demographic average. Specific people with names, dialects, income sources, shame thresholds, trust levels for each institution, and a political lean they keep hidden.',
+  'It runs the scenario through them. Hour by hour. Family phone call to WhatsApp voice message to Facebook post to bazaar rumour to teashop remark to the silence that travels faster than noise.',
+  'It shows you what one hundred to ten thousand specific people do - in their languages, with their emotions, at their speeds, through their networks - with cascade architecture, amplifier identification, and the behavioural math of who shares, who absorbs, and who goes quiet.',
   'Before it happens to you.',
 ]
 
@@ -267,8 +267,8 @@ export const WHO_ITS_FOR_LINES = [
 export const WHO_ITS_FOR_OUTRO = 'Murmur is the rehearsal. What happens in the simulation before it happens in the street, the feed, or the ministry\'s inbox.'
 
 export const LEGITIMACY_LINES = [
-  'Built in Dhaka. Five countries. Hundreds of zones.',
-  '1,200 hours of recorded conversation. 25 years of documentary fieldwork.',
-  'From inside South Asia. Not pointed at it.',
-  'Private. Paid. High-context. Not a chatbot.',
+  'Five country models. Bangladesh, India, Pakistan, Sri Lanka, Nepal.',
+  'Labour survey data from each. 1,200 hours of recorded conversation in six dialects. Twenty-five years of documentary fieldwork.',
+  'Not a chatbot. Not an academic ABM. Not social listening. Not a Western tool repackaged.',
+  'Built in Dhaka. Not pointed at it.',
 ]
