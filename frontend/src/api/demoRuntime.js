@@ -91,6 +91,167 @@ const COUNTRY_AGENT_POOLS = {
       elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
     },
   },
+  // Maternal allowance pack. Northern char and riverine district names, and
+  // occupations built around a social programme rather than a market.
+  bdngo: {
+    defaultSegments: ['rural', 'women', 'middle_class', 'students'],
+    segmentWeights: {
+      rural: 0.3,
+      urban_working: 0.1,
+      middle_class: 0.14,
+      corporate: 0.04,
+      migration_workers: 0.06,
+      students: 0.08,
+      retailers: 0.06,
+      women: 0.18,
+      elderly: 0.04,
+    },
+    femaleFirst: ['Rahima', 'Morjina', 'Amena', 'Josna', 'Rojina', 'Sathi', 'Kohinoor', 'Anowara', 'Shefali', 'Bilkis', 'Shahida', 'Ayesha', 'Momtaz', 'Nurjahan'],
+    maleFirst: ['Sirajul', 'Mokbul', 'Rafiqul', 'Jashim', 'Nurul', 'Habibur', 'Shahjahan', 'Alamgir', 'Delwar', 'Ripon', 'Sohag', 'Faruk', 'Motaleb', 'Aziz'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Kurigram', 'Chilmari', 'Ulipur', 'Rowmari', 'Nageshwari', 'Bhurungamari', 'Char Rajibpur', 'Lalmonirhat', 'Gaibandha', 'Rangpur'],
+    occupations: {
+      rural: ['Char household farmer', 'Day labourer', 'Homestead poultry keeper', 'Boat ghat helper', 'Vegetable seller'],
+      urban_working: ['Garment worker', 'Brick field worker', 'Tea stall staff', 'Construction helper', 'Rice mill worker'],
+      middle_class: ['NGO field officer', 'Union parishad secretary', 'Community clinic provider', 'Primary school teacher', 'Upazila office clerk'],
+      corporate: ['NGO programme manager', 'Donor compliance officer', 'Programme data officer', 'Development researcher', 'Grants coordinator'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Seasonal migrant to Dhaka', 'Overseas worker family bookkeeper'],
+      students: ['College student', 'Campus page admin', 'Coaching student', 'Nursing student', 'Public university student'],
+      retailers: ['Photocopy and NID shop owner', 'Mudi dokan owner', 'Mobile banking agent', 'Bazaar stall trader', 'Stationery counter staff'],
+      women: ['Maternal allowance beneficiary', 'Community health volunteer', 'Shomiti group leader', 'Homestead poultry keeper', 'Domestic worker'],
+      elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired union office clerk', 'Household pensioner'],
+    },
+  },
+  // Telecom pack. Dhaka metro plus the three biggest secondary cities, and
+  // occupations that live or die on a data pack.
+  bdtelco: {
+    defaultSegments: ['students', 'urban_working', 'retailers', 'middle_class'],
+    segmentWeights: {
+      rural: 0.06,
+      urban_working: 0.24,
+      middle_class: 0.18,
+      corporate: 0.06,
+      migration_workers: 0.04,
+      students: 0.22,
+      retailers: 0.14,
+      women: 0.04,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Mim', 'Tasnim', 'Sadia', 'Ishrat', 'Anika', 'Nusrat', 'Raisa', 'Tamanna', 'Jarin', 'Samira', 'Oishi', 'Fariha', 'Maliha', 'Rimi'],
+    maleFirst: ['Shakil', 'Rakib', 'Tanjim', 'Nahid', 'Sourav', 'Rifat', 'Mahmud', 'Emon', 'Shanto', 'Piyash', 'Redwan', 'Tawhid', 'Nazmul', 'Fahim'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Mirpur, Dhaka', 'Uttara', 'Badda', 'Mohammadpur', 'Farmgate', 'Rampura', 'Jatrabari', 'Chattogram', 'Sylhet', 'Khulna'],
+    occupations: {
+      rural: ['Village shopkeeper', 'Homestead farmer', 'Rural school teacher', 'Agricultural day labourer', 'Poultry farm helper'],
+      urban_working: ['Food delivery rider', 'Courier hub sorter', 'Garment worker', 'Call centre night staff', 'Warehouse packer'],
+      middle_class: ['School teacher', 'Bank clerk', 'Private tutor', 'Nurse', 'NGO programme officer'],
+      corporate: ['Telecom retention analyst', 'Media buyer', 'Corporate communications officer', 'IT support engineer', 'Market researcher'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Overseas worker family bookkeeper', 'Recruiting agency caller'],
+      students: ['Public university student', 'Private university student', 'Campus page admin', 'Gaming group moderator', 'Coaching student'],
+      retailers: ['Flexiload counter operator', 'Mobile accessory shop owner', 'Mudi dokan owner', 'SIM reseller point staff', 'Superstore floor staff'],
+      women: ['Household bill manager', 'Online clothing seller', 'Domestic worker', 'Beauty parlor worker', 'Clinic support worker'],
+      elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
+    },
+  },
+  // Mobile wallet pack. Sylhet division names because the remittance corridor
+  // is the scenario, and the retail lane is weighted up because the agent
+  // point is where a silent run first becomes visible.
+  bdwallet: {
+    defaultSegments: ['retailers', 'migration_workers', 'rural', 'women'],
+    segmentWeights: {
+      rural: 0.18,
+      urban_working: 0.12,
+      middle_class: 0.1,
+      corporate: 0.04,
+      migration_workers: 0.18,
+      students: 0.06,
+      retailers: 0.2,
+      women: 0.1,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Rahela', 'Jesmin', 'Nargis', 'Rokeya', 'Shirin', 'Marium', 'Kulsum', 'Salma', 'Ruma', 'Dilara', 'Mahmuda', 'Aleya', 'Ferdousi', 'Nazma'],
+    maleFirst: ['Suhel', 'Jamal', 'Tofazzol', 'Ruhul', 'Belal', 'Kamruzzaman', 'Ashraf', 'Mostafa', 'Iqbal', 'Rubel', 'Shamim', 'Jubayer', 'Anwar', 'Liton'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Sylhet', 'Beanibazar', 'Golapganj', 'Jaintiapur', 'Bishwanath', 'Zakiganj', 'Kanaighat', 'Moulvibazar', 'Habiganj', 'Sunamganj'],
+    occupations: {
+      rural: ['Homestead farmer', 'Haor fishing worker', 'Betel leaf grower', 'Agricultural day labourer', 'Village poultry keeper'],
+      urban_working: ['Restaurant staff', 'Construction helper', 'Tea stall staff', 'Transport counter staff', 'Garment worker'],
+      middle_class: ['School teacher', 'Bank clerk', 'Nurse', 'NGO programme officer', 'Private tutor'],
+      corporate: ['Financial services area manager', 'Compliance officer', 'Distribution channel manager', 'Fintech product analyst', 'Fraud and risk analyst'],
+      migration_workers: ['Remittance household manager', 'UK returnee', 'Household head while spouse works abroad', 'Overseas worker family bookkeeper', 'Recruiting agency caller'],
+      students: ['Public university student', 'Madrasa student', 'Campus page admin', 'Coaching student', 'Nursing student'],
+      retailers: ['Agent point operator', 'Mudi dokan agent', 'Mobile recharge counter staff', 'Bazaar wholesale trader', 'Grocery counter staff'],
+      women: ['Transfer receiving household head', 'Shomiti group leader', 'Tailoring worker', 'Domestic worker', 'Clinic support worker'],
+      elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
+    },
+  },
+  // Wage board pack. Industrial belt locations and factory-floor occupations,
+  // with the floor lane weighted heaviest because that is where the silence is.
+  bdwage: {
+    defaultSegments: ['urban_working', 'women', 'middle_class', 'corporate'],
+    segmentWeights: {
+      rural: 0.08,
+      urban_working: 0.34,
+      middle_class: 0.14,
+      corporate: 0.06,
+      migration_workers: 0.06,
+      students: 0.06,
+      retailers: 0.08,
+      women: 0.16,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Rina', 'Shilpi', 'Monowara', 'Beauty', 'Rojina', 'Aduri', 'Shahanaz', 'Rupali', 'Jorna', 'Konica', 'Lipi', 'Mukta', 'Shathi', 'Poly'],
+    maleFirst: ['Babul', 'Milon', 'Shafiq', 'Rased', 'Jewel', 'Bacchu', 'Mizan', 'Sumon', 'Titu', 'Khokon', 'Robiul', 'Jahangir', 'Palash', 'Shohel'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Gazipur', 'Konabari', 'Tongi', 'Ashulia', 'Savar', 'Kaliakoir', 'Board Bazar', 'Narayanganj', 'Fatullah', 'Mirpur, Dhaka'],
+    occupations: {
+      rural: ['Village household farmer', 'Day labourer', 'Homestead poultry keeper', 'Vegetable seller', 'Rural school teacher'],
+      urban_working: ['Sewing machine operator', 'Finishing section helper', 'Cutting section worker', 'Quality checker', 'Knitting section worker'],
+      middle_class: ['Line supervisor', 'Floor in charge', 'Production planning officer', 'HR and compliance officer', 'Welfare officer'],
+      corporate: ['Owners forum representative', 'Buyer compliance auditor', 'Merchandiser', 'Industrial relations manager', 'Labour law adviser'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Village family bookkeeper', 'Seasonal migrant to Dhaka'],
+      students: ['Labour rights page admin', 'Night college student', 'Public university student', 'Coaching student', 'Campus page admin'],
+      retailers: ['Mess canteen owner', 'Mudi dokan owner', 'Tea stall owner', 'Mobile recharge counter staff', 'Bazaar stall trader'],
+      women: ['Sewing machine operator', 'Helper section worker', 'Creche attendant', 'Shomiti group leader', 'Domestic worker'],
+      elderly: ['Retired factory worker', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
+    },
+  },
+  // Dengue season pack. Dhaka wards that carry the case load, and a retail lane
+  // built entirely of pharmacy counters because that is the detection lane.
+  bdhealth: {
+    defaultSegments: ['retailers', 'urban_working', 'women', 'middle_class'],
+    segmentWeights: {
+      rural: 0.1,
+      urban_working: 0.24,
+      middle_class: 0.16,
+      corporate: 0.05,
+      migration_workers: 0.04,
+      students: 0.09,
+      retailers: 0.2,
+      women: 0.1,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Shefa', 'Rumpa', 'Tania', 'Nishat', 'Sharmili', 'Afroza', 'Sumona', 'Jharna', 'Rukhsana', 'Tahmina', 'Nasima', 'Papia', 'Sanjida', 'Munira'],
+    maleFirst: ['Shipon', 'Arafat', 'Zahid', 'Rony', 'Masum', 'Tarek', 'Nayan', 'Sabuj', 'Rasel', 'Imtiaz', 'Bappi', 'Shohag', 'Riyad', 'Kabir'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Jatrabari, Dhaka', 'Mugda', 'Khilgaon', 'Mirpur, Dhaka', 'Rampura', 'Kamrangirchar', 'Shyampur', 'Badda', 'Demra', 'Narayanganj'],
+    occupations: {
+      rural: ['Village household farmer', 'Homestead poultry keeper', 'Rural school teacher', 'Agricultural day labourer', 'Village shopkeeper'],
+      urban_working: ['Garment worker', 'Construction helper', 'Food delivery rider', 'Hotel kitchen staff', 'Tea stall staff'],
+      middle_class: ['School teacher', 'Ward nurse', 'Bank clerk', 'Private tutor', 'Newspaper reporter'],
+      corporate: ['Hospital marketing officer', 'Pharmaceutical territory officer', 'Health insurance analyst', 'Corporate communications officer', 'Diagnostic chain manager'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Overseas worker family bookkeeper', 'Recruiting agency caller'],
+      students: ['Medical college student', 'Public university student', 'Campus page admin', 'Coaching student', 'Nursing student'],
+      retailers: ['Para pharmacy counter', 'Pharmacy owner', 'Diagnostic centre front desk', 'Medicine wholesale trader', 'Mudi dokan owner'],
+      women: ['Household care giver', 'Community health volunteer', 'Clinic support worker', 'Domestic worker', 'School meal worker'],
+      elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
+    },
+  },
   india: {
     defaultSegments: ['urban_working', 'students', 'women', 'middle_class'],
     segmentWeights: {
@@ -431,7 +592,9 @@ function buildSegmentAssignments(pack, totalAgents) {
 }
 
 function buildTopicPool(pack) {
-  const seedTopics = [
+  // Persona interest chips are on screen during population setup, so a pack
+  // about data packs or hospital beds must not inherit the price-shock topics.
+  const seedTopics = pack.population.topicSeeds?.length ? pack.population.topicSeeds : [
     'food prices',
     'household budgeting',
     'relief queues',
