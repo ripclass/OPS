@@ -50,6 +50,26 @@
       <section class="dashboard-section">
         <div class="right-panel full-width">
           <div class="console-box">
+            <div v-if="isDemoRoute" class="console-section pack-section">
+              <div class="console-header">
+                <span class="console-label">00 / Scenario Pack</span>
+                <span class="console-meta">Seven prepared Bangladesh scenarios</span>
+              </div>
+              <div class="pack-grid">
+                <button
+                  v-for="pick in DEMO_SCENARIO_PICKS"
+                  :key="pick.countryCode"
+                  class="pack-card"
+                  :class="{ active: pick.countryCode === activePackCode }"
+                  type="button"
+                  @click="selectScenarioPack(pick.countryCode)"
+                >
+                  <span class="pack-card-label">{{ pick.label }}</span>
+                  <span class="pack-card-detail">{{ pick.detail }}</span>
+                </button>
+              </div>
+            </div>
+
             <div class="console-section">
               <div class="console-header">
                 <span class="console-label">01 / Source Material</span>
@@ -154,6 +174,7 @@ import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
 import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
+import { DEMO_SCENARIO_PICKS, getDemoPackByCountryCode } from '../content/demoFlowPacks'
 import { useDemoBrand } from '../composables/useDemoBrand'
 
 const router = useRouter()
@@ -201,6 +222,26 @@ const fileInput = ref(null)
 const isDemoRoute = computed(() => route.path.startsWith('/demo'))
 
 const canSubmit = computed(() => formData.value.simulationRequirement.trim() !== '')
+const activePackCode = computed(() => {
+  const raw = typeof route.query.country === 'string' ? route.query.country.trim().toUpperCase() : ''
+  return raw || 'BD'
+})
+
+// The picker only ever rewrites this page's own query and its own textarea. The
+// landing CTA never lands here, it seeds the store and jumps straight to
+// DemoGraph, so nothing below can reach that path.
+const selectScenarioPack = (countryCode) => {
+  const pack = getDemoPackByCountryCode(countryCode)
+  formData.value.simulationRequirement = pack.intake.defaultScenario
+  router.replace({
+    path: route.path,
+    query: {
+      ...route.query,
+      country: countryCode,
+      scenario: undefined,
+    },
+  })
+}
 const heroSectionStyle = computed(() => ({
   '--hero-image': `url("${heroImageUrl}")`,
 }))
@@ -545,6 +586,56 @@ const handleSignOut = async () => {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: #666;
+}
+
+.pack-section {
+  padding-bottom: 0;
+}
+
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.pack-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  color: var(--black);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pack-card:hover {
+  border-color: #999;
+}
+
+.pack-card.active {
+  border-color: var(--black);
+  background: var(--white);
+}
+
+.pack-card-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.pack-card-detail {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: #777;
+}
+
+.pack-card.active .pack-card-detail {
+  color: #555;
 }
 
 .upload-zone {
