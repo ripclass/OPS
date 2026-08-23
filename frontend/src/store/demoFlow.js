@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { getDemoPackByCountryCode, resolveDemoPackKey } from '../content/demoFlowPacks'
+import { DEMO_PACKS, getDemoPackByCountryCode, resolveDemoPackKey } from '../content/demoFlowPacks'
 import { detectCountryCode } from '../composables/useGeolocation'
 
 const STORAGE_KEY = 'murmur_demo_flow_v1'
@@ -81,7 +81,17 @@ export async function initializeDemoFlow({ scenario, country } = {}) {
   }
 
   const pack = getDemoPackByCountryCode(nextCountryCode)
-  const nextScenario = String(scenario || state.scenario || pack.intake.defaultScenario).trim()
+  const carried = String(scenario || state.scenario || '').trim()
+
+  // A scenario carried over from a different pack is that pack's canned
+  // default, not something the user wrote, so switching packs mid-session
+  // should not leave the previous scenario's text on screen. Anything the user
+  // actually typed is preserved.
+  const isOtherPackDefault = Boolean(carried)
+    && carried !== pack.intake.defaultScenario
+    && Object.values(DEMO_PACKS).some(entry => entry.intake.defaultScenario === carried)
+
+  const nextScenario = (!carried || isOtherPackDefault) ? pack.intake.defaultScenario : carried
 
   state.countryCode = nextCountryCode
   state.scenario = nextScenario || pack.intake.defaultScenario

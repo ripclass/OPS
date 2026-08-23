@@ -17,6 +17,7 @@ const SEGMENT_PARAM_MAP = Object.freeze({
   Corporate: 'corporate',
   'Migration workers': 'migration_workers',
   Students: 'students',
+  'Retail and shopkeepers': 'retailers',
   Women: 'women',
   Elderly: 'elderly',
 })

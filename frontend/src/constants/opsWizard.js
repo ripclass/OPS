@@ -20,6 +20,7 @@ export const SEGMENT_OPTIONS = [
   { value: 'Corporate', label: 'Corporate', description: 'Professionals whose public signaling carries higher reputational risk.' },
   { value: 'Migration workers', label: 'Migration workers', description: 'Internal and overseas workers shaped by remittance and family obligations.' },
   { value: 'Students', label: 'Students', description: 'High-reactivity youth segments with fast peer-network propagation.' },
+  { value: 'Retail and shopkeepers', label: 'Retail and shopkeepers', description: 'Para grocers and counter staff who read demand off the shelf before sentiment moves.' },
   { value: 'Women', label: 'Women', description: 'Gendered response dynamics across household, safety, and reputation concerns.' },
   { value: 'Elderly', label: 'Elderly', description: 'Older publics with different trust patterns and slower but durable spread.' },
 ]

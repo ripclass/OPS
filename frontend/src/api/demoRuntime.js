@@ -19,6 +19,8 @@ const SEGMENT_KEY_ALIASES = {
   'migration workers': 'migration_workers',
   migration_workers: 'migration_workers',
   students: 'students',
+  'retail and shopkeepers': 'retailers',
+  retailers: 'retailers',
   women: 'women',
   elderly: 'elderly',
 }
@@ -33,6 +35,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: 0.05,
       migration_workers: 0.09,
       students: 0.07,
+      retailers: 0.04,
       women: 0.03,
       elderly: 0.02,
     },
@@ -50,8 +53,42 @@ const COUNTRY_AGENT_POOLS = {
       // either. "Migrant wife running the household" did not.
       migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Recruiting-agency caller', 'Overseas worker family bookkeeper'],
       students: ['Campus page admin', 'Private university student', 'Public university student', 'Coaching student', 'Freelance student organizer'],
+      retailers: ['Mudi dokan owner', 'Grocery counter staff', 'Bazaar wholesale trader', 'Superstore floor staff', 'Para pharmacy counter'],
       women: ['Queue manager for the household', 'Domestic worker', 'Beauty parlor worker', 'Microcredit field collector', 'Clinic support worker'],
       elderly: ['Retired madrasa teacher', 'Retired school clerk', 'Elderly shopkeeper', 'Village elder', 'Household pensioner'],
+    },
+  },
+  // Brand-crisis pack. Same Bangladeshi name pools, but Dhaka-metro locations
+  // and consumer-facing occupations, and the retail lane is weighted up because
+  // the shelf is where this scenario turns first.
+  bdbrand: {
+    defaultSegments: ['women', 'retailers', 'middle_class', 'students'],
+    segmentWeights: {
+      rural: 0.08,
+      urban_working: 0.22,
+      middle_class: 0.22,
+      corporate: 0.05,
+      migration_workers: 0.03,
+      students: 0.12,
+      retailers: 0.16,
+      women: 0.1,
+      elderly: 0.02,
+    },
+    femaleFirst: ['Sharmin', 'Nasrin', 'Tahmina', 'Rumana', 'Sabina', 'Jannat', 'Farhana', 'Shireen', 'Mitu', 'Nusrat', 'Afsana', 'Rehana', 'Sumaiya', 'Labonno'],
+    maleFirst: ['Kamrul', 'Tanvir', 'Shahin', 'Rakib', 'Faisal', 'Mizanur', 'Sabbir', 'Arif', 'Tuhin', 'Jewel', 'Nayeem', 'Ashiq', 'Robin', 'Sajib'],
+    femaleSurnames: ['Begum', 'Akhter', 'Khatun', 'Sultana', 'Islam', 'Ahmed', 'Nahar'],
+    maleSurnames: ['Miah', 'Hossain', 'Islam', 'Molla', 'Sheikh', 'Mondal', 'Sarker', 'Ahmed', 'Rahman', 'Uddin', 'Talukder'],
+    locations: ['Mirpur, Dhaka', 'Mohammadpur', 'Uttara', 'Bashundhara', 'Jatrabari', 'Badda', 'Rampura', 'Gazipur', 'Narayanganj', 'Savar'],
+    occupations: {
+      rural: ['Village shopkeeper', 'Homestead poultry farmer', 'Vegetable seller', 'Agricultural day laborer', 'Rural school teacher'],
+      urban_working: ['Garment worker', 'Food delivery rider', 'Rickshaw puller', 'Construction helper', 'Domestic worker'],
+      middle_class: ['School teacher', 'Nurse', 'Bank clerk', 'NGO program officer', 'Private tutor'],
+      corporate: ['Brand executive', 'Media buyer', 'Corporate communications officer', 'Retail category manager', 'Market researcher'],
+      migration_workers: ['Remittance household manager', 'Gulf returnee', 'Household head while spouse works abroad', 'Recruiting-agency caller', 'Overseas worker family bookkeeper'],
+      students: ['Campus page admin', 'Meme page moderator', 'Private university student', 'Public university student', 'Coaching student'],
+      retailers: ['Mudi dokan owner', 'Grocery counter staff', 'Bazaar wholesale trader', 'Superstore floor staff', 'Para pharmacy counter'],
+      women: ['School-group mother', 'Tiffin box planner for the household', 'Domestic worker', 'Beauty parlor worker', 'Clinic support worker'],
+      elderly: ['Retired school teacher', 'Elderly shopkeeper', 'Para committee elder', 'Retired clerk', 'Household pensioner'],
     },
   },
   india: {
@@ -63,6 +100,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: 0.08,
       migration_workers: 0.07,
       students: 0.07,
+      retailers: 0.04,
       women: 0.03,
       elderly: 0.02,
     },
@@ -78,6 +116,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: ['Software engineer', 'Operations analyst', 'Law associate', 'Consultant', 'HR manager'],
       migration_workers: ['Surat construction migrant', 'Gulf returnee', 'Interstate factory worker', 'Driver', 'Warehouse loader'],
       students: ['Campus organizer', 'Civil service aspirant', 'Engineering student', 'Student page editor', 'Law student'],
+      retailers: ['Kirana store owner', 'Grocery counter staff', 'Mandi wholesale trader', 'Supermarket floor staff', 'Chemist counter'],
       women: ['ASHA worker', 'Anganwadi worker', 'Tailor', 'Beauty worker', 'Nurse trainee'],
       elderly: ['Retired clerk', 'Retired teacher', 'Small shopkeeper', 'Temple committee elder', 'Pensioner'],
     },
@@ -91,6 +130,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: 0.06,
       migration_workers: 0.09,
       students: 0.07,
+      retailers: 0.04,
       women: 0.04,
       elderly: 0.02,
     },
@@ -109,6 +149,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: ['Software developer', 'Compliance officer', 'Media producer', 'Corporate lawyer', 'NGO coordinator'],
       migration_workers: ['Gulf household manager', 'Saudi construction worker family contact', 'Remittance-dependent spouse', 'Visa processing helper', 'Return migrant driver'],
       students: ['Student union poster', 'Campus debater', 'Exam prep student', 'WhatsApp admin', 'Law student'],
+      retailers: ['Karyana store owner', 'Grocery counter staff', 'Wholesale market trader', 'Superstore floor staff', 'Medical store counter'],
       women: ['Home-based embroidery worker', 'Tailor', 'LHW volunteer', 'Quran tutor', 'Beauty worker'],
       elderly: ['Retired trader', 'Mohalla elder', 'Retired government clerk', 'Mosque committee elder', 'Pensioner'],
     },
@@ -122,6 +163,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: 0.08,
       migration_workers: 0.09,
       students: 0.06,
+      retailers: 0.04,
       women: 0.04,
       elderly: 0.02,
     },
@@ -138,6 +180,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: ['IT analyst', 'Tourism manager', 'Law associate', 'Corporate planner', 'Private hospital executive'],
       migration_workers: ['Gulf remittance household head', 'Abroad domestic worker family contact', 'Return migrant technician', 'Transfer-dependent parent', 'Recruitment desk caller'],
       students: ['Campus activist', 'Tuition student', 'University society editor', 'Student page moderator', 'A-level candidate'],
+      retailers: ['Boutique shop owner', 'Grocery counter staff', 'Pola wholesale trader', 'Supermarket floor staff', 'Pharmacy counter'],
       women: ['Tea estate household manager', 'Clinic attendant', 'Garment dormitory worker', 'School canteen worker', 'Union volunteer'],
       elderly: ['Retired public servant', 'Temple elder', 'Estate elder', 'Small trader', 'Pensioner'],
     },
@@ -151,6 +194,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: 0.05,
       migration_workers: 0.13,
       students: 0.06,
+      retailers: 0.04,
       women: 0.04,
       elderly: 0.02,
     },
@@ -167,6 +211,7 @@ const COUNTRY_AGENT_POOLS = {
       corporate: ['IT associate', 'Project officer', 'Travel company analyst', 'Policy assistant', 'Private bank officer'],
       migration_workers: ['Remittance household manager', 'Qatar worker family contact', 'Malaysia returnee', 'Visa processing clerk', 'Transfer-dependent spouse'],
       students: ['Campus organizer', 'Exam student', 'Messenger group admin', 'Nursing student', 'Law student'],
+      retailers: ['Kirana pasal owner', 'Grocery counter staff', 'Wholesale market trader', 'Departmental store staff', 'Medical shop counter'],
       women: ['FCHV volunteer', 'Household manager', 'Tailor', 'School meal worker', 'Clinic attendant'],
       elderly: ['Retired teacher', 'Ward elder', 'Small landowner', 'Temple helper', 'Pensioner'],
     },
@@ -507,8 +552,9 @@ function createProfiles(pack) {
       agent_id: index,
       username,
       // Carried so the interview view can keep pronouns consistent with the
-      // name it just showed.
+      // name it just showed, and match answers to the right lane.
       gender,
+      segmentKey,
       name: createHandle(username, index),
       profession,
       bio: createDemoBio(pack, anchor, profession, location, segmentKey, detailNote),
@@ -577,7 +623,10 @@ function createSimulationActions(pack) {
   const profiles = createProfiles(pack)
   const plazaSeeds = pack.simulation.actions.filter(action => action.platform === 'plaza')
   const communitySeeds = pack.simulation.actions.filter(action => action.platform === 'community')
-  const tails = [
+  // Every generated action gets one of these appended to vary the feed. They
+  // are price-shock wording by default, so a pack with a different subject
+  // supplies its own or the cascade reads about the wrong scenario.
+  const tails = pack.simulation.cascadeTails || [
     'Queue photos begin circulating before the official explanation lands.',
     'Neighbors compare prices by voice note and assume the worst first.',
     'Screenshots move faster than relief language.',
@@ -1394,13 +1443,23 @@ export function chatWithDemoReport({ simulation_id, message }) {
   const pack = getPackForIdentifier(simulation_id)
   const prompt = String(message || '').toLowerCase()
 
+  // A pack may supply its own keyword answers; otherwise fall back to the
+  // price-shock wording these hooks were originally written for.
+  const packAnswers = pack.interaction.reportAgentAnswers || {}
+  const DEFAULT_ANSWERS = {
+    spread: 'The issue spreads when local public pages and rumor relays convert private household strain into a legitimacy problem.',
+    trust: 'Institutional trust weakens when relief language arrives after people have already built their own explanation for the shock.',
+    first: 'The first signal is domestic adjustment: rationing, delay, and silence before visible complaint.',
+  }
+  const answer = key => packAnswers[key] || DEFAULT_ANSWERS[key]
+
   let response = pack.report.summary
   if (prompt.includes('spread') || prompt.includes('amplif')) {
-    response = 'The issue spreads when local public pages and rumor relays convert private household strain into a legitimacy problem.'
+    response = answer('spread')
   } else if (prompt.includes('trust')) {
-    response = 'Institutional trust weakens when relief language arrives after people have already built their own explanation for the shock.'
+    response = answer('trust')
   } else if (prompt.includes('first') || prompt.includes('earliest')) {
-    response = 'The first signal is domestic adjustment: rationing, delay, and silence before visible complaint.'
+    response = answer('first')
   }
 
   return {
@@ -1444,8 +1503,13 @@ export function interviewDemoAgents({ simulation_id, interviews = [] }) {
   interviews.forEach((interview) => {
     const agentId = Number.parseInt(String(interview.agent_id), 10) || 0
     const profile = profiles[agentId] || profiles[0]
-    const interviewPack = scripted.length
-      ? scripted[agentId % scripted.length]
+    // Prefer an answer written for this agent's segment, so a shopkeeper is not
+    // handed a household answer. Packs that do not tag their answers keep the
+    // previous cycling behaviour.
+    const segmentMatches = scripted.filter(entry => entry.segment && entry.segment === profile.segmentKey)
+    const pool = segmentMatches.length ? segmentMatches : scripted
+    const interviewPack = pool.length
+      ? pool[agentId % pool.length]
       : null
     const base = interviewPack?.response
       || `${profile.username} answers from ${profile.profession.toLowerCase()} in ${profile.bio.split('.')[0]}.`

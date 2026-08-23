@@ -4,6 +4,9 @@ const COUNTRY_CODE_TO_PACK = {
   PK: 'pakistan',
   LK: 'srilanka',
   NP: 'nepal',
+  // A second Bangladesh pack, selected with ?country=BD-BRAND. Plain BD keeps
+  // the default price-shock flow untouched.
+  'BD-BRAND': 'bdbrand',
 }
 
 const GRAPH_COLORS = {
@@ -141,7 +144,10 @@ const GRAPH_CLUSTER_SPECS = [
 ]
 
 function createGraphData(key, context = {}) {
-  const { labels = {}, countryLabel = 'Country', city = 'City' } = context
+  // clusterNouns lets a pack rename the generated cluster nodes. Without it the
+  // shared nameFactory wording applies, which is right for a price shock but
+  // reads oddly elsewhere ("Dhaka queue mother 01" in a brand crisis).
+  const { labels = {}, countryLabel = 'Country', city = 'City', clusterNouns = {} } = context
   const nodes = GRAPH_TEMPLATE.map(([id, name, nodeLabels]) => ({
     uuid: `${key}_${id}`,
     name: labels[id] || name,
@@ -179,7 +185,9 @@ function createGraphData(key, context = {}) {
 
       nodes.push({
         uuid: nodeUuid,
-        name: spec.nameFactory({ countryLabel, city, labels }, index),
+        name: clusterNouns[spec.anchor]
+          ? `${clusterNouns[spec.anchor]} ${String(index + 1).padStart(2, '0')}`
+          : spec.nameFactory({ countryLabel, city, labels }, index),
         labels: ['Entity', spec.label],
         attributes: {
           region: key,
@@ -216,22 +224,26 @@ function createPack({
   seedLabel,
   defaultScenario,
   graphLabels,
+  graphClusterNouns,
   graphLogs,
   populationNotes,
   personas,
   simulationLogs,
   simulationActions,
+  cascadeTails,
   reportTitle,
   reportSummary,
   reportSections,
   reportWorkbench,
   interactionLogs,
   reportAgentMessages,
+  reportAgentAnswers,
   interviewAgents,
 }) {
   const graphData = createGraphData(key, {
     countryLabel,
     city,
+    clusterNouns: graphClusterNouns || {},
     labels: {
       commodity: `${countryLabel} staple price shock`,
       dhaka: city,
@@ -276,6 +288,8 @@ function createPack({
       communityA: { name: 'Info Plaza', rounds: 40, acts: 276 },
       communityB: { name: 'Topic Community', rounds: 40, acts: 456 },
       actions: simulationActions,
+      // Optional per-pack filler lines for generated cascade actions.
+      cascadeTails: cascadeTails || null,
       logs: simulationLogs,
     },
     report: {
@@ -293,6 +307,9 @@ function createPack({
     interaction: {
       logs: interactionLogs,
       reportAgentMessages,
+      // Keyword-hooked answers for the report agent. Packs that omit these fall
+      // back to the shared price-shock wording in demoRuntime.
+      reportAgentAnswers: reportAgentAnswers || null,
       interviewAgents,
     },
   }
@@ -698,6 +715,141 @@ export const DEMO_PACKS = {
       { name: 'Kalpana', role: 'Farmer and volunteer', response: 'She hides the first consequences from her husband because her job is to keep the household functioning.' },
       { name: 'Milan', role: 'Shopkeeper', response: 'He is where private struggle becomes a visible public fact.' },
       { name: 'Anju', role: 'Health volunteer', response: 'She explains risk in language that people trust more than official copy.' },
+    ],
+  }),
+
+  // Brand-crisis pack for agency audiences. Rongdhonu Noodles is invented for
+  // this demo; the scenario shape echoes the 2015 regional instant-noodle
+  // safety scare, but no real brand is named anywhere in it.
+  bdbrand: createPack({
+    key: 'bdbrand',
+    countryCode: 'BD-BRAND',
+    countryLabel: 'Bangladesh',
+    city: 'Dhaka',
+    seedLabel: 'Rongdhonu Noodles - Eid Campaign Crisis Brief (fictional brand).pdf',
+    defaultScenario:
+      'A contamination rumour hits Rongdhonu Noodles during Eid campaign week. How do mothers groups, retailers, and meme pages respond, and who quietly stops buying?',
+    graphLabels: {
+      gov_notice: 'BSTI Test Notice',
+      commodity: 'Rongdhonu Contamination Rumour',
+      bazaar: 'Bazaar and Teashop Talk',
+      students: 'Campus and Meme Pages',
+      remittance: 'Young Family Households',
+      workers: 'Office Tiffin Groups',
+      mosque: 'Community Group Admins',
+      relief: 'Rongdhonu Response Desk',
+      media: 'Bangla Health and News Pages',
+      grocers: 'Mudi Dokan Retailers',
+      mothers: 'School Mother Groups',
+    },
+    graphClusterNouns: {
+      students: 'Dhaka meme page',
+      media: 'Bangla health page',
+      remittance: 'Dhaka young family',
+      workers: 'Dhaka tiffin group',
+      mothers: 'Dhaka school-mother group',
+      bazaar: 'Dhaka teashop thread',
+      grocers: 'Dhaka mudi dokan',
+      gov_notice: 'BSTI circular',
+      relief: 'Rongdhonu response desk',
+      dhaka: 'Dhaka ward',
+    },
+    graphLogs: [
+      'Campaign brief and rumour screenshots ingested from the brand crisis pack.',
+      'Rongdhonu Noodles registered as the campaign entity under scrutiny.',
+      'Mother groups, mudi dokan retailers, and meme pages linked as distinct lanes.',
+      'Scenario graph ready for population setup.',
+    ],
+    populationNotes: [
+      'Households that stop buying quietly and never post a complaint.',
+      'Mudi dokan retailers who see demand fall before any statement is issued.',
+      'Group admins and meme pages that decide how fast a screenshot travels.',
+    ],
+    personas: [
+      { name: 'Sharmin', role: 'School-group mother', detail: 'Packs a tiffin box every morning', trait: 'Removes the product before saying anything' },
+      { name: 'Kamrul', role: 'Mudi dokan owner', detail: 'Runs a para grocery in Mirpur', trait: 'Reads demand off the shelf, not the news' },
+      { name: 'Tanvir', role: 'Meme page admin', detail: 'Runs a campus humour page', trait: 'Turns a batch number into a joke that travels' },
+      { name: 'Nasrin', role: 'Garment floor supervisor', detail: 'Buys in bulk for a shared kitchen', trait: 'Switches brand without announcing it' },
+    ],
+    simulationLogs: [
+      'Seeding Eid campaign posts and the first rumour screenshot.',
+      'Running mother groups, retail lane, and meme pages in parallel.',
+      'Tracking silent substitution against visible complaint.',
+      'Cascade complete across both communities.',
+    ],
+    simulationActions: [
+      { id: 'bb1', platform: 'community', actor: 'Sharmin', role: 'School-group mother', kind: 'Group message', text: 'Apuu, ei noodles ta ki bacchader tiffin e deya thik hobe? Ekta screenshot dekhlam, batch number soho. Bhoy lagche.', round: 'R02', time: '00:40' },
+      { id: 'bb2', platform: 'plaza', actor: 'Rongdhonu', role: 'Brand campaign page', kind: 'Campaign post', text: 'Eid er khushi, ek plate e. Rongdhonu Noodles er notun Eid campaign live. (Scheduled post, published forty minutes after the first screenshot.)', round: 'R04', time: '01:05' },
+      { id: 'bb3', platform: 'community', actor: 'Group admin', role: 'Community group admin', kind: 'Forward', text: 'ভাই, ব্যাচ নম্বরটা দেখেন। কেউ কনফার্ম করতে পারলে জানান। আপাতত বাচ্চাদের না দেওয়াই ভালো।', round: 'R07', time: '01:50' },
+      { id: 'bb4', platform: 'plaza', actor: 'Tanvir', role: 'Meme page admin', kind: 'Meme post', text: 'Eid er khushi ek plate e, lead o ek plate e. Batch number ta comment e dilam. (The joke reaches more people in two hours than the campaign did in two days.)', round: 'R11', time: '02:35' },
+      { id: 'bb5', platform: 'community', actor: 'Kamrul', role: 'Mudi dokan owner', kind: 'Retailer signal', text: 'Ei week e tin carton porei ache. Keu chaitese na, kintu keu jigges o kortese na. Customer chupchap onno brand nite jaitese.', round: 'R15', time: '03:20' },
+      { id: 'bb6', platform: 'plaza', actor: 'Nasrin', role: 'Garment floor supervisor', kind: 'Silent adjustment', text: 'Buys a different brand at the bazaar on the way home and says nothing to anyone. No post, no comment, no complaint. The switch is invisible to every dashboard.', round: 'R19', time: '04:10' },
+      { id: 'bb7', platform: 'community', actor: 'Teashop table', role: 'Bazaar and teashop talk', kind: 'Offline relay', text: 'Cha er dokane ekjon bollo tar bhaginar school e naki notice diyeche. Keu link dekhe nai, kintu shobai bishwas kore fellcho.', round: 'R24', time: '05:05' },
+      { id: 'bb8', platform: 'plaza', actor: 'BSTI notice', role: 'Regulator', kind: 'Test notice', text: 'A sample-testing notice is issued. The wording is procedural and gives no verdict, so both sides read it as proof of their own position.', round: 'R28', time: '06:00' },
+      { id: 'bb9', platform: 'plaza', actor: 'Rongdhonu', role: 'Brand response desk', kind: 'Clarification', text: 'Brand issues an English-language statement citing compliance certificates. It circulates among middle-class pages and does not enter the mother groups at all.', round: 'R33', time: '06:50' },
+      { id: 'bb10', platform: 'community', actor: 'Kamrul', role: 'Mudi dokan owner', kind: 'Trade outcome', text: 'Statement er por o order kori nai. Ami wait kortesi. Customer fire ashle tokhon anbo, ager moto na.', round: 'R38', time: '07:40' },
+    ],
+    cascadeTails: [
+      'The screenshot arrives before anyone has checked whether it is real.',
+      'Nobody asks the shopkeeper why, they simply reach for the other packet.',
+      'The joke travels further than the correction ever will.',
+      'A group admin decides in one second how far this goes.',
+      'The tiffin box changes before the opinion does.',
+      'The campaign schedule keeps posting into a room that has already turned.',
+    ],
+    reportTitle: 'Contamination Rumour in Eid Campaign Week: Forecast Report on Silent Substitution, Retail Drag, and Split Trust Recovery',
+    reportSummary:
+      'The damage does not arrive as outrage. It arrives as a tiffin box packed with something else, a shelf that stops moving, and a clarification that reaches the segment that had already forgiven you.',
+    reportSections: [
+      {
+        title: 'The rumour clears the groups before it reaches the timeline',
+        paragraphs: [
+          'The first movement is a screenshot inside closed mother groups and building groups, carrying a batch number that nobody verifies. It travels as caution between people who know each other, which is the format that survives fact-checking.',
+          'The scheduled Eid campaign post lands into that suspicion rather than ahead of it. Because the campaign continues on its original calendar, the brand appears to be celebrating while parents are asking whether it is safe.',
+        ],
+      },
+      {
+        title: 'The shelf is the fastest indicator, and the quietest',
+        paragraphs: [
+          'Retailers register the change days before the brand does. Cartons stop moving, and customers switch without asking a question the shopkeeper could answer or report upward.',
+          'This is the population that never appears in a listening dashboard: no post, no complaint, no negative sentiment. Only a reorder that does not happen. In this run the retail lane turns before any measurable spike in public conversation.',
+        ],
+      },
+      {
+        title: 'The clarification lands in three different countries',
+        paragraphs: [
+          'An English-language compliance statement is legible to the middle-class segment, who were the least likely to have stopped buying. It does not enter the groups where the rumour actually lives, and it does not reach the retailer deciding whether to reorder.',
+          'Recovery therefore splits by trust rather than by exposure. The segments that saw the least evidence forgive fastest, and the households that quietly switched stay switched, because nothing has yet asked them to come back.',
+        ],
+      },
+    ],
+    reportWorkbench: [
+      { label: 'Planning', title: 'Outline', detail: 'Group-first spread, retail drag, split trust recovery.' },
+      { label: 'Quick Search', title: 'Active memories', detail: 'Tiffin box, batch number screenshot, mudi dokan reorder, Eid campaign calendar.' },
+      { label: 'Agent Interview', title: 'Retail check', detail: 'Shopkeepers see the switch before the brand sees the sentiment.' },
+      { label: 'Complete', title: 'Report ready', detail: 'Brand crisis report assembled and ready for review.' },
+    ],
+    interactionLogs: [
+      'Load brand crisis report thread.',
+      'Load interviewable mother, retailer, and page-admin personas.',
+      'Survey prompt bank ready.',
+    ],
+    reportAgentMessages: [
+      { role: 'assistant', text: 'The first loss is not reputation. It is a tiffin box quietly packed with another brand.' },
+      { role: 'user', text: 'Where does the brand find out?' },
+      { role: 'assistant', text: 'At the shelf. Retailers stop reordering before public sentiment moves enough to register.' },
+    ],
+    reportAgentAnswers: {
+      first: 'The earliest signal is inside closed mother groups: a forwarded screenshot with a batch number, hours before anything appears on a public timeline.',
+      spread: 'It spreads when group admins forward it as caution and meme pages convert the batch number into a joke. Humour carries it further than accusation would.',
+      trust: 'Trust splits by language and channel. The English compliance statement reassures the middle-class segment that had barely stopped buying, and never reaches the households or the retailers who already switched.',
+    },
+    interviewAgents: [
+      { name: 'Sharmin', role: 'School-group mother', segment: 'women', response: 'She takes the packet out of the tiffin box first and asks the group afterwards. The purchase stops days before the opinion forms.' },
+      { name: 'Kamrul', role: 'Mudi dokan owner', segment: 'retailers', response: 'He watches three cartons sit unsold and reads that as the verdict. No customer explains the switch to him, so he has nothing to pass upward.' },
+      { name: 'Tanvir', role: 'Meme page admin', segment: 'students', response: 'He is not angry at the brand. He is chasing reach, and the batch number happens to be the funniest thing available that week.' },
+      { name: 'Rumana', role: 'School teacher', segment: 'middle_class', response: 'She reads the English statement, finds it credible, and never learns that the group her sister is in already moved on to another brand.' },
+      { name: 'Shahin', role: 'Garment worker', segment: 'urban_working', response: 'He switched at the bazaar without discussing it. Nobody asked him, so the decision never became data.' },
     ],
   }),
 }
