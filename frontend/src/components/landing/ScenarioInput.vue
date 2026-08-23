@@ -7,36 +7,17 @@
 
       <div class="scenario-standfirst">
         <p class="scenario-standfirst__lead" v-html="decoratedLead" />
-        <p class="scenario-standfirst__detail">This opens the public Murmur demo. No account needed.</p>
+        <p class="scenario-standfirst__detail">This runs the public Murmur demo end to end. No account needed.</p>
       </div>
     </div>
 
     <div class="scenario-scribble">before it leaves your desk</div>
 
     <form class="scenario-console" aria-label="Landing demo handoff" @submit.prevent="handleSubmit">
-      <div class="scenario-console__section">
-        <div class="scenario-console__header">
-          <span class="scenario-console__label">01 / Reality Seeds</span>
-          <span class="scenario-console__meta">Sample intake</span>
-        </div>
-
-        <div class="scenario-seed-row" aria-hidden="true">
-          <div class="scenario-seed-row__left">
-            <span class="scenario-seed-row__icon">DOC</span>
-            <span class="scenario-seed-row__name">Bangladesh Rice Price Shock Brief.pdf</span>
-          </div>
-          <span class="scenario-seed-row__action">DL</span>
-        </div>
-      </div>
-
-      <div class="scenario-console__divider">
-        <span>Input Parameters</span>
-      </div>
-
       <div class="scenario-console__section scenario-console__section--brief">
         <div class="scenario-console__header">
-          <span class="scenario-console__label">&gt;_ 02 / Scenario Brief</span>
-          <span class="scenario-console__meta">Public demo handoff</span>
+          <span class="scenario-console__label">&gt;_ 01 / Scenario Brief</span>
+          <span class="scenario-console__meta">Public demo</span>
         </div>
 
         <div class="scenario-input-wrapper">
@@ -44,15 +25,31 @@
             v-model.trim="scenario"
             class="scenario-input"
             rows="6"
+            aria-label="Scenario brief"
             :placeholder="placeholder"
           />
           <div class="scenario-engine-badge">Engine: Murmur / OASIS</div>
         </div>
+      </div>
+
+      <div class="scenario-console__divider">
+        <span>What the run does</span>
+      </div>
+
+      <div class="scenario-console__section scenario-console__section--steps">
+        <ol class="scenario-steps">
+          <li v-for="step in RUN_STEPS" :key="step.number" class="scenario-step">
+            <span class="scenario-step__number">{{ step.number }}</span>
+            <span class="scenario-step__title">{{ step.title }}</span>
+          </li>
+        </ol>
 
         <button class="scenario-primary" type="submit">
-          <span>Run scenario</span>
+          <span>{{ ctaLabel }}</span>
           <span class="scenario-primary__arrow">-&gt;</span>
         </button>
+
+        <p class="scenario-note">Starts at step 01 of 05. Nothing else to fill in.</p>
       </div>
     </form>
   </section>
@@ -64,9 +61,23 @@ import { useRevealOnScroll } from '../../composables/useRevealOnScroll'
 
 const emit = defineEmits(['submit'])
 
+// Named for what the visitor will watch happen, so the button is not a leap in
+// the dark and the panel cannot be mistaken for the demo's own intake form.
+const RUN_STEPS = [
+  { number: '01', title: 'Scenario graph' },
+  { number: '02', title: 'Population' },
+  { number: '03', title: 'Cascade' },
+  { number: '04', title: 'Report' },
+  { number: '05', title: 'Interview' },
+]
+
 const placeholder = "Tell us what you're about to announce. We'll show you what happens next."
 const scenario = ref('')
 const { targetRef, isVisible } = useRevealOnScroll()
+
+// An empty box is not a dead end: the run falls back to the sample brief for
+// whichever country pack the visitor resolves to.
+const ctaLabel = computed(() => (scenario.value ? 'Run this brief' : 'Run the sample brief'))
 
 const decorate = (text, target, replacement) => text.replace(target, replacement)
 
@@ -83,10 +94,6 @@ const decoratedLead = computed(() => decorate(
 ))
 
 const handleSubmit = () => {
-  if (!scenario.value) {
-    return
-  }
-
   emit('submit', scenario.value.trim())
 }
 </script>
@@ -174,6 +181,10 @@ const handleSubmit = () => {
 }
 
 .scenario-console__section--brief {
+  padding-bottom: 4px;
+}
+
+.scenario-console__section--steps {
   padding-bottom: 28px;
 }
 
@@ -194,35 +205,6 @@ const handleSubmit = () => {
 .scenario-console__label,
 .scenario-console__meta {
   font-size: 12px;
-}
-
-.scenario-seed-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 18px;
-  padding: 16px 18px;
-  border: 1px solid #e6e6e6;
-  background: #fafafa;
-}
-
-.scenario-seed-row__left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: "Mom´sTypewriter", var(--murmur-font-type);
-  font-size: 15px;
-}
-
-.scenario-seed-row__icon,
-.scenario-seed-row__action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  min-height: 28px;
-  border: 1px solid #dedede;
-  font-size: 11px;
 }
 
 .scenario-console__divider {
@@ -276,23 +258,69 @@ const handleSubmit = () => {
   font-size: 12px;
 }
 
+.scenario-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scenario-step {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 2px solid #0048ff;
+}
+
+.scenario-step__number {
+  color: #0048ff;
+  font-family: "Mom´sTypewriter", var(--murmur-font-type);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.scenario-step__title {
+  color: #050505;
+  font-family: var(--murmur-font-ui);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
 .scenario-primary {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 26px;
   padding: 20px 22px;
-  border: 1px solid #e2e2e2;
-  background: #fff;
-  color: #050505;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  font-family: var(--murmur-font-display);
   font-size: 28px;
   font-weight: 800;
+  letter-spacing: -0.02em;
   cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.scenario-primary:hover {
+  background: #0048ff;
+  border-color: #0048ff;
 }
 
 .scenario-primary__arrow {
   font-size: 22px;
+}
+
+.scenario-note {
+  margin: 12px 0 0;
+  color: #6d6d6d;
+  font-family: "Mom´sTypewriter", var(--murmur-font-type);
+  font-size: 12px;
 }
 
 :deep(.scenario-circle),
@@ -330,6 +358,16 @@ const handleSubmit = () => {
 @media (max-width: 980px) {
   .scenario-top {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .scenario-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scenario-primary {
+    font-size: 22px;
   }
 }
 </style>

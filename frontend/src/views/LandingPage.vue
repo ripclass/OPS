@@ -134,6 +134,7 @@ import {
 } from '../content/agentStories'
 import { useGeolocation } from '../composables/useGeolocation'
 import { authState, signOut } from '../store/auth'
+import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
 
 const router = useRouter()
 const route = useRoute()
@@ -248,15 +249,27 @@ const openConsole = (scenario = '') => {
   openAuth('signin', redirect)
 }
 
-const handleScenarioSubmit = (scenario) => {
-  const nextQuery = {
-    scenario,
+// The landing already collects the only thing /demo's intake asks a demo
+// visitor for, so sending them to that intake made them fill the same form
+// twice. Seed the demo store here and drop them straight into step 1 instead.
+// A direct /demo visit still gets the intake, exactly once.
+const handleScenarioSubmit = async (scenario) => {
+  const brief = String(scenario || '').trim()
+
+  // An empty box is allowed: initializeDemoFlow falls back to the country
+  // pack's own default brief rather than dead-ending the click.
+  await initializeDemoFlow({
+    scenario: brief,
     country: countryCode.value || 'BD',
+  })
+
+  if (brief) {
+    setDemoScenario(brief)
   }
 
   router.push({
-    path: '/demo',
-    query: nextQuery,
+    name: 'DemoGraph',
+    query: buildDemoQuery(),
   })
 }
 
