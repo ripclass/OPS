@@ -17,7 +17,7 @@
       <div class="scenario-console__section">
         <div class="scenario-console__header">
           <span class="scenario-console__label">01 / Reality Seeds</span>
-          <span class="scenario-console__meta">Static demo intake</span>
+          <span class="scenario-console__meta">Sample intake</span>
         </div>
 
         <div class="scenario-seed-row" aria-hidden="true">
