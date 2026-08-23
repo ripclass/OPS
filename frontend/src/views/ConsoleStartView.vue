@@ -72,13 +72,15 @@
 
             <div class="console-section">
               <div class="console-header">
-                <span class="console-label">01 / Source Material</span>
-                <span class="console-meta">Optional Uploads: PDF, MD, MARKDOWN, TXT</span>
+                <span class="console-label">{{ isDemoRoute ? '01 / Reality Seeds' : '01 / Source Material' }}</span>
+                <span class="console-meta">
+                  {{ isDemoRoute ? 'Pre-attached for this scenario' : 'Optional Uploads: PDF, MD, MARKDOWN, TXT' }}
+                </span>
               </div>
 
               <div
                 class="upload-zone"
-                :class="{ 'drag-over': isDragOver, 'has-files': files.length > 0 }"
+                :class="{ 'drag-over': isDragOver, 'has-files': files.length > 0 || isDemoRoute }"
                 @dragover.prevent="handleDragOver"
                 @dragleave.prevent="handleDragLeave"
                 @drop.prevent="handleDrop"
@@ -94,21 +96,46 @@
                   @change="handleFileSelect"
                 />
 
-                <div v-if="files.length === 0" class="upload-placeholder">
-                  <div class="upload-icon">^</div>
-                  <div class="upload-title">Drag Files to Upload (Optional)</div>
-                  <div class="upload-hint">
-                    Or click to browse. You can continue with only the scenario prompt below.
+                <div v-if="isDemoRoute" class="file-list">
+                  <div
+                    v-for="doc in visibleSeedDocs"
+                    :key="doc.name"
+                    class="file-item file-item--seed"
+                  >
+                    <span class="file-icon file-kind">{{ doc.kind }}</span>
+                    <span class="file-name">
+                      {{ doc.name }}
+                      <span class="file-note">{{ doc.note }}</span>
+                    </span>
+                    <span class="file-attached">attached</span>
                   </div>
-                </div>
 
-                <div v-else class="file-list">
                   <div v-for="(file, index) in files" :key="`${file.name}-${index}`" class="file-item">
                     <span class="file-icon">DOC</span>
                     <span class="file-name">{{ file.name }}</span>
                     <button class="remove-btn" @click.stop="removeFile(index)">x</button>
                   </div>
+
+                  <div class="seed-add-hint">Click to add your own files: PDF, MD, MARKDOWN, TXT.</div>
                 </div>
+
+                <template v-else>
+                  <div v-if="files.length === 0" class="upload-placeholder">
+                    <div class="upload-icon">^</div>
+                    <div class="upload-title">Drag Files to Upload (Optional)</div>
+                    <div class="upload-hint">
+                      Or click to browse. You can continue with only the scenario prompt below.
+                    </div>
+                  </div>
+
+                  <div v-else class="file-list">
+                    <div v-for="(file, index) in files" :key="`${file.name}-${index}`" class="file-item">
+                      <span class="file-icon">DOC</span>
+                      <span class="file-name">{{ file.name }}</span>
+                      <button class="remove-btn" @click.stop="removeFile(index)">x</button>
+                    </div>
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -135,13 +162,26 @@
             <div class="console-section">
               <div class="console-header">
                 <span class="console-label">&gt;_ 02 / Scenario Brief</span>
+                <button
+                  v-if="isDemoRoute"
+                  class="draft-brief-btn"
+                  type="button"
+                  :disabled="typingBrief || loading"
+                  @click="draftBriefForMe"
+                >
+                  {{ typingBrief ? 'Drafting...' : 'Draft the brief for me' }}
+                </button>
               </div>
+              <p v-if="isDemoRoute" class="draft-brief-hint">
+                Fills a scripted example brief for the selected scenario. Edit it before you run.
+              </p>
               <div class="input-wrapper">
                 <textarea
                   v-model="formData.simulationRequirement"
                   class="code-input"
                   rows="6"
                   :disabled="loading"
+                  :readonly="typingBrief"
                   placeholder="Describe the trigger you want to test. Example: The government announces a 40% rice price increase before Eid. How do low-income households in Dhaka respond?"
                 ></textarea>
                 <div class="model-badge">{{ engineLabel }}</div>
@@ -151,7 +191,7 @@
             <div class="console-section btn-section">
               <button
                 class="start-engine-btn"
-                :disabled="!canSubmit || loading"
+                :disabled="!canSubmit || loading || typingBrief"
                 @click="startSimulation"
               >
                 <span v-if="!loading">Continue to Population Setup</span>
@@ -169,12 +209,13 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
 import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
-import { DEMO_SCENARIO_PICKS, getDemoPackByCountryCode } from '../content/demoFlowPacks'
+import { DEMO_SCENARIO_PICKS, getDemoPackByCountryCode, resolveDemoPackKey } from '../content/demoFlowPacks'
+import { getDraftedBrief, getSeedDocsForPack } from '../content/demoSeedDocs'
 import { useDemoBrand } from '../composables/useDemoBrand'
 
 const router = useRouter()
@@ -227,12 +268,112 @@ const activePackCode = computed(() => {
   return raw || 'BD'
 })
 
+// Demo-only intake theater. The run has to be seen receiving its inputs, so the
+// brief types itself in and the pack's reality seeds re-attach one at a time.
+// Everything below is gated on isDemoRoute; /console keeps its plain behaviour.
+const SEED_STAGGER_MS = 140
+const TYPE_TICK_MS = 26
+const PACK_TYPE_MS = 1000
+const DRAFT_TYPE_MS = 1300
+
+const typingBrief = ref(false)
+const seedRevealCount = ref(Number.MAX_SAFE_INTEGER)
+
+const activePackKey = computed(() => resolveDemoPackKey(activePackCode.value))
+const packSeedDocs = computed(() => (isDemoRoute.value ? getSeedDocsForPack(activePackKey.value) : []))
+const visibleSeedDocs = computed(() => packSeedDocs.value.slice(0, seedRevealCount.value))
+
+const seedTimers = []
+let briefTypeTimer = null
+
+const scheduleSeed = (fn, delay) => {
+  seedTimers.push(window.setTimeout(fn, delay))
+}
+
+const clearIntakeTimers = () => {
+  seedTimers.splice(0).forEach((id) => window.clearTimeout(id))
+  if (briefTypeTimer !== null) {
+    window.clearInterval(briefTypeTimer)
+    briefTypeTimer = null
+  }
+}
+
+onBeforeUnmount(clearIntakeTimers)
+
+const prefersReducedMotion = () => (
+  typeof window !== 'undefined'
+  && typeof window.matchMedia === 'function'
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+)
+
+// Characters are batched per tick so a long brief lands in about the same time
+// a short one does, instead of crawling.
+const typeIntoBrief = (text, durationMs) => {
+  if (briefTypeTimer !== null) {
+    window.clearInterval(briefTypeTimer)
+    briefTypeTimer = null
+  }
+
+  const total = text.length
+  if (!total) {
+    formData.value.simulationRequirement = ''
+    return
+  }
+
+  if (prefersReducedMotion()) {
+    formData.value.simulationRequirement = text
+    return
+  }
+
+  const ticks = Math.max(1, Math.round(durationMs / TYPE_TICK_MS))
+  const perTick = Math.max(1, Math.ceil(total / ticks))
+  let index = 0
+
+  typingBrief.value = true
+  formData.value.simulationRequirement = ''
+  briefTypeTimer = window.setInterval(() => {
+    index = Math.min(total, index + perTick)
+    formData.value.simulationRequirement = text.slice(0, index)
+    if (index >= total) {
+      window.clearInterval(briefTypeTimer)
+      briefTypeTimer = null
+      typingBrief.value = false
+    }
+  }, TYPE_TICK_MS)
+}
+
+// The count is passed in rather than read off the computed, because router
+// .replace has not landed yet when the picker calls this and the computed would
+// still describe the pack we are leaving.
+const restageSeedDocs = (count) => {
+  seedTimers.splice(0).forEach((id) => window.clearTimeout(id))
+
+  if (!count || prefersReducedMotion()) {
+    seedRevealCount.value = Number.MAX_SAFE_INTEGER
+    return
+  }
+
+  seedRevealCount.value = 0
+  for (let index = 0; index < count; index += 1) {
+    scheduleSeed(() => {
+      seedRevealCount.value = index + 1
+    }, SEED_STAGGER_MS * (index + 1))
+  }
+}
+
+const draftBriefForMe = () => {
+  if (typingBrief.value || loading.value) {
+    return
+  }
+  typeIntoBrief(getDraftedBrief(activePackKey.value), DRAFT_TYPE_MS)
+}
+
 // The picker only ever rewrites this page's own query and its own textarea. The
 // landing CTA never lands here, it seeds the store and jumps straight to
 // DemoGraph, so nothing below can reach that path.
 const selectScenarioPack = (countryCode) => {
   const pack = getDemoPackByCountryCode(countryCode)
-  formData.value.simulationRequirement = pack.intake.defaultScenario
+
   router.replace({
     path: route.path,
     query: {
@@ -241,6 +382,14 @@ const selectScenarioPack = (countryCode) => {
       scenario: undefined,
     },
   })
+
+  if (!isDemoRoute.value) {
+    formData.value.simulationRequirement = pack.intake.defaultScenario
+    return
+  }
+
+  restageSeedDocs(getSeedDocsForPack(resolveDemoPackKey(countryCode)).length)
+  typeIntoBrief(pack.intake.defaultScenario, PACK_TYPE_MS)
 }
 const heroSectionStyle = computed(() => ({
   '--hero-image': `url("${heroImageUrl}")`,
@@ -721,6 +870,104 @@ const handleSignOut = async () => {
   cursor: pointer;
   font-size: 1rem;
   color: #999;
+}
+
+.file-item--seed {
+  align-items: flex-start;
+  border-color: #ddd;
+  animation: seed-in 0.2s ease-out both;
+}
+
+@keyframes seed-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.file-kind {
+  flex: none;
+  min-width: 42px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  color: #555;
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.file-item--seed .file-name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.file-note {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.file-attached {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-size: 0.68rem;
+  color: #999;
+}
+
+/* Drawn rather than set as a glyph, so no font substitutes an emoji tick.
+   The literal is deliberate: --orange is declared under :root inside this
+   scoped block, so it never resolves here. */
+.file-attached::before {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border-right: 2px solid #ff4500;
+  border-bottom: 2px solid #ff4500;
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.seed-add-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #999;
+  padding-top: 2px;
+}
+
+.draft-brief-btn {
+  border: 1px solid #ddd;
+  background: var(--white);
+  color: var(--black);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.draft-brief-btn:not(:disabled):hover {
+  border-color: #ff4500;
+  color: #ff4500;
+}
+
+.draft-brief-btn:disabled {
+  color: #aaa;
+  cursor: progress;
+}
+
+.draft-brief-hint {
+  margin: -8px 0 12px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #999;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-item--seed {
+    animation: none;
+  }
 }
 
 .console-divider {

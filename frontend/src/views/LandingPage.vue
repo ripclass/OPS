@@ -75,7 +75,11 @@
       </section>
 
       <section id="console" class="content-section content-section--wide content-section--scenario">
-        <ScenarioInput @submit="handleScenarioSubmit" />
+        <ScenarioInput
+          :sample-brief="demoSampleBrief"
+          :seed-docs="demoSeedDocs"
+          @submit="handleScenarioSubmit"
+        />
       </section>
 
       <section id="privacy" class="content-section content-section--wide content-section--privacy">
@@ -133,6 +137,8 @@ import {
   WHO_ITS_FOR_OUTRO,
 } from '../content/agentStories'
 import { useGeolocation } from '../composables/useGeolocation'
+import { getDemoPackByCountryCode, resolveDemoPackKey } from '../content/demoFlowPacks'
+import { getSeedDocsForPack } from '../content/demoSeedDocs'
 import { authState, signOut } from '../store/auth'
 import { buildDemoQuery, initializeDemoFlow, setDemoScenario } from '../store/demoFlow'
 
@@ -248,6 +254,15 @@ const openConsole = (scenario = '') => {
   }
   openAuth('signin', redirect)
 }
+
+// The scenario panel plays a short intake sequence before it submits, so it
+// needs the same brief and the same reality seeds the run will actually use.
+// Resolved here from the visitor's country pack; the panel stays presentational.
+const demoPackKey = computed(() => resolveDemoPackKey(countryCode.value || 'BD'))
+const demoSampleBrief = computed(
+  () => getDemoPackByCountryCode(countryCode.value || 'BD').intake.defaultScenario
+)
+const demoSeedDocs = computed(() => getSeedDocsForPack(demoPackKey.value))
 
 // The landing already collects the only thing /demo's intake asks a demo
 // visitor for, so sending them to that intake made them fill the same form
