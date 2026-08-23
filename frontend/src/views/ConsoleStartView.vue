@@ -209,7 +209,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HistoryDatabase from '../components/HistoryDatabase.vue'
 import { authState, signOut } from '../store/auth'
@@ -404,6 +404,17 @@ watch(
   },
   { immediate: true }
 )
+
+// Arriving at /demo with nothing in the box left the primary button disabled
+// and the visitor guessing. The demo has a brief for whichever pack is
+// selected, so type it in and let them change it or run it. /console keeps its
+// empty box, because there the brief is the whole point of the page.
+onMounted(() => {
+  if (!isDemoRoute.value || formData.value.simulationRequirement.trim()) {
+    return
+  }
+  typeIntoBrief(getDemoPackByCountryCode(activePackCode.value).intake.defaultScenario, PACK_TYPE_MS)
+})
 
 const triggerFileInput = () => {
   if (!loading.value) {
