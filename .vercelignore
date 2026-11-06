@@ -1,0 +1,24 @@
+# Deploy uploads run from the repo root because the Vercel project's Root
+# Directory is `frontend`. Everything the frontend build does not need stays
+# on this machine — above all the root .env, which carries service keys.
+.env
+.env.*
+**/.env
+**/.env.local
+backend/
+log/
+static/
+node_modules/
+tmp-ui-flow/
+tmp-live-bundle.js
+.pytest_cache/
+.github/
+.claude/
+.git/
+Dockerfile
+docker-compose.yml
+render.yaml
+*.pdf
+*.docx
+frontend/vite-dev.log
+frontend/node_modules/
